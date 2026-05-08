@@ -1,0 +1,80 @@
+[project]
+name = "ClinVarMatcher"
+version = "0.1.0"
+description = "clinical metadata variables harmonization"
+authors = [
+    {name = "Komal Gilani",email = "komalsyeda29@gmail.com"}
+]
+readme = "README.md"
+requires-python = ">=3.11,<3.12"
+
+[tool.poetry.dependencies]
+    matplotlib = "*"
+    seaborn = "*"
+    requests = "*"
+    tqdm = ">=4.67.1"
+    setuptools = "*"
+    pyreadstat = "*"
+    dateinfer = "*"
+    quantulum = "*"
+    rdflib = "*"
+    sparqlwrapper = "*"
+    python-dotenv = "*"
+    chardet = "*"
+    oxrdflib = "*"
+    plotly = "*"
+    networkx = "*"
+    ontospy="*"
+    pylode= "*"
+    faiss-cpu = "*"
+    owlready2 = "*"
+    asyncpg = "*"
+    greenlet = "*"
+    torch = "*"
+    transformers = "*"
+    scipy = "1.13.1"
+    scikit-learn = "1.5.2"
+    jinja2 = "*"
+    pyvis = "*"
+    optimum = "*"
+    openpyxl = "*"
+    thefuzz = "^0.22.1"
+    pint = "^0.24.4"
+    pyreadr = "^0.5.3"
+    sentence-transformers = "^5.1.2"
+    squarify = "^0.4.4"
+    circlify = "^0.15.1"
+    tensorflow = "2.18.0"
+    tf-keras = "==2.18.*"
+    pandas = "^2.3.3"
+    numpy = "<2.3"
+    qdrant-client = "1.14.2"
+    ollama = "^0.6.1"
+    spacy = "^3.8.11"
+    en-core-web-sm = {url = "https://github.com/explosion/spacy-models/releases/download/en_core_web_sm-3.8.0/en_core_web_sm-3.8.0.tar.gz"}
+    pyshacl = "^0.31.0"
+    gensim = "^4.4.0"
+    compress-fasttext = "^0.1.5"
+    torch-geometric = "^2.7.0"
+    python-pptx = "^1.0.2"
+    together = "^2.1.0"
+    google-generativeai = "^0.8.6"
+    google-genai = "^1.64.0"
+einops = "^0.8.2"
+pre = "^1.3.0"
+datasets = "^4.8.4"
+openrouter = "^0.8.1"
+ucimlrepo = "^0.0.7"
+peft = "^0.19.1"
+ftfy = "^6.3.1"
+openai = "^2.35.1"
+
+
+
+[tool.poetry]
+packages = [{include = "experiment"}]
+
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"

@@ -40,23 +40,31 @@ class StructuralEvidence:
     """Handler-specific context: source_unit, target_unit, source_range,
     target_range, categories, etc. Survives into the final Verdict.extra."""
 
-
 @dataclass(frozen=True)
 class LLMEvidence:
-    """The LLM's verdict on a candidate pair.
-
-    Carries the raw verdict string ('COMPLETE' | 'COMPATIBLE' | 'PARTIAL'
-    | 'IMPOSSIBLE') rather than a ContextMatchType — keeping the LLM's
-    semantic protocol explicit and out of the rest of the pipeline.
-
-    """
     verdict: str
     confidence: float
     reason: str = ""
     transform: str = ""
     transform_direction: str = ""
+    harmonized_variable: str = ""
 
     VALID_VERDICTS = ("COMPLETE", "COMPATIBLE", "PARTIAL", "IMPOSSIBLE")
+
+    # Logprob-derived uncertainty evidence
+    logprob_usable: bool = False
+    logprob_distribution_type: str = ""   # complete_four_class | observed_alternatives | unusable
+    logprob_observability: float = 0.0    # observed class codes / 4
+
+    logprob_dist: dict = field(default_factory=dict)
+    logprob_confidence: float = 0.0
+    logprob_top_label: str = ""
+    logprob_top_prob: float = 0.0
+    logprob_runner_up: str = ""
+    logprob_margin: float = 0.0
+    logprob_raw_margin: float = 0.0
+
+    confidence_source: str = ""
 
     def __post_init__(self):
         if self.verdict not in self.VALID_VERDICTS:
@@ -102,6 +110,11 @@ class Verdict:
             if isinstance(self.transformation, TransformationType)
             else (self.transformation or TransformationType.NONE.value)
         )
+        details["timepoint_transformation"] = (
+                TransformationType.TIMEPOINT_ALIGNMENT.value
+                if (not self.timepoint.aligned and self.level != MatchLevel.NOT_APPLICABLE)
+                else TransformationType.NONE.value
+            )
         details["timepoint_aligned"] = "yes" if self.timepoint.aligned else "no"
         if not self.timepoint.aligned and self.level != MatchLevel.NOT_APPLICABLE:
             details["source_timepoint"] = self.timepoint.source_visit

@@ -2,12 +2,32 @@ from __future__ import annotations
 import json, re, time
 from typing import Dict, List, Optional, Tuple, Any
 from dataclasses import dataclass, field
+
+from .utils import setup_logger
 from .config import settings
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from .data_model import ContextMatchType, MappingType
 
 import hashlib
 from pathlib import Path
+
+logger = setup_logger("llm_logs.log")
+_LABELS = {
+    "COMPLETE",
+    "COMPATIBLE",
+    "PARTIAL",
+    "IMPOSSIBLE",
+}
+
+_LABEL_ALIASES = {
+    "complete": "COMPLETE",
+    "compatible": "COMPATIBLE",
+    "partial": "PARTIAL",
+    "impossible": "IMPOSSIBLE",
+}
+
+_CODE_TO_LABEL = {"1": "COMPLETE", "2": "COMPATIBLE", "3": "PARTIAL", "4": "IMPOSSIBLE"}
+
 
 
 class LLMDiskCache:
@@ -19,1022 +39,498 @@ class LLMDiskCache:
         """Call once when system prompt changes to invalidate stale entries."""
         self._sys_hash = hashlib.sha256(sys_prompt.encode()).hexdigest()[:12]
 
-    def _path(self, model: str, prompt: str, mode: str = "", batch: bool = False) -> Path:
+   
+    def _path(self, model: str, prompt: str, mode: str = "") -> Path:
         name = model.split("/")[-1]
         d = self.root / name
         d.mkdir(parents=True, exist_ok=True)
-        key_material = f"{self._sys_hash}::{mode}::{prompt}"
+        key_material = f"{self._sys_hash}::{mode}::{model}::{prompt}"
         return d / f"{hashlib.sha256(key_material.encode()).hexdigest()}.json"
 
-    def get(self, model: str, prompt: str, mode: str = "", batch: bool = False) -> str | None:
-        p = self._path(model, prompt, mode, batch)
-        return json.loads(p.read_text())["r"] if p.exists() else None
-
-    def put(self, model: str, prompt: str, response: str, mode: str = "", batch: bool = False):
-        self._path(model, prompt, mode, batch).write_text(
-            json.dumps({"prompt": prompt, "r": response}))
-
-    def delete(self, model: str, prompt: str, mode: str = "", batch: bool = False):
-        self._path(model, prompt, mode, batch).unlink(missing_ok=True)
-
-# SYSTEM_PROMPT_NE = """
-# You are a clinical data harmonization expert assessing whether two variables have the same clinical meaning and whether they can be aligned for pooled statistical analysis.
-
-# # INPUT
-# Two variables are provided: Source and Target.
-
-# Each variable has:
-# - description: variable label from study metadata
-# - unit: measurement unit, if available
-# - categories: allowed values; [] means continuous or free-text
-
-# # TASK
-# Using only the provided metadata, assign exactly ONE of the following statuses.
-
-
-# - COMPLETE:
-#   Same clinical meaning or safely alignable to a broader clinically acceptable class with no data transformation needed.
-#   Examples: sitting systolic blood pressure mmHg vs systolic blood pressure mmHg, furosemide(mg) vs loop diuretic (mg), myocardia infraction vs actue myocardia infraction etc.
-
-
-# - COMPATIBLE:
-#   Same clinical meaning, or safely alignable to a broader clinically acceptable class through possible or deterministic data transformation.
-#   Examples: weight (kg) vs weight (lb), Blood glucose (mmol/L) vs Blood glucose(mg/dL), Gender: Female/Male vs Gender: 0/1, furosemide (%) vs loop diuretic (mg)
-
-# - PARTIAL:
-#   Both variables describe the same clinical entity but at different levels of granularity. A common (coarser) variable can be derived by reducing the finer-grained side to match the broader side — typically through category collapse, dichotomization, or aggregation.
-#   The transformation is lossy and one-directional (specific → general only); the coarser side cannot recover the finer side.  Examples:
-#   - multi-category smoking status vs smoker yes/no
-#   - specific beta-blocker taken vs beta-blocker taken yes/no
-#   - diagnosis date vs diagnosis yes/no
-#   - heart failure hospitalization or death vs all-cause death
-
-# - IMPOSSIBLE:
-#   This includes variables that share a broad therapeutic area or clinical domain but measure DIFFERENT entities.
-#   Examples:
-#   - sitting systolic blood pressure vs standing systolic blood pressure (different)
-#   - diabetes medication use vs diabetes diagnosis
-#   - ACE inhibitor vs ARBs inhibitor 
-
-
-# # IMPORTANT RULES
-# - Judge based on clinical context and relevance, not surface word overlap.
-# - Base the decision only on the provided metadata. Do not invent missing details, and do not over-classify alignment unless it is supported by the available evidence.
-# - A transformation is considered safe only if it is a pure representation normalization and does not change granularity or meaning.
-
-# # CONFIDENCE
-# Confidence is your confidence that the assigned status is correct. Use these ranges:
-# - COMPLETE: 1.0
-# - COMPATIBLE: 0.85 to 0.95
-# - PARTIAL: 0.75 to 0.85
-# - IMPOSSIBLE: 0.0
-
-# # TRANSFORM
-# - COMPLETE: ""
-# - IMPOSSIBLE: ""
-# - COMPATIBLE: exact normalization
-# - PARTIAL: required transformation or main limitation
-
-# # ALIGNMENT DIRECTION
-# Use one of:
-# - "source to target"
-# - "target to source"
-# - "bidirectional"
-# - ""
-
-# Use "bidirectional" only when both sides can be aligned without loss of meaning.
-# Use "" for COMPLETE and IMPOSSIBLE.
-
-# # OUTPUT CONSTRAINTS
-# - status must be one of: COMPLETE, COMPATIBLE, PARTIAL, IMPOSSIBLE
-# - confidence must be a number between 0.0 and 1.0
-# - reason must be 25 words or fewer
-# - transform must be 35 words or fewer, or ""
-# - alignment_direction must be one of:
-#   "source to target", "target to source", "bidirectional", ""
-
-# # OUTPUT FORMAT
-# Return ONLY one valid JSON object with this structure:
-
-# {
-#   "status": "COMPLETE",
-#   "confidence": 1.0,
-#   "reason": "Same variable meaning and representation.",
-#   "transform": "",
-#   "alignment_direction": ""
-# }
-# """
-
-# SYSTEM_PROMPT_EV = """
-# You are a clinical data harmonization expert assessing whether two variables have the same clinical meaning and whether they can be aligned for pooled statistical analysis.
-
-# # INPUT
-# Two variables are provided: Source and Target.
-
-# Each variable may include:
-# - Description: short variable label
-# - Concepts: pipe-separated ordered concepts
-#   - first concept = primary concept of the variable
-#   - remaining concepts = additional concepts that may refine the meaning
-# - Categories: allowed values, if available
-# - Unit: measurement unit, if available
-# - Graph evidence: optional semantic evidence from OMOP vocabularies
-
-# # TASK
-# Using only the provided metadata, assign exactly ONE of the following statuses.
-
-
-# - COMPLETE:
-#   Same clinical meaning or safely alignable to a broader clinically acceptable class with no data transformation needed.
-#   Examples: sitting systolic blood pressure mmHg vs systolic blood pressure mmHg, furosemide(mg) vs loop diuretic (mg), myocardia infraction vs actue myocardia infraction etc.
-
-# - COMPATIBLE:
-#   Same clinical meaning, or safely alignable to a broader clinically acceptable class through possible or deterministic data transformation.
-#   Examples: weight (kg) vs weight (lb), Blood glucose (mmol/L) vs Blood glucose(mg/dL), Gender: Female/Male vs Gender: 0/1, furosemide (%) vs loop diuretic (mg)
-
-# - PARTIAL:
-#   Both variables describe the same clinical entity but at different levels of granularity. A common (coarser) variable can be derived by reducing the finer-grained side to match the broader side — typically through category collapse, dichotomization, or aggregation.
-#   The transformation is lossy and one-directional (specific → general only); the coarser side cannot recover the finer side.
-#   Examples:
-#   - multi-category smoking status vs smoker yes/no
-#   - specific beta-blockers taken vs beta-blocker taken yes/no
-#   - diagnosis date vs diagnosis yes/no
-#   - heart failure hospitalization or death vs all-cause death
-
-# - IMPOSSIBLE:
-#   This includes variables that share a broad therapeutic area or clinical domain but measure DIFFERENT entities.
-#   Examples:
-#   - sitting systolic blood pressure vs standing systolic blood pressure (different)
-#   - diabetes medication use vs diabetes diagnosis
-#   - ACE inhibitor vs ARBs inhibitor 
-
-
-# # IMPORTANT RULES
-# - Judge based on clinical context and relevance, not surface word overlap.
-# - Base the decision only on the provided metadata. Do not invent missing details, and do not over-classify alignment unless it is supported by the available evidence.
-# - Treat an additional concept as important only if it changes the actual variable meaning; otherwise ignore it as annotation noise or redundant wording
-# - Use graph evidence only as supporting evidence for semantic clarity.
-
-# # CONFIDENCE
-# Confidence means confidence that the assigned status is correct.
-# - COMPLETE: 1.0
-# - COMPATIBLE: 0.85 to 0.95
-# - PARTIAL: 0.75 to 0.85
-# - IMPOSSIBLE: 0.0
-
-# # TRANSFORM
-# - COMPLETE: ""
-# - IMPOSSIBLE: ""
-# - COMPATIBLE: exact normalization
-# - PARTIAL: required transformation or main limitation
-
-# # ALIGNMENT DIRECTION
-# Use one of:
-# - "source to target"
-# - "target to source"
-# - "bidirectional"
-# - ""
-
-# Use "bidirectional" only when both sides can be aligned without loss of meaning.
-# Use "" for COMPLETE and IMPOSSIBLE.
-
-# # OUTPUT CONSTRAINTS
-# - status must be one of: COMPLETE, COMPATIBLE, PARTIAL, IMPOSSIBLE
-# - confidence must be a number between 0.0 and 1.0
-# - reason must be 25 words or fewer
-# - transform must be 35 words or fewer, or ""
-# - alignment_direction must be one of:
-#   "source to target", "target to source", "bidirectional", ""
-
-# # OUTPUT FORMAT
-# Return ONLY one valid JSON object with exactly these keys:
-# {
-#   "status": "COMPLETE",
-#   "confidence": 1.0,
-#   "reason": "Same variable meaning and representation.",
-#   "transform": "",
-#   "alignment_direction": ""
-# }
-# """
-
-# SYSTEM_PROMPT_NE = """
-# You are a clinical data harmonization expert assessing whether two variables have the same clinical meaning and whether they can be aligned for pooled statistical analysis.
-
-# # INPUT
-# Two variables are provided: Source and Target. The Source/Target labels are positional only — they do not imply which side is finer or coarser, nor which side is the reference.
-
-# Each variable has:
-# - description: variable label from study metadata
-# - unit: measurement unit, if available
-# - categories: allowed values; [] means continuous or free-text
-
-# # TASK
-# Using only the provided metadata, assign exactly ONE of the following statuses.
-
-# - COMPLETE:
-#   Identical clinical meaning AND identical representation (same units, same coding, same granularity). Values from one side can be used as-is for the other with no transformation.
-#   Examples:
-#   - systolic BP (mmHg) vs sitting systolic BP (mmHg)
-#   - acute myocardial infarction vs myocardial infarction (when MI is the analysis target)
-#   - HbA1c (%) vs HbA1c (%)
-
-# - COMPATIBLE:
-#   Same clinical meaning and same granularity, but different representation. Values can be losslessly converted via a deterministic transformation (unit conversion, recoding, rescaling).
-#   Examples:
-#   - weight (kg) vs weight (lb)
-#   - blood glucose (mmol/L) vs blood glucose (mg/dL)
-#   - Gender Female/Male vs Gender 0/1
-#   - furosemide (mg) vs furosemide (%)
-
-# - PARTIAL:
-#   Both variables describe the same clinical entity but at different levels of granularity. A common (coarser) variable can be derived by reducing the finer-grained side to match the broader side — typically through category collapse, dichotomization, or aggregation. The transformation is lossy and one-directional (specific → general only); the coarser side cannot recover the finer side.
-#   Examples:
-#   - multi-category smoking status vs smoker yes/no → collapse to yes/no
-#   - specific beta-blocker taken vs beta-blocker taken yes/no → dichotomize to any-use
-#   - diagnosis date vs diagnosis yes/no → derive presence from date
-#   - heart failure hospitalization or death vs all-cause death → reduce composite to component
-#   - furosemide (mg) vs loop diuretic (any-use) → collapse specific drug to drug class indicator
-
-# - IMPOSSIBLE:
-#   The two variables measure different clinical entities, even if they share a therapeutic area, organ system, or surface vocabulary. No transformation can align them without fabricating data. Also use this when the variables have no clinical relationship at all.
-#   Examples:
-#   - sitting SBP vs standing SBP (different physiological states)
-#   - diabetes medication use vs diabetes diagnosis (treatment ≠ condition)
-#   - ACE inhibitor vs ARB (different drug classes)
-#   - hemoglobin vs zip code (no clinical relationship)
-
-# # IMPORTANT RULES
-# - Judge based on clinical meaning, not surface word overlap.
-# - Use only the provided metadata. Do not invent units, categories, or details that are not stated.
-# - A transformation is considered safe only if it is a pure representation normalization and does not change granularity or meaning. If granularity changes, the status is PARTIAL, not COMPATIBLE.
-# - The Source/Target labels are positional only — determine granularity and direction from the metadata itself, not from which side is labeled "Source."
-# - When in doubt between two statuses, prefer the more conservative one: COMPATIBLE over COMPLETE; PARTIAL over COMPATIBLE; IMPOSSIBLE over PARTIAL.
-
-# # CONFIDENCE
-# Confidence reflects genuine uncertainty in the status assignment based on metadata completeness and ambiguity:
-# - 0.95–1.00: metadata is unambiguous; status is clear
-# - 0.80–0.94: minor ambiguity (e.g., unit missing but inferable from description)
-# - 0.65–0.79: meaningful ambiguity (e.g., descriptions conflict, categories unclear)
-# - below 0.65: do not assign a positive alignment — return IMPOSSIBLE instead
-
-# For IMPOSSIBLE:
-# - 0.0 when the variables have no clinical relationship
-# - 0.70–0.95 when they share a domain but measure different entities
-
-# # TRANSFORM
-# Describes the data operation needed to align the two variables. Limitations and caveats belong in `reason`, not here.
-# - COMPLETE: ""  (no transformation)
-# - COMPATIBLE: the deterministic conversion (e.g., "kg = lb × 0.4536", "recode {0→Male, 1→Female}", "mmol/L × 18.0182 = mg/dL for glucose")
-# - PARTIAL: the lossy reduction (e.g., "collapse smoking categories to ever/never", "dichotomize specific drug to any-use yes/no", "derive presence indicator from diagnosis date")
-# - IMPOSSIBLE: ""
-
-# # ALIGNMENT DIRECTION
-# Use one of:
-# - "source to target"
-# - "target to source"
-# - "bidirectional"
-# - ""
-
-# Rules:
-# - COMPLETE and IMPOSSIBLE: always "".
-# - COMPATIBLE: typically "bidirectional" since deterministic conversions are reversible. Use a single direction only if the metadata indicates one side cannot be reconstructed (e.g., precision loss in rounding).
-# - PARTIAL: never "bidirectional". The lossy reduction flows only from the finer-grained side to the coarser side. Use "source to target" if the source is finer; "target to source" if the target is finer.
-
-# # OUTPUT CONSTRAINTS
-# - status must be one of: COMPLETE, COMPATIBLE, PARTIAL, IMPOSSIBLE
-# - confidence must be a number between 0.0 and 1.0
-# - reason must be 25 words or fewer; briefly justify the status with reference to the specific metadata that drove the decision
-# - transform must be 35 words or fewer, or ""
-# - alignment_direction must be one of: "source to target", "target to source", "bidirectional", ""
-
-# # OUTPUT FORMAT
-# Return ONLY one valid JSON object with exactly these keys, in this order:
-# {
-#   "status": "<COMPLETE|COMPATIBLE|PARTIAL|IMPOSSIBLE>",
-#   "confidence": <float 0.0–1.0>,
-#   "reason": "<≤25 words>",
-#   "transform": "<≤35 words, or empty string>",
-#   "alignment_direction": "<source to target|target to source|bidirectional|empty string>"
-# }
-# """
-
-# SYSTEM_PROMPT_EV = """
-# You are a clinical data harmonization expert assessing whether two variables have the same clinical meaning and whether they can be aligned for pooled statistical analysis.
-
-# # INPUT
-# Two variables are provided: Source and Target. The Source/Target labels are positional only — they do not imply which side is finer or coarser, nor which side is the reference.
-
-# Each variable may include:
-# - Description: short variable label
-# - Concepts: ordered concepts separated by " | "
-#   - first concept = primary concept of the variable (authoritative for meaning)
-#   - remaining concepts = refinements that may narrow or qualify the meaning
-# - Categories: allowed values, if available
-# - Unit: measurement unit, if available
-# - Graph evidence: optional semantic evidence from OMOP vocabularies
-
-# # TASK
-# Using only the provided metadata, assign exactly ONE of the following statuses.
-
-# - COMPLETE:
-#   Identical clinical meaning AND identical representation (same units, same coding, same granularity). Values from one side can be used as-is for the other with no transformation.
-#   Examples:
-#   - systolic BP (mmHg) vs sitting systolic BP (mmHg)
-#   - acute myocardial infarction vs myocardial infarction (when MI is the analysis target)
-#   - HbA1c (%) vs HbA1c (%)
-
-
-# - COMPATIBLE:
-#   Same clinical meaning and same granularity, but different representation. Values can be losslessly converted via a deterministic transformation (unit conversion, recoding, rescaling).
-#   Examples:
-#   - weight (kg) vs weight (lb)
-#   - blood glucose (mmol/L) vs blood glucose (mg/dL)
-#   - Gender Female/Male vs Gender 0/1
-#   - furosemide (mg) vs furosemide (%)
-
-# - PARTIAL:
-#   Both variables describe the same clinical entity but at different levels of granularity. A common (coarser) variable can be derived by reducing the finer-grained side to match the broader side — typically through category collapse, dichotomization, or aggregation. The transformation is lossy and one-directional (specific → general only); the coarser side cannot recover the finer side. - 
-
-#   Examples:
-#   - multi-category smoking status vs smoker yes/no → collapse to yes/no
-#   - specific beta-blocker taken vs beta-blocker taken yes/no → dichotomize to any-use
-#   - diagnosis date vs diagnosis yes/no → derive presence from date
-#   - heart failure hospitalization or death vs all-cause death → reduce composite to component
-#   - furosemide (mg) vs loop diuretic (any-use) → collapse specific drug to drug class indicator
-
-# - IMPOSSIBLE:
-#   The two variables measure different clinical entities, even if they share a therapeutic area, organ system, or surface vocabulary. No transformation can align them without fabricating data. Also use this when the variables have no clinical relationship at all.
-#   Examples:
-#   - sitting SBP vs standing SBP (different physiological states)
-#   - diabetes medication use vs diabetes diagnosis (treatment ≠ condition)
-#   - ACE inhibitor vs ARB (different drug classes)
-#   - hemoglobin vs zip code (no clinical relationship)
-
-# # IMPORTANT RULES
-# - Judge based on clinical meaning, not surface word overlap.
-# - Use only the provided metadata. Do not invent units, categories, or concepts.
-# - Treat the first concept as authoritative for variable meaning; treat additional concepts as refinements only if they materially change clinical interpretation. Otherwise ignore them as annotation noise.
-# - The Source/Target labels are positional only — determine granularity and direction from the metadata itself, not from which side is labeled "Source."
-# - When graph evidence conflicts with description or concepts, prefer the explicit metadata. Use graph evidence to break ties or confirm semantic relationships, not to override stated meaning.
-# - When in doubt between two statuses, prefer the more conservative one: COMPATIBLE over COMPLETE; PARTIAL over COMPATIBLE; IMPOSSIBLE over PARTIAL.
-
-# # CONFIDENCE
-# Confidence reflects genuine uncertainty in the status assignment based on metadata completeness and ambiguity:
-# - 0.95–1.00: metadata is unambiguous; status is clear
-# - 0.80–0.94: minor ambiguity (e.g., unit missing but inferable from description)
-# - 0.65–0.79: meaningful ambiguity (e.g., concepts conflict, categories unclear)
-# - below 0.65: do not assign a positive alignment — return IMPOSSIBLE instead
-
-# For IMPOSSIBLE:
-# - 0.0 when the variables have no clinical relationship
-# - 0.70–0.95 when they share a domain but measure different entities
-
-# # TRANSFORM
-# Describes the data operation needed to align the two variables. Limitations and caveats belong in `reason`, not here.
-# - COMPLETE: ""  (no transformation)
-# - COMPATIBLE: the deterministic conversion (e.g., "kg = lb × 0.4536", "recode {0→Male, 1→Female}", "mmol/L × 18.0182 = mg/dL for glucose")
-# - PARTIAL: the lossy reduction (e.g., "collapse smoking categories to ever/never", "dichotomize specific drug to any-use yes/no", "derive presence indicator from diagnosis date")
-# - IMPOSSIBLE: ""
-
-# # ALIGNMENT DIRECTION
-# Use one of:
-# - "source to target"
-# - "target to source"
-# - "bidirectional"
-# - ""
-
-# Rules:
-# - COMPLETE and IMPOSSIBLE: always "".
-# - COMPATIBLE: typically "bidirectional" since deterministic conversions are reversible. Use a single direction only if the metadata indicates one side cannot be reconstructed (e.g., precision loss in rounding).
-# - PARTIAL: never "bidirectional". The lossy reduction flows only from the finer-grained side to the coarser side. Use "source to target" if the source is finer; "target to source" if the target is finer.
-
-# # OUTPUT CONSTRAINTS
-# - status must be one of: COMPLETE, COMPATIBLE, PARTIAL, IMPOSSIBLE
-# - confidence must be a number between 0.0 and 1.0
-# - reason must be 25 words or fewer; briefly justify the status with reference to the specific metadata that drove the decision
-# - transform must be 35 words or fewer, or ""
-# - alignment_direction must be one of: "source to target", "target to source", "bidirectional", ""
-
-# # OUTPUT FORMAT
-# Return ONLY one valid JSON object with exactly these keys, in this order:
-# {
-#   "status": "<COMPLETE|COMPATIBLE|PARTIAL|IMPOSSIBLE>",
-#   "confidence": <float 0.0–1.0>,
-#   "reason": "<≤25 words>",
-#   "transform": "<≤35 words, or empty string>",
-#   "alignment_direction": "<source to target|target to source|bidirectional|empty string>"
-# }
-# """
-
-# SYSTEM_PROMPT_NE = """
-# You are a clinical data harmonization expert assessing whether two variables have the same clinical meaning and whether they can be aligned for pooled statistical analysis.
-
-# # INPUT
-# Two variables are provided: Source and Target. The Source/Target labels are positional only — they do not imply which side is finer or coarser, nor which side is the reference.
-
-# Each variable has:
-# - description: variable label from study metadata
-# - unit: measurement unit, if available
-# - categories: allowed values; [] means continuous or free-text
-
-# # TASK
-# Using only the provided metadata, assign exactly ONE of the following statuses.
-
-# - COMPLETE:
-#   Identical clinical meaning AND identical representation (same units, same coding, same granularity). Values from one side can be used as-is for the other with no transformation.
-#   Examples:
-#   - systolic BP (mmHg) vs sitting systolic BP (mmHg)
-#   - acute myocardial infarction vs myocardial infarction (when MI is the analysis target)
-#   - HbA1c (%) vs HbA1c (%)
-
-# - COMPATIBLE:
-#   Same clinical meaning and same granularity, but different representation. Values can be losslessly converted via a deterministic transformation (unit conversion, recoding, rescaling).
-#   Examples:
-#   - weight (kg) vs weight (lb)
-#   - blood glucose (mmol/L) vs blood glucose (mg/dL)
-#   - Gender Female/Male vs Gender 0/1
-#   - furosemide (mg) vs furosemide (%)
-
-# - PARTIAL:
-#   Both variables describe the same clinical entity but at different levels of granularity. A common (coarser) variable can be derived by reducing the finer-grained side to match the broader side — typically through category collapse, dichotomization, or aggregation. The transformation is lossy and one-directional (specific → general only); the coarser side cannot recover the finer side.
-#   Examples:
-#   - multi-category smoking status vs smoker yes/no → collapse to yes/no
-#   - specific beta-blocker taken vs beta-blocker taken yes/no → dichotomize to any-use
-#   - diagnosis date vs diagnosis yes/no → derive presence from date
-#   - heart failure hospitalization or death vs all-cause death → reduce composite to component
-#   - furosemide (mg) vs loop diuretic (any-use) → collapse specific drug to drug class indicator
-
-# - IMPOSSIBLE:
-#   The two variables measure different clinical entities, even if they share a therapeutic area, organ system, or surface vocabulary. No transformation can align them without fabricating data. Also use this when the variables have no clinical relationship at all.
-#   Examples:
-#   - sitting SBP vs standing SBP (different physiological states)
-#   - diabetes medication use vs diabetes diagnosis (treatment ≠ condition)
-#   - ACE inhibitor vs ARB (different drug classes)
-#   - hemoglobin vs zip code (no clinical relationship)
-
-# # IMPORTANT RULES
-# - Judge based on clinical meaning, not surface word overlap.
-# - Use only the provided metadata. Do not invent units, categories, or details that are not stated.
-# - A transformation is considered safe only if it is a pure representation normalization and does not change granularity or meaning. If granularity changes, the status is PARTIAL, not COMPATIBLE.
-# - The Source/Target labels are positional only — determine granularity and direction from the metadata itself, not from which side is labeled "Source."
-# - When in doubt between two statuses, prefer the more conservative one: COMPATIBLE over COMPLETE; PARTIAL over COMPATIBLE; IMPOSSIBLE over PARTIAL.
-
-# # CONFIDENCE
-# Confidence reflects genuine uncertainty in the status assignment based on metadata completeness and ambiguity:
-# - 0.95–1.00: metadata is unambiguous; status is clear
-# - 0.80–0.94: minor ambiguity (e.g., unit missing but inferable from description)
-# - 0.65–0.79: meaningful ambiguity (e.g., descriptions conflict, categories unclear)
-# - below 0.65: do not assign a positive alignment — return IMPOSSIBLE instead
-
-# For IMPOSSIBLE:
-# - 0.0 when the variables have no clinical relationship
-# - 0.70–0.95 when they share a domain but measure different entities
-
-# # TRANSFORM
-# Describes the data operation needed to align the two variables. Limitations and caveats belong in `reason`, not here.
-# - COMPLETE: ""  (no transformation)
-# - COMPATIBLE: the deterministic conversion (e.g., "kg = lb × 0.4536", "recode {0→Male, 1→Female}", "mmol/L × 18.0182 = mg/dL for glucose")
-# - PARTIAL: the lossy reduction (e.g., "collapse smoking categories to ever/never", "dichotomize specific drug to any-use yes/no", "derive presence indicator from diagnosis date")
-# - IMPOSSIBLE: ""
-
-# # ALIGNMENT DIRECTION
-# Use one of:
-# - "source to target"
-# - "target to source"
-# - "bidirectional"
-# - ""
-
-# Rules:
-# - COMPLETE and IMPOSSIBLE: always "".
-# - COMPATIBLE: typically "bidirectional" since deterministic conversions are reversible. Use a single direction only if the metadata indicates one side cannot be reconstructed (e.g., precision loss in rounding).
-# - PARTIAL: never "bidirectional". The lossy reduction flows only from the finer-grained side to the coarser side. Use "source to target" if the source is finer; "target to source" if the target is finer.
-
-# # OUTPUT CONSTRAINTS
-# - status must be one of: COMPLETE, COMPATIBLE, PARTIAL, IMPOSSIBLE
-# - confidence must be a number between 0.0 and 1.0
-# - reason must be 25 words or fewer; briefly justify the status with reference to the specific metadata that drove the decision
-# - transform must be 35 words or fewer, or ""
-# - alignment_direction must be one of: "source to target", "target to source", "bidirectional", ""
-
-# # OUTPUT FORMAT
-# Return ONLY one valid JSON object with exactly these keys, in this order:
-# {
-#   "status": "<COMPLETE|COMPATIBLE|PARTIAL|IMPOSSIBLE>",
-#   "confidence": <float 0.0–1.0>,
-#   "reason": "<≤25 words>",
-#   "transform": "<≤35 words, or empty string>",
-#   "alignment_direction": "<source to target|target to source|bidirectional|empty string>"
-# }
-# """
-
-
-# SYSTEM_PROMPT_NE = """
-# You are a clinical data harmonization expert assessing whether two variables have the same clinical meaning and whether they can be aligned for pooled statistical analysis.
-
-# # INPUT
-# Two variables are provided: Source and Target. The Source/Target labels are positional only — they do not imply which side is finer or coarser, nor which side is the reference.
-
-# Each variable has:
-# - description: variable label from study metadata
-# - unit: measurement unit, if available
-# - categories: allowed values; [] means continuous or free-text
-
-# # TASK
-# Using only the provided metadata, assign exactly ONE of the following statuses.
-
-# - COMPLETE:
-#   Identical clinical meaning AND identical representation (same units, same coding, same granularity). Values from one side can be used as-is for the other with no transformation.
-#   Examples:
-#   - systolic BP (mmHg) vs sitting systolic BP (mmHg)
-#   - acute myocardial infarction vs myocardial infarction (when MI is the analysis target)
-#   - HbA1c (%) vs HbA1c (%)
-
-# - COMPATIBLE:
-#   Same clinical meaning and same analysis-level granularity, but different representation or operational definition. Values can be aligned through deterministic recoding, unit conversion, rescaling, or clinically justified threshold interpretation. 
-#   Threshold-defined binary indicators are COMPATIBLE when one variable is a binary state such as elevated, high, low, abnormal, present, or positive, and the other defines the same binary state using a clinically plausible threshold (>X, <X, ≥X, ≤X).
-
-#   Examples:
-#   - weight (kg) vs weight (lb)
-#   - blood glucose (mmol/L) vs blood glucose (mg/dL)
-#   - Gender Female/Male vs Gender 0/1
-#   - jugular vein elevated yes/no vs central venous pressure > 6 cm H2O yes/no
-#   - high blood pressure yes/no vs systolic BP ≥ 140 mmHg yes/no
-
-# - PARTIAL:
-#   Both variables describe the same clinical entity but at different levels of granularity. Either of the following situations qualifies as PARTIAL and requires manual review.
-
-#   (a) Granularity reduction. The two variables describe the same clinical entity
-#       at different levels of granularity. A coarser variable can be derived from
-#       the finer side via category collapse, dichotomization, or aggregation.
-#       Lossy and one-directional (specific → general only); the coarser side
-#       cannot recover the finer side.
-#       Examples:
-#       - multi-category smoking status vs smoker yes/no
-#       - specific beta-blocker taken vs beta-blocker taken yes/no
-#       - diagnosis date vs diagnosis yes/no
-#       - HF hospitalization or death vs all-cause death
-#       - furosemide (mg) vs loop diuretic (any-use)
-
-#   (b) External-reference alignment. The two variables represent the same (or
-#       class-related) clinical entity in different scales, and conversion is
-#       computable but requires a external knowledge and may involve clinical approximations.
-#       Examples:
-#       - spironolactone (mg) vs MRA class as % of target dose
-#       - furosemide (mg) vs furosemide (% of target dose)
-#       - bumetanide (mg) vs furosemide-equivalent (mg)
-
-
-# - IMPOSSIBLE:
-#   The two variables measure different clinical entities, even if they share a therapeutic area, organ system, or surface vocabulary. No transformation can align them without fabricating data. Also use this when the variables have no clinical relationship at all.
-#   Examples:
-#   - sitting SBP vs standing SBP (different physiological states)
-#   - diabetes medication use vs diabetes diagnosis (treatment ≠ condition)
-#   - ACE inhibitor vs ARB (different drug classes)
-#   - hemoglobin concentration vs MCHC (both mention hemoglobin, but one measures total blood hemoglobin and the other a red-cell index)
-
-# # IMPORTANT RULES
-# - Judge based on clinical meaning, not surface word overlap.
-# - Use only the provided metadata. Do not invent units, categories, or details that are not stated.
-# - A transformation is considered safe only if it is a pure representation normalization and does not change granularity or meaning. If granularity changes, the status is PARTIAL, not COMPATIBLE.
-# - The Source/Target labels are positional only — determine granularity and direction from the metadata itself, not from which side is labeled "Source."
-# - When in doubt between two statuses, prefer the more conservative one: COMPATIBLE over COMPLETE; PARTIAL over COMPATIBLE; IMPOSSIBLE over PARTIAL.
-
-# # CONFIDENCE
-# Confidence reflects genuine uncertainty in the status assignment based on metadata completeness and ambiguity:
-# - 0.95–1.00: metadata is unambiguous; status is clear
-# - 0.80–0.94: minor ambiguity (e.g., unit missing but inferable from description)
-# - 0.65–0.79: meaningful ambiguity (e.g., descriptions conflict, categories unclear)
-# - below 0.65: do not assign a positive alignment — return IMPOSSIBLE instead
-
-# For IMPOSSIBLE:
-# - 0.0 when the variables have no clinical relationship
-# - 0.70–0.95 when they share a domain but measure different entities
-
-# # TRANSFORM
-# Describes the data operation needed to align the two variables. Limitations and caveats belong in `reason`, not here.
-# - COMPLETE: ""  (no transformation)
-# - COMPATIBLE: the deterministic conversion or alignment operation (e.g., "kg = lb × 0.4536", "recode {0→Male, 1→Female}", "interpret threshold as indicators")
-# - PARTIAL: the lossy reduction (e.g., "collapse smoking categories to ever/never", "dichotomize specific drug to any-use yes/no", "derive presence indicator from diagnosis date")
-# - IMPOSSIBLE: ""
-
-# # ALIGNMENT DIRECTION
-# Use one of:
-# - "source to target"
-# - "target to source"
-# - "bidirectional"
-# - ""
-
-# Rules:
-# - COMPLETE and IMPOSSIBLE: always "".
-# - COMPATIBLE: typically "bidirectional" since deterministic conversions are reversible. Use a single direction only if the metadata indicates one side cannot be reconstructed (e.g., precision loss in rounding).
-# - PARTIAL: never "bidirectional". The lossy reduction flows only from the finer-grained side to the coarser side. Use "source to target" if the source is finer; "target to source" if the target is finer.
-
-# # OUTPUT CONSTRAINTS
-# - status must be one of: COMPLETE, COMPATIBLE, PARTIAL, IMPOSSIBLE
-# - confidence must be a number between 0.0 and 1.0
-# - reason must be 25 words or fewer; briefly justify the status with reference to the specific metadata that drove the decision
-# - transform must be 35 words or fewer, or ""
-# - alignment_direction must be one of: "source to target", "target to source", "bidirectional", ""
-
-# # OUTPUT FORMAT
-# Return ONLY one valid JSON object with exactly these keys, in this order:
-# {
-#   "status": "<COMPLETE|COMPATIBLE|PARTIAL|IMPOSSIBLE>",
-#   "confidence": <float 0.0–1.0>,
-#   "reason": "<≤25 words>",
-#   "transform": "<≤35 words, or empty string>",
-#   "alignment_direction": "<source to target|target to source|bidirectional|empty string>"
-# }
-# """
-
-
-# SYSTEM_PROMPT_EV = """
-# You are a clinical data harmonization expert assessing whether two variables have the same clinical meaning and whether they can be aligned for pooled statistical analysis.
-
-# # INPUT
-# Two variables are provided: Source and Target. The Source/Target labels are positional only — they do not imply which side is finer or coarser, nor which side is the reference.
-
-# Each variable may include:
-# - Description: short variable label
-# - Concepts: ordered concepts separated by " | "
-#   - first concept = primary concept of the variable (authoritative for meaning)
-#   - remaining concepts = refinements that may narrow or qualify the meaning
-# - Categories: allowed values, if available
-# - Unit: measurement unit, if available
-# - Graph evidence: optional semantic evidence from OMOP vocabularies
-
-# # TASK
-# Using only the provided metadata, assign exactly ONE of the following statuses.
-
-# - COMPLETE:
-#   Identical clinical meaning AND identical representation (same units, same coding, same granularity). Values from one side can be used as-is for the other with no transformation.
-#   Examples:
-#   - systolic BP (mmHg) vs sitting systolic BP (mmHg)
-#   - acute myocardial infarction vs myocardial infarction (when MI is the analysis target)
-#   - HbA1c (%) vs HbA1c (%)
-
-
-# - COMPATIBLE:
-#   Same clinical meaning and same analysis-level granularity, but different representation or operational definition. Values can be aligned through deterministic recoding, unit conversion, rescaling, or clinically justified threshold interpretation. 
-#   Threshold-defined binary indicators are COMPATIBLE when one variable is a binary state such as elevated, high, low, abnormal, present, or positive, and the other defines the same binary state using a clinically plausible threshold (>X, <X, ≥X, ≤X).
-
-#   Examples:
-#   - weight (kg) vs weight (lb)
-#   - blood glucose (mmol/L) vs blood glucose (mg/dL)
-#   - Gender Female/Male vs Gender 0/1
-#   - jugular vein elevated yes/no vs central venous pressure > 6 cm H2O yes/no
-#   - high blood pressure yes/no vs systolic BP ≥ 140 mmHg yes/no
-
-# - PARTIAL:
-#   Both variables describe the same clinical entity but at different levels of granularity. Either of the following situations qualifies as PARTIAL and requires manual review.
-
-#   (a) Granularity reduction. The two variables describe the same clinical entity
-#       at different levels of granularity. A coarser variable can be derived from
-#       the finer side via category collapse, dichotomization, or aggregation.
-#       Lossy and one-directional (specific → general only); the coarser side
-#       cannot recover the finer side.
-#       Examples:
-#       - multi-category smoking status vs smoker yes/no
-#       - specific beta-blocker taken vs beta-blocker taken yes/no
-#       - diagnosis date vs diagnosis yes/no
-#       - HF hospitalization or death vs all-cause death
-#       - furosemide (mg) vs loop diuretic (any-use)
-
-#   (b) External-reference alignment. The two variables represent the same (or
-#       class-related) clinical entity in different scales, and conversion is
-#       computable but requires a external knowledge and may involve clinical approximations.
-#       Examples:
-#       - spironolactone (mg) vs MRA class as % of target dose
-#       - furosemide (mg) vs furosemide (% of target dose)
-#       - bumetanide (mg) vs furosemide-equivalent (mg)
-
-# - IMPOSSIBLE:
-#   The two variables measure different clinical entities, even if they share a therapeutic area, organ system, or surface vocabulary. No transformation can align them without fabricating data. Also use this when the variables have no clinical relationship at all.
-#   Examples:
-#   - sitting SBP vs standing SBP (different physiological states)
-#   - diabetes medication use vs diabetes diagnosis (treatment ≠ condition)
-#   - ACE inhibitor vs ARB (different drug classes)
-#   - hemoglobin concentration vs MCHC (both mention hemoglobin, but one measures total blood hemoglobin and the other a red-cell index)
-
-# # IMPORTANT RULES
-# - Judge based on clinical meaning, not surface word overlap.
-# - Use only the provided metadata. Do not invent units, categories, or concepts.
-# - Treat the first concept as authoritative for variable meaning; treat additional concepts as refinements only if they materially change clinical interpretation. Otherwise ignore them as annotation noise.
-# - The Source/Target labels are positional only — determine granularity and direction from the metadata itself, not from which side is labeled "Source."
-# - When graph evidence conflicts with description or concepts, prefer the explicit metadata. Use graph evidence to break ties or confirm semantic relationships, not to override stated meaning.
-# - When in doubt between two statuses, prefer the more conservative one: COMPATIBLE over COMPLETE; PARTIAL over COMPATIBLE; IMPOSSIBLE over PARTIAL.
-
-# # CONFIDENCE
-# Confidence reflects genuine uncertainty in the status assignment based on metadata completeness and ambiguity:
-# - 0.95–1.00: metadata is unambiguous; status is clear
-# - 0.80–0.94: minor ambiguity (e.g., unit missing but inferable from description)
-# - 0.65–0.79: meaningful ambiguity (e.g., concepts conflict, categories unclear)
-# - below 0.65: do not assign a positive alignment — return IMPOSSIBLE instead
-
-# For IMPOSSIBLE:
-# - 0.0 when the variables have no clinical relationship
-# - 0.70–0.95 when they share a domain but measure different entities
-
-# # TRANSFORM
-# Describes the data operation needed to align the two variables. Limitations and caveats belong in `reason`, not here.
-# - COMPLETE: ""  (no transformation)
-# - COMPATIBLE: the deterministic conversion or alignment operation (e.g., "kg = lb × 0.4536", "recode {0→Male, 1→Female}", "interpret threshold as indicators")
-# - PARTIAL: the lossy reduction (e.g., "collapse smoking categories to ever/never", "dichotomize specific drug to any-use yes/no", "derive presence indicator from diagnosis date")
-# - IMPOSSIBLE: ""
-
-# # ALIGNMENT DIRECTION
-# Use one of:
-# - "source to target"
-# - "target to source"
-# - "bidirectional"
-# - ""
-
-# Rules:
-# - COMPLETE and IMPOSSIBLE: always "".
-# - COMPATIBLE: typically "bidirectional" since deterministic conversions are reversible. Use a single direction only if the metadata indicates one side cannot be reconstructed (e.g., precision loss in rounding).
-# - PARTIAL: never "bidirectional". The lossy reduction flows only from the finer-grained side to the coarser side. Use "source to target" if the source is finer; "target to source" if the target is finer.
-
-# # OUTPUT CONSTRAINTS
-# - status must be one of: COMPLETE, COMPATIBLE, PARTIAL, IMPOSSIBLE
-# - confidence must be a number between 0.0 and 1.0
-# - reason must be 25 words or fewer; briefly justify the status with reference to the specific metadata that drove the decision
-# - transform must be 35 words or fewer, or ""
-# - alignment_direction must be one of: "source to target", "target to source", "bidirectional", ""
-
-# # OUTPUT FORMAT
-# Return ONLY one valid JSON object with exactly these keys, in this order:
-# {
-#   "status": "<COMPLETE|COMPATIBLE|PARTIAL|IMPOSSIBLE>",
-#   "confidence": <float 0.0–1.0>,
-#   "reason": "<≤25 words>",
-#   "transform": "<≤35 words, or empty string>",
-#   "alignment_direction": "<source to target|target to source|bidirectional|empty string>"
-# }
-# """
-
-
-
-SYSTEM_PROMPT_NE = """
-You are a clinical data harmonization expert assessing whether two variables have the same clinical meaning and whether they can be aligned and merged for pooled statistical analysis.
-
+    def get(self, model: str, prompt: str, mode: str = "") -> str | None:
+        p = self._path(model, prompt, mode)
+        if not p.exists():
+            return None
+        try:
+            return json.loads(p.read_text())["r"]
+        except Exception:
+            p.unlink(missing_ok=True)
+            return None
+
+    def get_record(self, model: str, prompt: str, mode: str = "") -> dict | None:
+        p = self._path(model, prompt, mode)
+        if not p.exists():
+            return None
+        try:
+            data = json.loads(p.read_text())
+
+            # Backward compatibility with old cache format:
+            # {"prompt": ..., "r": "..."}
+            if "r" in data:
+                logger.info(f"cached = {data}")
+                return data
+
+            return None
+        except Exception:
+            p.unlink(missing_ok=True)
+            return None
+    def put_record(
+        self,
+        model: str,
+        prompt: str,
+        response: str,
+        mode: str = "",
+        logprob_dist: dict | None = None,
+        raw_logprobs: dict | None = None,
+    ):
+        self._path(model, prompt, mode).write_text(
+            json.dumps({
+                "prompt": prompt,
+                "r": response,
+                "logprob_dist": logprob_dist,
+                "raw_logprobs": raw_logprobs,
+            }, ensure_ascii=False)
+        )
+
+    def put(self, model: str, 
+          prompt: str, 
+          response: str, 
+          mode: str = ""):
+        self.put_record(model, prompt, response, mode=mode)
+
+    def delete(self, model: str, prompt: str, mode: str = ""):
+        self._path(model, prompt, mode).unlink(missing_ok=True)
+
+_INPUT_NE = """
 # INPUT
-Two variables are provided: Source and Target. The Source/Target labels are positional only — they do not imply which side is finer or coarser, nor which side is the reference.
-
+Two variables are provided: Source and Target. Source/Target are positional labels only — they do not imply which side is finer or coarser, nor which side is the reference.
 Each variable has:
 - description: variable label from study metadata
 - unit: measurement unit, if available
-- categories: allowed values; [] means continuous or free-text
-
-# TASK
-Using only the provided metadata, assign exactly ONE of the following statuses.
-
-- COMPLETE:
-  Identical clinical meaning AND identical data representation (same units, same coding, same granularity). Values from one side can be merged as-is for the other with no transformation.
-  Examples:
-  - systolic BP (mmHg) vs sitting systolic BP (mmHg)
-  - history of myocardial infarction (yes/no) vs myocardial infarction (yes/no)
-  - HbA1c (%) vs HbA1c (%)
-
-- COMPATIBLE:
-  Same clinical meaning and same analysis-level granularity, but different data representation. Thresholds are COMPATIBLE ONLY if both variables already represent an interpreted clinical state (e.g., general "high blood pressure" vs threshold "SBP ≥ 140 mmHg").
-  Values can be merged through deterministic recoding, unit conversion, rescaling, or clinically justified threshold interpretation.  
-
-  Examples:
-  - weight (kg) vs weight (lb)
-  - blood glucose (mmol/L) vs blood glucose (mg/dL)
-  - Gender (Female/Male) vs Gender (m/f)
-  - jugular vein elevated (yes/no) vs central venous pressure > 6 cm H2O (yes/no)
-  - high blood pressure (yes/no) vs systolic BP ≥ 140 mmHg (yes/no)
-
-- PARTIAL:
-  Both variables describe the same clinical entity but at different levels of granularity. Either of the following situations qualifies as PARTIAL and requires manual review.
-
-  (a) Granularity reduction. The two variables describe the same clinical entity
-      at different levels of granularity. A coarser variable can be derived from
-      the finer side via category collapse, dichotomization, or aggregation.
-      Lossy and one-directional (specific → general only).
-
-      Examples:
-      - multi-category smoking status vs smoker (yes/no)
-      - specific beta-blocker taken vs beta-blocker taken (yes/no)
-      - diagnosis date vs diagnosis (yes/no)
-      - HF hospitalization or death vs all-cause death
-      - furosemide (mg) vs loop diuretic (any-use)
-
-  (b) External-reference alignment. The two variables represent the same (or
-      class-related) clinical entity in different scales, and conversion is
-      computable but requires a external knowledge and may involve clinical approximations.
-      Examples:
-      - spironolactone (mg) vs MRA class as % of target dose
-      - furosemide (mg) vs furosemide (% of target dose)
-      - bumetanide (mg) vs furosemide-equivalent (mg)
-
-
-- IMPOSSIBLE:
- The variables measure different clinical entities, even if superficially related. No valid transformation or alignment is possible.
-  Examples:
-  - sitting SBP vs standing SBP (different physiological states)
-  - diabetes medication use vs diabetes diagnosis (treatment ≠ condition)
-  - ACE inhibitor vs ARB (different drug classes)
-  - hemoglobin concentration vs MCHC (both mention hemoglobin, but one measures total blood hemoglobin and the other a red-cell index)
-
-# IMPORTANT RULES
-- Judge based on clinical meaning, not surface word overlap.
-- Use only the provided metadata. Do not invent units, categories, or details that are not stated.
-- When in doubt between two statuses, prefer the more conservative one: COMPATIBLE over COMPLETE; PARTIAL over COMPATIBLE; IMPOSSIBLE over PARTIAL.
-
-# CONFIDENCE
-Confidence reflects genuine uncertainty in the status assignment based on metadata completeness and ambiguity:
-- 0.95–1.00: metadata is unambiguous; status is clear
-- 0.80–0.94: minor ambiguity (e.g., unit missing but inferable from description)
-- 0.6–0.79: meaningful ambiguity (e.g., descriptions conflict, categories unclear)
-- below 0.6: do not assign a positive alignment — return IMPOSSIBLE instead
-
-For IMPOSSIBLE:
-- 0.0 when the variables have no clinical relationship
-- 0.70–0.95 when they share a domain but measure different entities
-
-# TRANSFORM
-Describes the data operation needed to align the two variables. Limitations and caveats belong in `reason`, not here.
-- COMPLETE: ""  (no transformation)
-- COMPATIBLE: the deterministic conversion or alignment operation (e.g., "kg = lb × 0.4536", "recode {0→Male, 1→Female}", "interpret threshold as indicators")
-- PARTIAL: the lossy reduction (e.g., "collapse smoking categories to ever/never", "dichotomize specific drug to any-use yes/no", "derive presence indicator from diagnosis date")
-- IMPOSSIBLE: ""
-
-ALIGNMENT DIRECTION Rules:
-- COMPLETE: "bidirectional"; same meaning and representation.
-- COMPATIBLE: "bidirectional" if deterministic and reversible; otherwise use the valid one-way direction.
-- PARTIAL: never "bidirectional"; use the direction from finer-grained to coarser-grained variable. If neither side can be derived, return IMPOSSIBLE.
-- IMPOSSIBLE: ""; no valid alignment direction exists.
-
-# OUTPUT CONSTRAINTS
-- status must be one of: COMPLETE, COMPATIBLE, PARTIAL, IMPOSSIBLE
-- confidence must be a number between 0.0 and 1.0
-- reason must be 25 words or fewer; briefly justify the status with reference to the specific metadata that drove the decision
-- transform must be 35 words or fewer, or ""
-- alignment_direction must be one of: "bidirectional", "source to target", "target to source", ""
-
-# OUTPUT FORMAT
-Return ONLY one valid JSON object with exactly these keys, in this order:
-{
-  "status": "<COMPLETE|COMPATIBLE|PARTIAL|IMPOSSIBLE>",
-  "confidence": <float 0.0–1.0>,
-  "reason": "<≤25 words>",
-  "transform": "<≤35 words, or empty string>",
-  "alignment_direction": "<source to target|target to source|bidirectional|empty string>"
-}
+- categories: allowed values in format [original value=readable label|original value=readable label]
 """
 
-
-SYSTEM_PROMPT_EV = """
-You are a clinical data harmonization expert assessing whether two variables have the same clinical meaning and whether they can be aligned and merged for pooled statistical analysis.
-
+_BATCH_INPUT_NE = """
 # INPUT
-Two variables are provided: Source and Target. The Source/Target labels are positional only — they do not imply which side is finer or coarser, nor which side is the reference.
-
+One Source variable and multiple target variables are provided. Source/Target are positional labels only — they do not imply which side is finer or coarser, nor which side is the reference.
+Each variable has:
+- description: variable label from study metadata
+- unit: measurement unit, if available
+- categories: allowed values in format [original value=readable label|original value=readable label]
+"""
+ 
+_INPUT_EV = """
+# INPUT
+The source and target variables originate from separate studies. Harmonization pools these patients into a single patient-level analysis variable, one row per patient; the two sides are therefore never repeated measurements of the same individual.
+Two variables are provided: Source and Target. Source/Target are positional labels only.
 Each variable may include:
 - Description: short variable label
 - Concepts: ordered concepts separated by " | "
-  - first concept = primary concept of the variable (authoritative for meaning)
-  - remaining concepts = refinements that may narrow or qualify the meaning
-- Categories: allowed values, if available
+  - first concept = primary concept (authoritative for meaning)
+  - remaining concepts = refinements that may narrow or qualify meaning
+- categories: allowed values in format [original value=readable label|original value=readable label]
 - Unit: measurement unit, if available
-- Graph evidence: optional semantic evidence from OMOP vocabularies
-
-# TASK
-Using only the provided metadata, assign exactly ONE of the following statuses.
-
-- COMPLETE:
-  Identical clinical meaning AND identical data representation (same units, same coding, same granularity). Values from one side can be merged as-is for the other with no transformation.
-  Examples:
-  - systolic BP (mmHg) vs sitting systolic BP (mmHg)
-  - history of myocardial infarction (yes/no) vs myocardial infarction (yes/no)
-  - HbA1c (%) vs HbA1c (%)
-
-- COMPATIBLE:
-  Same clinical meaning and same analysis-level granularity, but different data representation. Thresholds are COMPATIBLE ONLY if both variables already represent an interpreted clinical state (e.g., general "high blood pressure" vs threshold "SBP ≥ 140 mmHg").
-  Values can be merged through deterministic recoding, unit conversion, rescaling, or clinically justified threshold interpretation.  
-
-  Examples:
-  - weight (kg) vs weight (lb)
-  - blood glucose (mmol/L) vs blood glucose (mg/dL)
-  - Gender (Female/Male) vs Gender (m/f)
-  - jugular vein elevated (yes/no) vs central venous pressure > 6 cm H2O (yes/no)
-  - high blood pressure (yes/no) vs systolic BP ≥ 140 mmHg (yes/no)
-
-- PARTIAL:
-  Both variables describe the same clinical entity but at different levels of granularity. Either of the following situations qualifies as PARTIAL and requires manual review.
-
-  (a) Granularity reduction. The two variables describe the same clinical entity
-      at different levels of granularity. A coarser variable can be derived from
-      the finer side via category collapse, dichotomization, or aggregation.
-      Lossy and one-directional (specific → general only).
-
-      Examples:
-      - multi-category smoking status vs smoker (yes/no)
-      - specific beta-blocker taken  vs beta-blocker taken (yes/no)
-      - diagnosis date vs diagnosis (yes/no)
-      - HF hospitalization or death vs all-cause death
-      - furosemide (mg) vs loop diuretic (any-use)
-
-  (b) External-reference alignment. The two variables represent the same (or
-      class-related) clinical entity in different scales, and conversion is
-      computable but requires a external knowledge and may involve clinical approximations.
-      Examples:
-      - spironolactone (mg) vs MRA class as % of target dose
-      - furosemide (mg) vs furosemide (% of target dose)
-      - bumetanide (mg) vs furosemide-equivalent (mg)
-
-- IMPOSSIBLE:
-  The variables measure different clinical entities, even if superficially related. No valid transformation or alignment is possible.
-  Examples:
-  - sitting SBP vs standing SBP (different physiological states)
-  - diabetes medication use vs diabetes diagnosis (treatment ≠ condition)
-  - ACE inhibitor vs ARB (different drug classes)
-  - hemoglobin concentration vs MCHC (both mention hemoglobin, but one measures total blood hemoglobin and the other a red-cell index)
-
-# IMPORTANT RULES
-- Judge based on clinical meaning, not surface word overlap.
-- Use only the provided metadata. Do not invent units, categories, or concepts.
-- Treat the first concept as authoritative for variable meaning; treat additional concepts as refinements only if they materially change clinical interpretation. Otherwise ignore them as annotation noise.
-- When graph evidence conflicts with description or concepts, prefer the explicit metadata. Use graph evidence to break ties or confirm semantic relationships, not to override stated meaning.
-- When in doubt between two statuses, prefer the more conservative one: COMPATIBLE over COMPLETE; PARTIAL over COMPATIBLE; IMPOSSIBLE over PARTIAL.
-
-# CONFIDENCE
-Confidence reflects genuine uncertainty in the status assignment based on metadata completeness and ambiguity:
-- 0.95–1.00: metadata is unambiguous; status is clear
-- 0.80–0.94: minor ambiguity (e.g., unit missing but inferable from description)
-- 0.6–0.79: meaningful ambiguity (e.g., concepts conflict, categories unclear)
-- below 0.6: do not assign a positive alignment — return IMPOSSIBLE instead
-
-For IMPOSSIBLE:
-- 0.0 when the variables have no clinical relationship
-- 0.70–0.95 when they share a domain but measure different entities
-
-# TRANSFORM
-Describes the data operation needed to align the two variables. Limitations and caveats belong in `reason`, not here.
-- COMPLETE: ""  (no transformation)
-- COMPATIBLE: the deterministic conversion or alignment operation (e.g., "kg = lb × 0.4536", "recode {0→Male, 1→Female}", "interpret threshold as indicators")
-- PARTIAL: the lossy reduction (e.g., "collapse smoking categories to ever/never", "dichotomize specific drug to any-use yes/no", "derive presence indicator from diagnosis date")
-- IMPOSSIBLE: ""
-
-ALIGNMENT DIRECTION Rules:
-- COMPLETE: "bidirectional"; same meaning and representation.
-- COMPATIBLE: "bidirectional" if deterministic and reversible; otherwise use the valid one-way direction.
-- PARTIAL: never "bidirectional"; use the direction from finer-grained to coarser-grained variable. If neither side can be derived, return IMPOSSIBLE.
-- IMPOSSIBLE: ""; no valid alignment direction exists.
-
-# OUTPUT CONSTRAINTS
-- status must be one of: COMPLETE, COMPATIBLE, PARTIAL, IMPOSSIBLE
-- confidence must be a number between 0.0 and 1.0
-- reason must be 25 words or fewer; briefly justify the status with reference to the specific metadata that drove the decision
-- transform must be 35 words or fewer, or ""
-- alignment_direction must be one of: "bidirectional", "source to target", "target to source", ""
-
-# OUTPUT FORMAT
-Return ONLY one valid JSON object with exactly these keys, in this order:
-{
-  "status": "<COMPLETE|COMPATIBLE|PARTIAL|IMPOSSIBLE>",
-  "confidence": <float 0.0–1.0>,
-  "reason": "<≤25 words>",
-  "transform": "<≤35 words, or empty string>",
-  "alignment_direction": "<source to target|target to source|bidirectional|empty string>"
-}
+- Graph evidence: optional hierarchical structure of primary standard concept from controlled vocabularies
 """
 
-# def _truncate_cats(cats: str, max_items: int = 10) -> str:
-#     if not cats:
-#         return ""
-#     items = [c.strip() for c in cats.split("|") if c.strip()]
-#     if len(items) <= max_items:
-#         return " | ".join(items)
-#     return " | ".join(items[:max_items]) + f" | ... ({len(items)} total)"
+_BATCH_INPUT_EV = """
+# INPUT
+One Source variable and multiple target variables are provided. Source/Target are positional labels only — they do not imply which side is finer or coarser, nor which side is the reference.
+Each variable may include:
+- Description: short variable label
+- Concepts: ordered concepts separated by " | "
+  - first concept = primary concept (authoritative for meaning)
+  - remaining concepts = refinements that may narrow or qualify meaning
+- categories: allowed values in format [original value=readable label|original value=readable label]
+- Unit: measurement unit, if available
+- Graph evidence: hierarchical structure of primary standard concept from controlled vocabularies
+"""
+
+# _RULES_EV_ONLY = """- The first concept is authoritative for variable meaning. Treat additional concepts as refinements only if they materially change clinical interpretation; otherwise treat them as annotation context. 
+# - If Description and concepts conflict, use concepts as the primary meaning. 
+# """ 
+
+# _OUTPUT_PAIR = """
+# # OUTPUT CONSTRAINTS
+# - status_code: 1 | 2 | 3 | 4   (1=COMPLETE, 2=COMPATIBLE, 3=PARTIAL, 4=IMPOSSIBLE)
+# - status: COMPLETE | COMPATIBLE | PARTIAL | IMPOSSIBLE
+# - confidence: float 0.0-1.0
+# - reason: 50 words or fewer; prioritize clarity and explanation over word count. explain which rules you applied and why.
+# - transform: 40 words or fewer, or ""
+# - harmonized_variable: 12 words or fewer, snake_case, or ""
+# - alignment_direction: "bidirectional" | "source to target" | "target to source" | "both for derivation" | ""
+# """
+
+_OUTPUT_PAIR = """
+# OUTPUT FORMAT
+Return ONLY one valid JSON object:
+{{
+  "status_code": <1|2|3|4> (1=COMPLETE, 2=COMPATIBLE, 3=PARTIAL, 4=IMPOSSIBLE),
+  "status": "<COMPLETE|COMPATIBLE|PARTIAL|IMPOSSIBLE>",
+  "confidence": <float>,
+  "reason": "<50 words or fewer; prioritize clarity and explanation over word count. explain which rules you applied and why.>",
+  "transform": "<40 words or fewer, or empty>",
+  "harmonized_variable": "<12 words or fewer; snake_case or empty>",
+  "alignment_direction": "<direction or empty>"
+}}
+"""
+
+_OUTPUT_BATCH = """
+# OUTPUT CONSTRAINTS
+- Each verdict has the same fields and limits as the single-pair schema.
+- Evaluate each (Source, Target i) pair independently. Targets must not influence one another.
+# OUTPUT FORMAT
+Return ONLY one valid JSON array, one object per target, in the same order as Target 1 .. Target N:
+[
+  {{
+    "status": "<COMPLETE|COMPATIBLE|PARTIAL|IMPOSSIBLE>",
+    "confidence": <float>,
+    "reason": "<50 words or fewer>",
+    "transform": "<40 words or fewer, or empty>",
+    "harmonized_variable": "<snake_case or empty>",
+    "alignment_direction": "<direction or empty>"
+  }}
+]
+"""
+
+_STUDY_CONTEXT_RULES = """
+
+# STUDY CONTEXT
+Use study metadata only when relevant to judging whether the harmonized variable is meaningful for pooled analysis.
+Use cohort population, inclusion criteria, and shared morbidities to identify variables that would be constant (zero variance), structurally non-informative , or non-comparable across cohorts. 
+"""
+_SHARED_BODY = """
+{study_context_block}
+
+### MANDATORY SEMANTIC GATES
+Assess harmonizability for pooled patient-level analysis, not surface semantic similarity.
+
+For each variable, where the metadata allows, identify:
+1. Clinical entity — condition, measurement, medication, procedure, or event.
+2. Information axis — presence, severity, amount, dose, date, frequency, cause, method, or other attribute.
+3. Observation frame — history/ever, current state, during a specified test, incident event, cumulative period, or point-in-time assessment.
+4. Anatomical scope — general, organ-specific, regional, unilateral, bilateral, or other site restriction.
+5. Composition — single entity, parent class, subtype/member, union, sum, aggregate, or residual "other" field.
+6. Value support — which clinical states are explicitly represented and what a missing value means.
+7. If visit is omitted, assume source and target are recorded at the same timepoint.
+
+Apply the following gates before assigning a status.
+** Composite/component gate. On each side identify whether it is a single entity, a parent class, a member/subtype, or a pre-composed aggregate (sum or union), and whether the axis is dose or presence.
+    - A pre-composed aggregate of members matched to the parent class they exhaust, with the axis-correct operator (sum for dose, logical OR for presence), equals the class total → valid. Classify by representation: COMPLETE if value and unit align, COMPATIBLE if a lossless reversible recode/conversion is needed, PARTIAL if lossy or external-reference dependent. If the members do not exhaust the class, PARTIAL, or IMPOSSIBLE where the shortfall cannot be quantified.
+    - An aggregate or composite matched to a single member, or to a different aggregate, would require isolating a component from a combined figure → IMPOSSIBLE.
+    - An operator that does not match the axis (sum on presence, OR on dose) constructs a different variable → IMPOSSIBLE.
+    - Rolling members up to their class is permitted; pulling a component out of a composite is not.
+** Residual-field gate. "Other X" or "remaining X" excludes the separately itemized members of X, so its membership is unknown from the pair alone. It cannot align to a single itemized member (disjoint by construction) or to total X (unknown membership) → IMPOSSIBLE. A true parent "any X" that excludes nothing is not a residual field; a specific member maps to it as subtype→parent (PARTIAL).
+** Anatomical-scope gate. Laterality and site restriction are defining when one variable can be positive while the other is negative for the same patient. Identical category sets do not override a scope difference.
+** Setting/default gate. A defining qualifier (posture, physiological state, specimen, provocation, assay) present on one side and omitted on the other is read as the conventional default for that measurement, but only where a recognized clinical default exists. COMPLETE/COMPATIBLE only if the specified value is that default; if it departs from the default, or if both sides specify conflicting values, no single pooled variable exists → IMPOSSIBLE. Where no recognized default exists (assay/method, device scale, anatomical site), an omitted qualifier stays unverifiable — do not upgrade to COMPLETE.
+** Value-mapping gate. For every explicit observed value, determine whether it maps to a valid harmonized value or must remain unknown. Never map missing, not recorded, not assessed, or an unsupported negative to "No".
+** When dealing with clinical observations versus true physiological states, the goal shifts to preserving diagnostic precision.
+
+### STATUS BOUNDARIES
+
+COMPLETE
+Same clinical entity, information axis, observation frame, anatomical scope, granularity, and value meaning; values merge as-is, with no recoding, conversion, threshold reinterpretation, or category normalization. Mathematically equivalent unit notation is allowed only when the numeric values are unchanged.
+Examples:
+- source: systolic BP (mmHg) vs target: sitting systolic BP (mmHg)  [seated is the office-BP default]
+- source: NT-proBNP (ug/L) vs target: NT-proBNP (ng/mL)  [1 ug/L = 1 ng/mL]
+- source: history of atrial fibrillation(1=yes|0=no) vs target: Atrial fibrillation during ECG(yes=yes|no=no) : maps target-to-source (more complete path) — yes→1, no→0 (observation-frame abstraction).
+- source: central venous pressure > 6 cm H2O (0=no|1=yes) vs target: jugular vein elevated (0=no|1=yes): maps target-to-source (more complete direction) — 1→1, 0→0 
 
 
-# def _build_batch_prompt(src_desc: str, src_concepts: str, src_cats: str,
-#                         src_unit: str, targets: List[Dict],
-#                         mode: str = MappingType.OEH.value) -> str:
-#     is_ne = mode == MappingType.NE.value
-#     src = f"Source: description: {src_desc}"
-#     if not is_ne and src_concepts:
-#         src += f", concepts: {src_concepts}"
-#     if src_unit:
-#         src += f", unit: {src_unit}"
-#     src += f", categories: [{_truncate_cats(src_cats)}]"
+COMPATIBLE
+The same six attributes as COMPLETE, but value representations differ and a deterministic, lossless, reversible transformation aligns them — unit conversion, or bijective recoding (equal number of distinct clinical states). Clinical association or approximate interchangeability is not sufficient; a surrogate qualifies only where the metadata or adjudication policy establishes equivalence and a deterministic mapping.
+Examples:
+- source: weight (kg) vs target:weight (lb)
+- source: myocardial infarction (yes|no) vs target: myocardial infarction (t=yes|f=no)  [recoding only]
+- source: aspartate aminotransferase [enzymatic activity/volume]/L vs target: AST measurement (U/L)
+- source: jugular vein elevated (0=no|1=yes) vs target: central venous pressure > 6 cm H2O (3=yes|1=no): maps target-to-source (more complete direction) — 3→1, 1→0.
+- source: atrial fibrillation on ECG at baseline (t=yes|f=no) vs target: history of atrial fibrillation (t=yes|f=no): maps source-to-target (more complete path) — t→1, f→0 (observation-frame abstraction).
+PARTIAL
+One clinically meaningful variable can be built through a lossy, directional, or externally supported transformation. All must hold:
+1. Same entity, or a subtype/member/scope-restriction relationship identifiable from the provided metadata.
+2. The harmonized variable is one clinical concept, not a union or sum.
+3. Every explicit observed value is mapped validly or retained as unknown.
+4. No unsupported negative or missing value becomes "No".
+5. The transformation names the information loss: category collapse, positive-only derivation, observation-frame reduction, anatomical reduction, datetime approximation, or external-reference conversion.
+Examples:
+- source: Year/date of diabetes diagnosis vs target: diabetes history: maps source-to-target (more complete direction) — recorded date→yes, missing→unknown (positive-only derivation)
+- source: date of stroke event (dd/mm/yyyy) vs target: year of stroke event: maps source-to-target (more complete direction) — exact date→extracted year, missing→missing (datetime approximation).
+- source: LVEF <40% (1=yes|0=no) vs target: LVEF category (1:<40%, 2:40-49%, 3:>=50%): maps target-to-source (more complete direction) — cat1→1, cat2->0 and 3→0 (category collapse).
+- source: Ordinal pulmonary-rales extent (0=absent|1=basal|2=lower-third|3=upper-zones) vs target: basal rales (1=yes|0=no): maps source-to-target (more complete direction) — 1→1, 0→0, cat2→0 and 3→0(extent exceeds basal zone, category collapse)
+- source: Left-leg edema (0=no|1=yes) vs target: lower-limb edema (0=no|1=yes): maps source-to-target (more complete direction) — 1→1, 0→unknown (anatomical scope reduction).
+- source: captopril dose (mg) vs target: ACE-inhibitor dose (% target): maps source-to-target (more complete direction) — single member to parent class via external target-dose conversion factor (external-reference conversion).
 
-#     tgts = []
-#     for i, t in enumerate(targets):
-#         line = f"Target[{i}]: description: {t.get('desc', '')}"
-#         if not is_ne and t.get('tgt_concepts'):
-#             line += f", concepts: {t['tgt_concepts']}"
-#         if t.get('tgt_unit'):
-#             line += f", unit: {t['tgt_unit']}"
-#         line += f", categories: [{_truncate_cats(t.get('tgt_cats', ''))}]"
-#         tgts.append(line)
+IMPOSSIBLE
+No single pooled variable can be built without ambiguous decomposition or unsupported inference:
+- source: ARB-or-ACE use (yes/no) vs target: ACE-inhibitor use (yes/no)  [union → component].
+- source: Sum of ACE-inhibitor and ARB dose vs target: ARB dose  [aggregate → component].
+- source: "Other ARB" dose vs target: total ARB dose  [residual; membership unknown].
+- source: captopril dose (mg) vs target: trandolapril dose (mg)  [sibling drugs; raw mg not comparable across agents].
+- source: disease severity vs target: disease etiology  [different axes].
+- source: sitting systolic BP (mmHg) vs target: standing systolic BP (mmHg)  [conflicting specified settings].
 
-#     return f"## INPUT\n{src}\n" + "\n".join(tgts)
+### FINAL VERIFICATION
+1. Is the harmonized variable one single clinical concept?
+2. Are information axis and observation frame preserved, or explicitly reduced with the loss named?
+3. Is every explicit value mapped, or safely retained as unknown?
+4. Did any missing or unsupported value become "No"?
+5. Did a composite, residual field, sibling relationship, anatomical restriction, setting conflict, or history/current distinction invalidate the match?
+
+# CONFIDENCE
+Certainty in the chosen status, whatever it is:
+- 0.95-1.00: unambiguous
+- 0.80-0.94: minor ambiguity (e.g., unit missing but inferable)
+- 0.60-0.79: meaningful ambiguity; manual review advised
+- below 0.60: low certainty; reconsider the verdict
+
+# TRANSFORM
+The data operation that builds the harmonized variable; limitations go in reason.
+- COMPLETE: ""
+- COMPATIBLE: deterministic conversion ("kg = lb x 0.4536", "recode {{0 maps to no,1 maps to yes}}")
+- PARTIAL: lossy reduction ("collapse to yes/no", "derive presence from date", "mg to % via target-dose external conversion", "specific subtype yes -> broader class yes; specific subtype no -> broader class unknown/missing")
+- IMPOSSIBLE: ""
+
+# HARMONIZED VARIABLE
+- COMPLETE/COMPATIBLE/PARTIAL: short snake_case name ("smoker_yes_no", "weight_kg")
+- IMPOSSIBLE: ""
+
+# ALIGNMENT DIRECTION
+- COMPLETE: "bidirectional"
+- COMPATIBLE: "bidirectional" if reversible, else the valid one-way direction
+- PARTIAL: "source to target" (source finer) | "target to source" (target finer) | "both for derivation" (both contribute positive evidence to a broader variable)
+- IMPOSSIBLE: ""
+
+"""
+ 
+_PREAMBLE = """You are a clinical data harmonization expert assessing whether two variables from separate studies can be aligned into a common harmonized variable for pooled patient-level analysis. Determine whether the merge is clinically meaningful and whether any required transformation is supported by clinical guidelines or accepted domain knowledge.
+The source and target variables come from different cohorts. Harmonization pools different patients into one dataset, with one row per patient; therefore, the two sides are never repeated measurements of the same individual. "Source" and "Target" are simply positional labels for a directionless pair, you must assess the alignment by identifying which directional path preserves the most information and minimizes clinical inference. """
+
+_BATCH_PREAMBLE = """You are a clinical data harmonization expert assessing whether a single Source variable can be aligned to each of several candidate Target variables and merged into a common harmonized analysis variable for pooled statistical analysis. The source and target variables originate from separate studies. Harmonization pools these patients into a single patient-level analysis variable, one row per patient; the two sides are therefore never repeated measurements of the same individual.
+You will receive ONE Source and multiple Targets in a single request. Evaluate each (Source, Target i) pair independently and in isolation, using the same rules and definitions as a single-pair assessment. A target's verdict must depend only on that target and the Source — never on the presence, similarity, or verdict of any other target in the batch. Do not normalize, balance, or rank verdicts across targets. Two targets that would each receive COMPLETE in isolation must each receive COMPLETE here.
+
+"""
 
 
+VERDICT_JSON_SCHEMA = {
+    "type": "object",
+    "additionalProperties": False,
+    "required": [
+        "status_code",
+        "status",
+        "confidence",
+        "reason",
+        "transform",
+        "harmonized_variable",
+        "alignment_direction",
+    ],
+    "properties": {
+        "status_code": {"type": "integer", "enum": [1, 2, 3, 4]}, 
+
+        "status": {
+            "type": "string",
+            "enum": ["COMPLETE", "COMPATIBLE", "PARTIAL", "IMPOSSIBLE"],
+        },
+        "confidence": {"type": "number", "minimum": 0.0, "maximum": 1.0},
+        "reason": {"type": "string"},
+        "transform": {"type": "string"},
+        "harmonized_variable": {"type": "string"},
+        "alignment_direction": {
+            "type": "string",
+            "enum": [
+                "bidirectional",
+                "source to target",
+                "target to source",
+                "both for derivation",
+                "",
+            ],
+        },
+    }
+}
+
+def _get_field(obj: Any, key: str, default: Any = None) -> Any:
+    if isinstance(obj, dict):
+        return obj.get(key, default)
+    return getattr(obj, key, default)
+
+
+def _extract_single_code(token: Any) -> str:
+    s = str(token or "")
+    m = re.fullmatch(
+        r'[\s"\':,\{\}\[\]\n\r\t]*([1-4])[\s"\':,\{\}\[\]\n\r\t]*',
+        s,
+    )
+    return m.group(1) if m else ""
+
+
+def _reconstruct_token_text(tokens: list) -> str:
+    return "".join(str(_get_field(t, "token", "")) for t in tokens)
+
+
+def _find_token_at_char_offset(tokens: list, char_pos: int) -> int | None:
+    best_i = None
+
+    for i, tok in enumerate(tokens):
+        off = _get_field(tok, "text_offset", None)
+        if off is None:
+            continue
+
+        token_text = str(_get_field(tok, "token", ""))
+        end = off + len(token_text)
+
+        if off <= char_pos < end:
+            return i
+
+        if off <= char_pos:
+            best_i = i
+
+    return best_i
+
+def _extract_status_code_logprob_evidence(logprobs_obj) -> dict:
+    """
+    Extract logprob evidence from the final JSON status_code decision point.
+
+    Returns complete or truncated observed-alternative evidence.
+    """
+    tokens = _get_field(logprobs_obj, "content", None)
+
+    if not tokens:
+        return {
+            "logprob_usable": False,
+            "error": "missing_logprob_content",
+            "dist": {},
+        }
+
+    full_text = _reconstruct_token_text(tokens)
+
+    # matches = list(re.finditer(r'"status_code"\s*:\s*([1-4])', full_text))
+    matches = list(re.finditer(r'"status_code"\s*:\s*"?([1-4])', full_text))
+
+    if not matches:
+        return {
+            "logprob_usable": False,
+            "error": "final_status_code_not_found",
+            "dist": {},
+        }
+
+    m = matches[-1]
+    emitted_code = m.group(1)
+    digit_char_pos = m.start(1)
+
+    token_index = _find_token_at_char_offset(tokens, digit_char_pos)
+
+    if token_index is None:
+        return {
+            "logprob_usable": False,
+            "error": "status_code_token_index_not_found",
+            "emitted_code": emitted_code,
+            "dist": {},
+        }
+
+    tok = tokens[token_index]
+    sampled_code = _extract_single_code(_get_field(tok, "token", ""))
+
+    # If landed on whitespace/punctuation, scan nearby tokens.
+    if sampled_code != emitted_code:
+        for j in range(token_index, min(token_index + 5, len(tokens))):
+            candidate_code = _extract_single_code(_get_field(tokens[j], "token", ""))
+            if candidate_code == emitted_code:
+                token_index = j
+                tok = tokens[j]
+                sampled_code = candidate_code
+                break
+
+    if sampled_code != emitted_code:
+        return {
+            "logprob_usable": False,
+            "error": "sampled_token_does_not_match_final_status_code",
+            "emitted_code": emitted_code,
+            "sampled_token": _get_field(tok, "token", ""),
+            "token_index": token_index,
+            "dist": {},
+        }
+
+    code_logprobs = {}
+
+    sampled_lp = _get_field(tok, "logprob", None)
+    if sampled_code in _CODE_TO_LABEL and sampled_lp is not None:
+        code_logprobs[sampled_code] = float(sampled_lp)
+
+    for alt in _get_field(tok, "top_logprobs", []) or []:
+        alt_code = _extract_single_code(_get_field(alt, "token", ""))
+        alt_lp = _get_field(alt, "logprob", None)
+
+        if alt_code in _CODE_TO_LABEL and alt_lp is not None:
+            code_logprobs[alt_code] = float(alt_lp)
+
+    required_codes = {"1", "2", "3", "4"}
+    observed_codes = set(code_logprobs)
+    missing_codes = required_codes - observed_codes
+    observability = len(observed_codes) / 4
+
+    if len(observed_codes) < 2:
+        return {
+            "logprob_usable": False,
+            "error": "insufficient_code_alternatives",
+            "distribution_type": "unusable",
+            "complete_distribution": False,
+            "observability": observability,
+            "token_index": token_index,
+            "emitted_code": emitted_code,
+            "sampled_code": sampled_code,
+            "observed_codes": sorted(observed_codes),
+            "missing_codes": sorted(missing_codes),
+            "raw_code_logprobs": code_logprobs,
+            "dist": {},
+        }
+
+    distribution_type = (
+        "complete_four_class"
+        if observed_codes == required_codes
+        else "observed_alternatives"
+    )
+
+    label_logprobs = {
+        _CODE_TO_LABEL[code]: lp
+        for code, lp in code_logprobs.items()
+    }
+
+    probs = _normalize_logprobs(label_logprobs)
+    dist = {
+        k: float(f"{v:.8g}")
+        for k, v in probs.items()
+    }
+
+    ranked = sorted(probs.items(), key=lambda x: x[1], reverse=True)
+
+    top_label, top_prob = ranked[0]
+    runner_up, runner_up_prob = ranked[1]
+
+    label_to_code = {v: k for k, v in _CODE_TO_LABEL.items()}
+    raw_margin = (
+        code_logprobs[label_to_code[top_label]]
+        - code_logprobs[label_to_code[runner_up]]
+    )
+
+    return {
+        "logprob_usable": True,
+        "error": "" if distribution_type == "complete_four_class" else "incomplete_code_alternatives",
+        "distribution_type": distribution_type,
+        "complete_distribution": distribution_type == "complete_four_class",
+        "observability": observability,
+        "token_index": token_index,
+        "emitted_code": emitted_code,
+        "sampled_code": sampled_code,
+        "observed_codes": sorted(observed_codes),
+        "missing_codes": sorted(missing_codes),
+        "raw_code_logprobs": code_logprobs,
+        "dist": dist,
+        "top_label": top_label,
+        "top_prob": round(float(top_prob), 6),
+        "runner_up": runner_up,
+        "runner_up_prob": round(float(runner_up_prob), 6),
+        "margin": round(float(top_prob - runner_up_prob), 6),
+        "raw_logprob_margin": round(float(raw_margin), 6),
+    }
 def _build_pair_prompt(src_concepts:str = "", src_cats:str = "", tgt_concepts:str = "", tgt_cats:str = "",
                        src_desc:str = "", tgt_desc:str = "",
                        src_unit:str = "", tgt_unit:str = "",
@@ -1050,269 +546,971 @@ def _build_pair_prompt(src_concepts:str = "", src_cats:str = "", tgt_concepts:st
     src_line += f", categories: [{src_cats}]"
     tgt_line += f", categories: [{tgt_cats}]"
     prompt = f"## INPUT\n{src_line}\n{tgt_line}"
-    if evidence:
-        prompt += f"\ngraph_evidence: [{evidence}]"
+    # if evidence:
+    #     prompt += f"\ngraph_evidence: [{evidence}]"
+
     return prompt
 
+def _build_batch_prompt(
+    src_desc: str = "",
+    src_concepts: str = "",
+    src_cats: str = "",
+    src_unit: str = "",
+    targets: List[Dict[str, str]] = None,
+    mode: str = MappingType.OEH.value,
+) -> str:
+    """Build a prompt with 1 Source + N Targets. Schema and independence rule
+    live in the batch system prompt — this function only formats the data.
+    """
+    targets = targets or []
 
-# def _parse_batch(text: str, expected_n: int) -> List[Tuple[Optional[bool], int, float, str]]:
-#     _fail = (None, ContextMatchType.NOT_APPLICABLE.value, 0.0, "empty")
-#     if not text:
-#         return [_fail] * expected_n
-#     text = re.sub(r'<think>.*?</think>', '', text.strip(), flags=re.DOTALL).strip()
-#     if text.startswith("```"):
-#         text = re.sub(r"^```(?:json)?\s*", "", text)
-#         text = re.sub(r"\s*```$", "", text)
+    if mode == MappingType.NE.value:
+        src_line = f"Source: description: {src_desc}"
+    else:
+        # src_line = f"Source: description: {src_desc}"
+        src_line = f"Source: description: {src_desc}, concepts: {src_concepts}"
+    if src_unit:
+        src_line += f", unit: {src_unit}"
+    src_line += f", categories: [{src_cats}]"
 
-#     # Try full JSON parse
-#     try:
-#         arr = json.loads(text)
-#         if isinstance(arr, dict):
-#             arr = arr.get("results", [arr])
-#         results = [_parse_single(json.dumps(item)) for item in arr[:expected_n]]
-#         while len(results) < expected_n:
-#             results.append(_fail)
-#         return results
-#     except json.JSONDecodeError:
-#         pass
+    target_lines = []
+    for i, t in enumerate(targets, start=1):
+        if mode == MappingType.NE.value:
+            line = f"Target {i}: description: {t.get('desc', '')}"
+        else:
+            # line = (
+            #     f"Target {i}: description: {t.get('desc', '')}"
+            # )
+            line = (
+                f"Target {i}: description: {t.get('desc', '')}, "
+                f"concepts: {t.get('tgt_concepts', '')}"
+            )
+        if t.get("tgt_unit"):
+            line += f", unit: {t['tgt_unit']}"
+        line += f", categories: [{t.get('tgt_cats', '')}]"
+        # if t.get("evidence"):
+        #     line += f"\n  graph_evidence: [{t['evidence']}]"
+        target_lines.append(line)
 
-#     # Fallback: extract individual JSON objects
-#     objects = re.findall(r'\{[^{}]+\}', text)
-#     if objects:
-#         results = [_parse_single(obj) for obj in objects[:expected_n]]
-#         while len(results) < expected_n:
-#             results.append(_fail)
-#         return results
+    return "## INPUT\n" + src_line + "\n" + "\n".join(target_lines)
 
-#     # Last resort: single parse, pad rest
-#     return [_parse_single(text)] + [_fail] * (expected_n - 1)
+
+
+# def _extract_logprob_dist(logprobs_obj) -> dict | None:
+#     """Find the status_code token position and return {label: prob} or None."""
+#     if not logprobs_obj or not logprobs_obj.content:
+#         return None
+#     for tok in logprobs_obj.content:
+#         if tok.token.strip() in _CODE_TO_LABEL:
+#             import math
+#             dist = {}
+#             for alt in tok.top_logprobs:
+#                 label = _CODE_TO_LABEL.get(alt.token.strip())
+#                 if label:
+#                     dist[label] = math.exp(alt.logprob)
+#             # include the sampled token itself if not already in alts
+#             sampled_label = _CODE_TO_LABEL.get(tok.token.strip())
+#             if sampled_label and sampled_label not in dist:
+#                 dist[sampled_label] = math.exp(tok.logprob)
+#             return dist if dist else None
+#     return None
+
+def _parse_batch(text: str, expected_n: int) -> List[Tuple[Optional[bool], str, float, str]]:
+    """Parse a JSON array of verdicts. Returns exactly expected_n results,
+    padding with PENDING entries if the model under-delivered.
+    """
+    _pending = (
+        None,
+        ContextMatchType.PENDING.value,
+        0.0,
+        json.dumps({"status": "PARSE_ERROR", "reason": "batch_missing_item"}),
+    )
+
+    if not text:
+        return [_pending] * expected_n
+
+    text = text.strip()
+    text = re.sub(r"<think>.*?</think>", "", text, flags=re.DOTALL).strip()
+
+    if text.startswith("```"):
+        text = re.sub(r"^```(?:json)?\s*", "", text)
+        text = re.sub(r"\s*```$", "", text).strip()
+
+    # Try full JSON array parse
+    try:
+        arr = json.loads(text)
+        if isinstance(arr, dict):
+            # Some models wrap in {"results": [...]}
+            arr = arr.get("results") or arr.get("verdicts") or [arr]
+        if not isinstance(arr, list):
+            arr = [arr]
+        results = [_parse_single(json.dumps(item)) for item in arr[:expected_n]]
+        while len(results) < expected_n:
+            results.append(_pending)
+        return results
+    except json.JSONDecodeError:
+        pass
+
+    # Fallback: extract balanced JSON objects from the text
+    objects, depth, start = [], 0, None
+    for i, ch in enumerate(text):
+        if ch == "{":
+            if depth == 0:
+                start = i
+            depth += 1
+        elif ch == "}":
+            depth -= 1
+            if depth == 0 and start is not None:
+                objects.append(text[start : i + 1])
+                start = None
+
+    if objects:
+        results = [_parse_single(obj) for obj in objects[:expected_n]]
+        while len(results) < expected_n:
+            results.append(_pending)
+        return results
+
+    return [_pending] * expected_n
+
+def _normalize_logprobs(label_logprobs: dict[str, float]) -> dict[str, float]:
+    import math
+
+    if not label_logprobs:
+        return {}
+
+    max_lp = max(label_logprobs.values())
+    exp_vals = {
+        label: math.exp(lp - max_lp)
+        for label, lp in label_logprobs.items()
+    }
+    total = sum(exp_vals.values())
+
+    if total <= 0:
+        return {}
+
+    normalized_logprob =  {
+        label: val / total
+        for label, val in exp_vals.items()
+    }
+    # logger.info (f"normalized logs = {normalized_logprob}")
+    return normalized_logprob
+
+
+def _apply_logprob_confidence(parsed_tuple, logprob_evidence: Dict[str, Any] | None):
+    """
+    Preserve model-written confidence, and attach logprob evidence separately.
+
+    Use logprob confidence only when logprob evidence is usable.
+    """
+    matched, ctx_type, self_reported_conf, reason_json = parsed_tuple
+
+    try:
+        d = json.loads(reason_json) if isinstance(reason_json, str) else {}
+    except Exception:
+        d = {"reason": str(reason_json)}
+
+    status = str(d.get("status", "")).upper().strip()
+    logprob_evidence = logprob_evidence or {
+        "logprob_usable": False,
+        "error": "unavailable_logprob",
+        "dist": {},
+    }
+
+    dist = logprob_evidence.get("dist") or {}
+
+    logprob_conf = None
+    if logprob_evidence.get("logprob_usable") and dist:
+        logprob_conf = float(dist.get(status, 0.0))
+
+    d["llm_self_reported_confidence"] = float(self_reported_conf or 0.0)
+
+    d["logprob_usable"] = bool(logprob_evidence.get("logprob_usable"))
+    d["logprob_error"] = logprob_evidence.get("error", "")
+    d["logprob_distribution_type"] = logprob_evidence.get("distribution_type", "")
+    d["logprob_complete_distribution"] = logprob_evidence.get("complete_distribution", False)
+    d["logprob_observability"] = logprob_evidence.get("observability", 0.0)
+
+    d["observed_codes"] = logprob_evidence.get("observed_codes", [])
+    d["missing_codes"] = logprob_evidence.get("missing_codes", [])
+    d["raw_code_logprobs"] = logprob_evidence.get("raw_code_logprobs", {})
+
+    d["logprob_dist"] = dist
+    d["logprob_confidence"] = logprob_conf
+    d["logprob_top_label"] = logprob_evidence.get("top_label", "")
+    d["logprob_top_prob"] = logprob_evidence.get("top_prob", "")
+    d["logprob_runner_up"] = logprob_evidence.get("runner_up", "")
+    d["logprob_margin"] = logprob_evidence.get("margin", "")
+    d["logprob_raw_margin"] = logprob_evidence.get("raw_logprob_margin", "")
+
+    if logprob_evidence.get("logprob_usable"):
+        d["confidence_source"] = (
+            "logprob_complete_four_class"
+            if logprob_evidence.get("complete_distribution")
+            else "logprob_observed_alternatives"
+        )
+    else:
+        d["confidence_source"] = "self_reported_confidence"
+
+    # Important methodological choice:
+    # Keep the model-written confidence as the operational confidence.
+    # Store logprob evidence separately for uncertainty analysis.
+    conf = self_reported_conf
+
+    return matched, ctx_type, conf, json.dumps(d, ensure_ascii=False)
+
+def _build_system_prompt(
+    *,
+    mode: str,
+    batching: bool,
+    study_context: str = "",
+) -> str:
+    preamble = _BATCH_PREAMBLE if batching else _PREAMBLE
+
+    if batching:
+        input_block = (
+            _BATCH_INPUT_NE
+            if mode == MappingType.NE.value
+            else _BATCH_INPUT_EV
+        )
+        output_block = _OUTPUT_BATCH
+    else:
+        input_block = (
+            _INPUT_NE
+            if mode == MappingType.NE.value
+            else _INPUT_EV
+        )
+        output_block = _OUTPUT_PAIR
+
+    context_parts = [_STUDY_CONTEXT_RULES]
+
+    if study_context:
+        dynamic_context = study_context.strip()
+
+        # format_study_context_block() already starts with "# STUDY CONTEXT";
+        # remove it to avoid duplicate headers.
+        dynamic_context = re.sub(
+            r"^\s*#\s*STUDY CONTEXT\s*",
+            "",
+            dynamic_context,
+            flags=re.IGNORECASE,
+        ).strip()
+
+        if dynamic_context:
+            context_parts.append(dynamic_context)
+
+    study_context_block = "\n".join(context_parts)
+
+    final_prompt =(
+        preamble
+        + input_block
+        + _SHARED_BODY.format(study_context_block=study_context_block)
+        + output_block
+    )
+    # logger.info(f"prompt is {final_prompt}")
+    return final_prompt
+
 
 def _parse_single(text: str) -> Tuple[Optional[bool], str, float, str]:
     if not text:
-        return (None, ContextMatchType.NOT_APPLICABLE.value, 0.0, "empty_response")
+        return (None, ContextMatchType.PENDING.value, 0.0, "empty_response")
+
     text = text.strip()
-    text = re.sub(r'<think>.*?</think>', '', text, flags=re.DOTALL).strip()
+    text = re.sub(r"<think>.*?</think>", "", text, flags=re.DOTALL).strip()
+
     if not text:
-        return (None, ContextMatchType.NOT_APPLICABLE.value, 0.0, "think_only_response")
+        return (None, ContextMatchType.PENDING.value, 0.0, "think_only_response")
+
     if text.startswith("```"):
         text = re.sub(r"^```(?:json)?\s*", "", text)
-        text = re.sub(r"\s*```$", "", text)
+        text = re.sub(r"\s*```$", "", text).strip()
 
-    # Extract fields directly via regex — works on truncated JSON
-    status_m = re.search(r'"status"\s*:\s*"([^"]+)"', text)
-    conf_m = re.search(r'"confidence"\s*:\s*([\d.]+)', text)
-    reason_m = re.search(r'"reason"\s*:\s*"((?:[^"\\]|\\.)*)"?', text)
-    transform_m = re.search(r'"transform"\s*:\s*"((?:[^"\\]|\\.)*)"?', text)
-    transform = transform_m.group(1) if transform_m else ""
-    alignment_direction_m = re.search(r'"alignment_direction"\s*:\s*"([^"]+)"', text)
-    
-    if status_m:
+    try:
+        d = json.loads(text)
+    except json.JSONDecodeError:
+        return (None, ContextMatchType.PENDING.value, 0.0, "json_parse_fail")
 
-        alignment_direction = alignment_direction_m.group(1) if alignment_direction_m else "none"
-        status = status_m.group(1).upper()
-        conf = float(conf_m.group(1)) if conf_m else 0.8
-        reason = reason_m.group(1) if reason_m else "truncated"
-        reason = json.dumps({"status": status,"reason": reason, "transform": transform, "alignment_direction": alignment_direction})
-        # print(f"status: {status}, conf: {conf}, reason: {reason}, transform: {transform}")
-        if status.startswith("IMPOSSIBLE"):
-            return (False, ContextMatchType.NOT_APPLICABLE.value, 0.0, reason)
-        if status.startswith("COMPLETE"):
-            return (True,ContextMatchType.EXACT.value,  max(conf, 0.9), reason)
-        if status.startswith("COMPATIBLE"):
-            return (True, ContextMatchType.COMPATIBLE.value , max(min(conf, 0.9), 0.8), reason)
-        if status.startswith("PARTIAL"):
-            return (True, ContextMatchType.PARTIAL.value, max(min(conf, 0.8), 0.75), reason)
-    return (None, ContextMatchType.NOT_APPLICABLE.value, 0.0, "json_parse_fail")
+    required = {
+        "status_code",
+        "status",
+        "confidence",
+        "reason",
+        "transform",
+        "harmonized_variable",
+        "alignment_direction",
+    }
+
+    missing = required - set(d.keys())
+    if missing:
+        return (
+            None,
+            ContextMatchType.PENDING.value,
+            0.0,
+            f"missing_required_fields:{sorted(missing)}",
+        )
+
+    code = str(d.get("status_code", "")).strip()
+    status = _CODE_TO_LABEL.get(code, str(d.get("status", "")).upper().strip())    
+    conf = float(d.get("confidence") or 0.0)
+
+    reason_json = json.dumps({
+        "status": status,
+        "status_code": code, 
+        "reason": d.get("reason", ""),
+        "transform": d.get("transform", ""),
+        "transform_direction": d.get("alignment_direction", ""),
+        "alignment_direction": d.get("alignment_direction", ""),
+        "harmonized_variable": d.get("harmonized_variable", ""),
+    })
+
+    if status == "IMPOSSIBLE":
+        return (False, ContextMatchType.NOT_APPLICABLE.value, conf, reason_json)
+
+    if status == "COMPLETE":
+        return (True, ContextMatchType.EXACT.value, conf, reason_json)
+
+    if status == "COMPATIBLE":
+        return (True, ContextMatchType.COMPATIBLE.value, conf, reason_json)
+
+    if status == "PARTIAL":
+        return (True, ContextMatchType.PARTIAL.value, conf , reason_json)
+
+    return (
+        None,
+        ContextMatchType.PENDING.value,
+        0.0,
+        f"invalid_status:{status}",
+    )
+
 
 @dataclass
 class LLMConceptMatcher:
     models: List[str] = field(default_factory=list)
     max_retries: int = 5
-    temperature: float = 0
-    timeout: int = 1000
-    mode: str = MappingType.OEH.value
-    _clients: Dict[str, Any] = field(default_factory=dict, repr=False)
 
+    _study_context: str = field(default="", repr=False)
+
+     # Deterministic generation parameters
+    max_tokens: int = 4096
+    temperature: float = 0.0 # 0.0
+    top_p: float = 1.0  # 1.0
+    top_k: int = 0  # 0 = disabled/default for OpenRouter; omit for Gemini if 0
+    frequency_penalty: float = 0.0
+    presence_penalty: float = 0.0
+    repetition_penalty: float = 1.0
+    min_p: float = 0.0
+    top_a: float = 0.0
+
+    timeout: int = 2000
+    mode: str = MappingType.OEH.value
+    backend:str = "google"
+    _clients: Dict[str, Any] = field(default_factory=dict, repr=False)
+    batching:bool =False
+   
     def __post_init__(self):
         self._cache = LLMDiskCache()
-        sys_prompt = SYSTEM_PROMPT_NE if self.mode == MappingType.NE.value else SYSTEM_PROMPT_EV
-
-        self._cache.set_system_prompt(sys_prompt)
+        self._refresh_system_prompt()
+     
+        # self._cache.set_system_prompt(sys_prompt)
         model = self.models[0]
-        backend = self._backend_for(model)
-        if backend == "ollama":
-             
+
+        self.backend = self._backend_for(model)
+        self._apply_model_generation_defaults(model)
+        if self.backend  == "ollama":
             from ollama import Client
             self._clients["ollama"] = Client(host=settings.OLLAMA_URL)
-        elif backend == "together":
-            from together import Together
-            self._clients["together"] = Together(api_key=settings.TOGETHER_API_KEY, timeout=self.timeout)
+        # elif backend == "together":
+        #     from together import Together
+        #     self._clients["together"] = Together(api_key=settings.TOGETHER_API_KEY, timeout=self.timeout)
         # elif backend == "openai":
         #     from openai import OpenAI
         #     self._clients["openai"] = OpenAI(api_key=settings.OPENAI_API_KEY, timeout=self.timeout)
         # elif backend == "anthropic":
         #     from anthropic import Anthropic
         #     self._clients["anthropic"] = Anthropic(api_key=settings.ANTHROPIC_API_KEY, timeout=self.timeout)
-        # elif backend == "google":
-        #     from google.genai import Client
-        #     self._clients["google"] = Client(api_key=settings.GEMINI_API_KEY)
-        elif backend == "openrouter":
+        elif self.backend  == "google":
+            from google.genai import Client
+            self._clients["google"] = Client(api_key=settings.GEMINI_API_KEY)
+        elif self.backend  == "openrouter":
             from openrouter import OpenRouter
             self._clients["openrouter"] = OpenRouter(api_key=settings.OPENROUTER_API_KEY)
+        elif self.backend == "fireworks":
+            if not settings.FIREWORKS_API_KEY:
+                raise ValueError(
+                    "Fireworks backend selected but FIREWORKS_API_KEY is not set."
+                )
+            from openai import OpenAI
+            self._clients["fireworks"] = OpenAI(
+                api_key=settings.FIREWORKS_API_KEY,
+                base_url=settings.FIREWORKS_BASE_URL,
+                timeout=self.timeout,
+            )
+        elif self.backend == "litellm":
+            from openai import OpenAI
+            self._clients["litellm"] = OpenAI(
+                api_key=settings.LITELLM_API_KEY,
+                base_url=settings.LITELLM_BASE_URL,
+                timeout=self.timeout,
+            )
 
+  
+
+    def _refresh_system_prompt(self) -> None:
+            self._system_prompt = _build_system_prompt(
+                mode=self.mode,
+                batching=self.batching,
+                study_context=self._study_context,
+            )
+            self._cache.set_system_prompt(self._system_prompt)
+
+
+    # def set_study_context(self, context_block: str) -> None:
+    #         """Set cohort-pair study metadata for all LLM calls in this run."""
+    #         self._study_context = (context_block or "").strip()
+    #         self._refresh_system_prompt()
+
+    def _apply_model_generation_defaults(self, model: str) -> None:
+        """Apply model-specific decoding defaults for LLM-as-classifier runs.
+
+        top_k=0 means disabled in this code path; OpenRouter/Gemini params
+        omit top_k unless the value is greater than zero.
+        """
+        m = model.lower()
+
+        is_gpt_oss_120b = (
+            ("gpt-oss" in m or "gpt_oss" in m or "gpt oss" in m or "gpt-120" in m)
+            and ("120b" in m or "120-b" in m or "120" in m)
+        )
+
+        # is_deepseek_v4 = "deepseek" in m and ("v4" in m or "v-4" in m)
+        # is_glm = ("glm" in m and "4.7" in m )
+        # is_qwen_plus = (
+        #     "qwen" in m
+        #     and "plus" in m
+        #     and (
+        #         "3.6" in m or "3-6" in m or "3p6" in m or "36" in m
+        #         or "3.7" in m or "3-7" in m or "3p7" in m or "37" in m
+        #     )
+        # )
+     
+       
+        if is_gpt_oss_120b:
+                self.max_tokens = 16384 
+       
+           
+        logger.info (f"for LLM {m}, temperature = { self.temperature}, top_p = {self.top_p},top_k = {self.top_k} ")
     @staticmethod
     def _backend_for(model: str) -> str:
         m = model.lower()
         if "ollama/" in m: return "ollama"
+        if m.startswith("fireworks/") or m.startswith("accounts/fireworks/") or m.startswith("accounts/komalsyeda29-qw87svj/") :
+            return "fireworks"
         if "openrouter/" in m: return "openrouter"
         # if m.startswith("gpt-"): return "openai"
         # if m.startswith("claude-"): return "anthropic"
-        # if m.startswith("gemini-"): return "google"
-        return "together"
+        if m.startswith("gemini-") or m.startswith("gemma-"): return "google"
+        if "litellm/" in m: 
+            return "litellm"
+        return "openrouter"
 
-    def _call_one(self, model: str, prompt: str, force_freeform: bool = False) -> str:
-        token_limit = 2000
-        backend = self._backend_for(model)
-        api_model = model.replace("openrouter/", "") if backend == "openrouter" else model
+    def _openrouter_generation_params(self) -> Dict[str, Any]:
+        params = {
+           
+            # "reasoning": {"enabled": True},
+            # "reasoning_effort":"high",
+            "max_tokens": self.max_tokens,
+            "temperature": self.temperature,
+            "top_p": self.top_p,
+            "frequency_penalty": self.frequency_penalty,
+            "presence_penalty": self.presence_penalty,
+            # "logprobs": True,
+            # Fireworks currently accepts top_logprobs in the range 0..5.
+            # "top_logprobs": 10,
+            # "service_tier":"flex"
+           
+        }
+
+        # Only send non-default optional controls.
+        # top_k=0, min_p=0.0, top_a=0.0 mean disabled.
+        if self.top_k and self.top_k > 0:
+            params["top_k"] = self.top_k
+
+        if self.repetition_penalty != 1.0:
+            params["repetition_penalty"] = self.repetition_penalty
+
+        if self.min_p and self.min_p > 0.0:
+            params["min_p"] = self.min_p
+
+        if self.top_a and self.top_a > 0.0:
+            params["top_a"] = self.top_a
+
+        return params
+
+    def _fireworks_model_name(self, model: str) -> str:
+        """Return the Fireworks model id accepted by the OpenAI-compatible API.
+
+        Supported inputs:
+        - fireworks/deepseek-v4-flash
+        - fireworks/accounts/fireworks/models/deepseek-v4-flash"
+        - accounts/fireworks/models/deepseek-v4-flash
+        """
+        if model.startswith("fireworks/"):
+            model = model.replace("fireworks/", "", 1)
+        if model.startswith("accounts/fireworks/"):
+            return model
+        # Convenience alias for common serverless model ids.
+        if "/" not in model:
+            return f"accounts/fireworks/models/{model}"
+        return model
+
+    def _fireworks_generation_params(self) -> Dict[str, Any]:
+        params = {
+            "reasoning_effort":"high",
+            # "reasoning_history": "preserved",
+            "max_tokens": self.max_tokens,
+            "temperature": self.temperature,
+            "top_p": self.top_p,
+            "frequency_penalty": self.frequency_penalty,
+            "presence_penalty": self.presence_penalty,
+            "logprobs": True,
+            # Fireworks currently accepts top_logprobs in the range 0..5.
+            "top_logprobs": 5,
+        }
+        if self.top_k and self.top_k > 0:
+            params["top_k"] = self.top_k
+        return params
+
+    def _gemini_generation_config(self, sys_prompt: str, force_freeform: bool = False):
+        from google.genai import types
+
+        kwargs = {
+            "system_instruction": sys_prompt,
+            "temperature": self.temperature,
+            "top_p": self.top_p,
+            "max_output_tokens": self.max_tokens,
+            "presence_penalty": self.presence_penalty,
+            "frequency_penalty": self.frequency_penalty,
+            "thinking_config": types.ThinkingConfig(
+                thinking_level="high"
+            ),
+
+            # "response_logprobs":True,
+            # "logprobs":5,
+        }
+
+        # Use JSON mode on first attempt, but allow free-form fallback on retries.
+        if not force_freeform:
+            # kwargs["response_mime_type"] = "application/json"
+            # kwargs["response_mime_type"] = {"type": "json_schema",
+                        # "json_schema": {"name": "HarmonizationVerdict", "schema": VERDICT_JSON_SCHEMA}}
+            kwargs["response_mime_type"] = "application/json"
+            # kwargs["response_schema"] = VERDICT_JSON_SCHEMA
+
+        # For Gemini, do not send top_k=0. Treat 0 as disabled/default.
+        if self.top_k and self.top_k > 0:
+            kwargs["top_k"] = self.top_k
+
+        return types.GenerateContentConfig(**kwargs)
+        
+    def _cache_mode(self) -> str:
+        return f"{self.mode}::{self._generation_fingerprint()}"
+  
+
+    def _generation_fingerprint(self) -> str:
+        cfg = {
+            "max_tokens": self.max_tokens,
+            "temperature": self.temperature,
+            "top_p": self.top_p,
+            "top_k": self.top_k,
+            "frequency_penalty": self.frequency_penalty,
+            "presence_penalty": self.presence_penalty,
+            "repetition_penalty": self.repetition_penalty,
+            "min_p": self.min_p,
+            "top_a": self.top_a,
+            # logprob-aware cache separation
+            "backend": self.backend,
+            "logprobs": self.backend in {"openrouter", "fireworks"},
+            "top_logprobs": 5 if self.backend == "fireworks" else (20 if self.backend == "openrouter" else 0),
+            "confidence_source": "normalized_status_token_logprob_v1",
+        }
+        return hashlib.sha256(
+            json.dumps(cfg, sort_keys=True).encode()
+        ).hexdigest()[:12]
+    def _call_one(self, model: str, prompt: str, force_freeform: bool = False) ->  tuple[str, dict]:
+
+        # output_token_limit = self.max_tokens
+
+        output_token_limit = self.max_tokens
+        api_model = self._fireworks_model_name(model) if self.backend == "fireworks" else (model.replace("openrouter/", "") if self.backend == "openrouter" else model)
         mname = model.split('/')[-1]
-        client = self._clients[backend]
-        sys_prompt = SYSTEM_PROMPT_NE if self.mode == MappingType.NE.value else SYSTEM_PROMPT_EV
+        client = self._clients[self.backend]
+
+        # if self.batching:
+        #     sys_prompt = SYSTEM_PROMPT_NE_BATCH if self.mode == MappingType.NE.value else SYSTEM_PROMPT_EV_BATCH
+        # else:
+        #     sys_prompt = SYSTEM_PROMPT_NE if self.mode == MappingType.NE.value else SYSTEM_PROMPT_EV
+
+        sys_prompt = self._system_prompt
+        api_model = self._fireworks_model_name(model) if self.backend == "fireworks" else (model.replace("openrouter/", "") if self.backend == "openrouter" else model)
+        mname = model.split('/')[-1]
+        client = self._clients[self.backend]
+        logprob_evidence = None
+
+        # logger.info(
+        #     f"LLM REQUEST model={model} backend={self.backend} "
+        #     f"mode={self.mode} batching={self.batching}\n"
+        #     f"=== SYSTEM PROMPT ===\n{sys_prompt}\n"
+        #     f"=== USER INPUT ===\n{prompt}\n"
+        # )
+
         try:
-            if backend == "ollama":
+            if self.backend == "ollama":
                 resp = client.chat(
                     model=api_model.replace("ollama/", ""),
                     messages=[{"role": "system", "content": sys_prompt},
                             {"role": "user", "content": prompt}],
-                    options={"temperature": self.temperature, "num_predict": token_limit},
+                    options={"temperature": self.temperature, "num_predict": output_token_limit},
                 )
                 result = resp["message"]["content"] or ""
                 print(f"[ollama] got {len(result)} chars")
 
-            elif backend == "together":
-                print(f"api_model: {api_model}")
-                resp = client.chat.completions.create(
-                    model=api_model, temperature=self.temperature, max_tokens=token_limit,
-                    messages=[{"role": "system", "content": sys_prompt},
-                            {"role": "user", "content": prompt}],
-                )
-                result = resp.choices[0].message.content or ""
-            elif backend == "openrouter":
-                resp = client.chat.send(
-                    model=api_model, temperature=self.temperature, max_tokens=token_limit,
-                    stream=False,
-                    messages=[{"role": "system", "content": sys_prompt},
-                            {"role": "user", "content": prompt}],
-                )
-                result = resp.choices[0].message.content if resp.choices else ""
-            # elif backend == "openai":
-            #     msgs = [{"role": "system", "content": sys_prompt},
-            #             {"role": "user", "content": prompt}]
-            #     kwargs = dict(model=api_model, messages=msgs)
-            #     kwargs["max_completion_tokens"] = token_limit
-            #     kwargs["temperature"] = self.temperature
-            #     kwargs["reasoning_effort"] = "low"
-            #     if not force_freeform:
-            #         kwargs["response_format"] = {"type": "json_object"}
-            #     resp = client.chat.completions.create(**kwargs)
-            #     result = resp.choices[0].message.content or ""
+          
 
-            # elif backend == "anthropic":
-            #     resp = client.messages.create(
-            #         model=api_model, max_tokens=token_limit, temperature=self.temperature,
-            #         system=sys_prompt,
-            #         messages=[{"role": "user", "content": prompt}],
-            #     )
-            #     result = resp.content[0].text if resp.content else ""
-            # elif backend == "google":
-            #     from google.genai import types
-            #     resp = client.models.generate_content(
-            #         model=api_model, contents=prompt,
-            #         config=types.GenerateContentConfig(
-            #             system_instruction=sys_prompt, temperature=self.temperature,
-            #             max_output_tokens=token_limit, response_mime_type="application/json",
-            #             thinking_config=types.ThinkingConfig(thinking_budget=0),
-            #         )
-            #     )
-            #     result = resp.text or ""
+            elif self.backend == "openrouter":
+                kwargs = {
+                    "model": api_model,
+                    "stream": False,
+                    "messages": [
+                        {"role": "system", "content": sys_prompt},
+                        {"role": "user", "content": prompt},
+                    ],
+                    "reasoning": {"effort": "high"},
+                    # "verbosity": "low",
+                    # "reasoning": {
+                    #     "effort": "medium"
+                    # },
+                    # "provider": {
+                    #     "require_parameters": True
+                    # },
+                    "provider": {
+                        "quantizations": [
+                        "bf16"
+                        ]
+                    },
+                     "logprobs": True,
+                    "top_logprobs": 10,
+                    **self._openrouter_generation_params(),
+                }
+
+                # Use JSON mode on first attempt only.
+                # If a routed provider rejects JSON mode, retry free-form and parse with regex.
+                if not force_freeform:
+                    # kwargs["response_format"] = {
+                    #     "type": "json_object"
+                    # }
+                     kwargs["response_format"] = {"type": "json_schema",
+                        "json_schema": {"name": "HarmonizationVerdict", "schema": VERDICT_JSON_SCHEMA}}
+                   
+
+                resp = client.chat.send(**kwargs)
+                if not resp.choices:
+                    return "", {}
+
+                choice = resp.choices[0]
+                text = choice.message.content or ""
+                logprob_evidence = _extract_status_code_logprob_evidence( getattr(choice, "logprobs", None))
+
+                print("DEBUG status text:", text[:500])
+                # logprobs_obj = getattr(choice, "logprobs", None)
+                # print("DEBUG logprob_dist:", _extract_status_logprob_dist(logprobs_obj))
+                return text, logprob_evidence
+
+            elif self.backend == "litellm":
+                kwargs = {
+                    "model": model.replace("litellm/", "", 1),
+                    "messages": [
+                        {"role": "system", "content": sys_prompt},
+                        {"role": "user", "content": prompt},
+                    ],
+                     "extra_body": {
+                        "reasoning_effort": "high",
+                        "allowed_openai_params": ["reasoning_effort"],
+                        "drop_params": True,
+                    },
+                    **self._fireworks_generation_params(),
+                }
+                if not force_freeform:
+                    kwargs["response_format"] = {"type": "json_schema",
+                        "json_schema": {"name": "HarmonizationVerdict", "schema": VERDICT_JSON_SCHEMA}}
+
+                resp = client.chat.completions.create(**kwargs)
+                if not resp.choices:
+                    return "", {}
+                choice = resp.choices[0]
+                text = choice.message.content or ""
+                logprob_evidence = _extract_status_code_logprob_evidence(
+                    getattr(choice, "logprobs", None)
+                )
+                return text, logprob_evidence
+            elif self.backend == "fireworks":
+                kwargs = {
+                    "model": api_model,
+                    "messages": [
+                        {"role": "system", "content": sys_prompt},
+                        {"role": "user", "content": prompt},
+                    ],
+           
+                    **self._fireworks_generation_params(),
+                }
+
+                # Use JSON mode on early attempts; retry without it for models
+                # that do not support response_format on the routed backend.
+                if not force_freeform:
+                    # kwargs["response_format"] = {"type": "json_object"}
+                    kwargs["response_format"] = {"type": "json_schema",
+                        "json_schema": {"name": "HarmonizationVerdict", "schema": VERDICT_JSON_SCHEMA}}
+
+                resp = client.chat.completions.create(**kwargs)
+                if not resp.choices:
+                    return "", {}
+
+                choice = resp.choices[0]
+                text = choice.message.content or ""
+                logprob_evidence = _extract_status_code_logprob_evidence(
+                    getattr(choice, "logprobs", None)
+                )
+                return text, logprob_evidence
+    
+            elif self.backend == "google":
+                resp = client.models.generate_content(
+                    model=api_model,
+                    contents=prompt,
+                    config=self._gemini_generation_config(sys_prompt, force_freeform=force_freeform),
+                )
+                result = resp.text or ""
             else:
                 result = ""
         except Exception as e:
             print(f"[{mname}] call failed: {e}")
-            return ""
-        return result
+            return "", {}
+        logger.info (f"LLM={model}, prompt={prompt}, result ={result}, logprob_dist ={logprob_evidence}")
+        return result, logprob_evidence
+
+   
 
     def _eval_pair(self, model: str, prompt: str) -> Tuple[Optional[bool], str, float, str]:
-        cached = self._cache.get(model, prompt, mode=self.mode)
-        if cached:
-            v = _parse_single(cached)
-            if v[0] is not None: 
-                return v
-        for attempt in range(self.max_retries):
-            text = self._call_one(model, prompt, force_freeform=(attempt > 0))
-            v = _parse_single(text)
+        cache_mode = self._cache_mode()
+        cached = self._cache.get_record(model, prompt, mode=cache_mode)
+        # cached = None
+        if cached and cached.get("r"):
+            v = _parse_single(cached["r"])
             if v[0] is not None:
-                self._cache.put(model, prompt, text, mode=self.mode)
+                return _apply_logprob_confidence(
+                    v,
+                    cached.get("logprob_dist") or {},
+                )
+
+        for attempt in range(self.max_retries):
+            text, logprob_dist = self._call_one(
+                model,
+                prompt,
+                force_freeform=(attempt > 3),
+            )
+
+            v = _parse_single(text)
+
+            if v[0] is not None:
+                v = _apply_logprob_confidence(v, logprob_dist)
+
+                self._cache.put_record(
+                    model, 
+                    prompt,
+                    text,
+                    mode=cache_mode,
+                    logprob_dist=logprob_dist,
+                )
+
                 return v
+
             time.sleep(1 + attempt)
-        return (None, ContextMatchType.NOT_APPLICABLE.value, 0.0,
-                json.dumps({"status": "IMPOSSIBLE", "reason": "parse_failed_after_retries"}))
 
-    # def _eval_batch(self, model: str, prompt: str, expected_n: int) -> List[Tuple]:
-    #     cached = self._cache.get(model, prompt, mode=self.mode, batch=True)
-    #     if cached:
-    #         v = _parse_batch(cached, expected_n)
-    #         if sum(1 for x in v if x[0] is not None) == expected_n: return v
-    #     for attempt in range(self.max_retries):
-    #         text = self._call_one(model, prompt, force_freeform=(attempt > 0), batch=True)
-    #         v = _parse_batch(text, expected_n)
-    #         parsed = sum(1 for x in v if x[0] is not None)
-    #         if parsed == expected_n:
-    #             self._cache.put(model, prompt, text, mode=self.mode, batch=True)
-    #             return v
-    #         if parsed > 0 and attempt == self.max_retries - 1: return v
-    #         time.sleep(1 + attempt)
-    #     return [(None, ContextMatchType.NOT_APPLICABLE.value, 0.0, "batch_parse_fail")] * expected_n
+        return (
+            None,
+            ContextMatchType.PENDING.value,
+            0.0,
+            json.dumps({
+                "status": "IMPOSSIBLE",
+                "reason": "parse_failed_after_retries",
+                "logprob_dist": {},
+                "logprob_confidence": 0.0,
+                "confidence_source": "unavailable_logprob",
+            }),
+        )
+        
+ 
 
-    def assess(self, groups: List[Dict], case_ids: List[str] = None) -> Tuple[List[List[Tuple]], Dict]:
-        if not groups: return [], {}
-        model = self.models[0]
-        flat_meta, prompts = [], []
-        for g_idx, g in enumerate(groups):
-            for t_idx, t in enumerate(g["targets"]):
-                flat_meta.append((g_idx, t_idx))
-                prompts.append(_build_pair_prompt(
-                    g.get("src_concepts", ""), g.get("src_cats", ""),
-                    t.get("tgt_concepts", ""), t.get("tgt_cats", ""),
-                    src_desc=g.get("src_desc", ""), tgt_desc=t.get("desc", ""),
-                    src_unit=g.get("src_unit", ""), tgt_unit=t.get("tgt_unit", ""),
-                    evidence=t.get("evidence", ""), mode=self.mode))
-        with ThreadPoolExecutor(max_workers=3) as pool:
-            futures = {pool.submit(self._eval_pair, model, p): i for i, p in enumerate(prompts)}
+    def _is_pending_llm_result(self, result) -> bool:
+        """
+        result format:
+            (matched, ctx_type, conf, reason_json)
+
+        Pending means: technical failure / parse failure / unresolved LLM output.
+        """
+        if result is None:
+            return True
+
+        matched, ctx_type, conf, reason_json = result
+
+        if matched is None:
+            return True
+
+        if ctx_type == ContextMatchType.PENDING.value:
+            return True
+
+        try:
+            d = json.loads(reason_json) if isinstance(reason_json, str) else {}
+            status = str(d.get("status", "")).upper()
+            reason = str(d.get("reason", "")).lower()
+
+            if status in {"PENDING", "PARSE_ERROR"}:
+                return True
+
+            if "parse_failed" in reason or "json_parse_fail" in reason:
+                return True
+
+        except Exception:
+            pass
+
+        return False
+  
+    def assess(
+            self,
+            groups: List[Dict],
+            case_ids: List[str] = None,
+            max_pending_rounds: int = 2,
+        ) -> Tuple[List[List[Tuple]], Dict]:
+
+            if not groups:
+                return [], {}
+
+            model = self.models[0]
+
+            flat_meta, prompts = [], []
+
+            for g_idx, g in enumerate(groups):
+                for t_idx, t in enumerate(g["targets"]):
+                    flat_meta.append((g_idx, t_idx))
+                   
+                    pair_prompt =  _build_pair_prompt(
+                            g.get("src_concepts", ""),
+                            g.get("src_cats", ""),
+                            t.get("tgt_concepts", ""),
+                            t.get("tgt_cats", ""),
+                            src_desc=g.get("src_desc", ""),
+                            tgt_desc=t.get("desc", ""),
+                            src_unit=g.get("src_unit", ""),
+                            tgt_unit=t.get("tgt_unit", ""),
+                            evidence=t.get("evidence", ""),
+                            mode=self.mode,
+                        )
+                    
+                    if self._study_context and self._study_context != "":
+                        self._refresh_system_prompt()
+                        # pair_prompt = f"{self._study_context}\n\n{pair_prompt}"
+                    prompts.append(pair_prompt)
+
+
+
             results = [None] * len(prompts)
-            for fut in as_completed(futures):
-                results[futures[fut]] = fut.result()
-        grouped = [[] for _ in range(len(groups))]
-        for fi, (g_idx, _) in enumerate(flat_meta):
-            grouped[g_idx].append(results[fi])
-        return grouped, {"total_targets": len(prompts), "model": model}
 
-    # def assess_batch(self, groups: List[Dict], case_ids: List[str] = None) -> Tuple[List[List[Tuple]], Dict]:
-    #     if not groups: return [], {}
-    #     model = self.models[0]
-    #     prompts, sizes = [], []
-    #     for g in groups:
-    #         prompts.append(_build_batch_prompt(
-    #             src_desc=g.get("src_desc", ""), src_concepts=g.get("src_concepts", ""),
-    #             src_cats=g.get("src_cats", ""), src_unit=g.get("src_unit", ""),
-    #             targets=g["targets"], mode=self.mode))
-    #         sizes.append(len(g["targets"]))
-    #     with ThreadPoolExecutor(max_workers=5) as pool:
-    #         futures = {pool.submit(self._eval_batch, model, prompts[i], sizes[i]): i
-    #                    for i in range(len(prompts))}
-    #         results = [None] * len(prompts)
-    #         for fut in as_completed(futures):
-    #             i = futures[fut]
-    #             try: results[i] = fut.result()
-    #             except Exception as e:
-    #                 results[i] = [(None, ContextMatchType.NOT_APPLICABLE.value, 0.0, str(e))] * sizes[i]
-    #     return results, {"total_groups": len(prompts), "total_targets": sum(sizes), "model": model}
+            # Initially all prompts are active.
+            active_indices = list(range(len(prompts)))
+
+            total_calls = 0
+            pending_rounds_used = 0
+
+           
+            for round_idx in range(max_pending_rounds + 1):
+                if not active_indices:
+                    break
+
+                pending_rounds_used = round_idx
+
+                if len(active_indices) == 1:
+                    # Single prompt — call directly, no pool overhead
+                    i = active_indices[0]
+                    try:
+                        results[i] = self._eval_pair(model, prompts[i])
+                    except Exception as e:
+                        results[i] = (
+                            None,
+                            ContextMatchType.PENDING.value,
+                            0.0,
+                            json.dumps({
+                                "status": "PARSE_ERROR",
+                                "reason": f"eval_pair_exception: {type(e).__name__}: {e}",
+                                "transform": "",
+                                "transform_direction": "",
+                            }),
+                        )
+                else:
+                    with ThreadPoolExecutor(max_workers=3) as pool:
+                        futures = {
+                            pool.submit(self._eval_pair, model, prompts[i]): i
+                            for i in active_indices
+                        }
+                        for fut in as_completed(futures):
+                            i = futures[fut]
+                            try:
+                                results[i] = fut.result()
+                            except Exception as e:
+                                results[i] = (
+                                    None,
+                                    ContextMatchType.PENDING.value,
+                                    0.0,
+                                    json.dumps({
+                                        "status": "PARSE_ERROR",
+                                        "reason": f"eval_pair_exception: {type(e).__name__}: {e}",
+                                        "transform": "",
+                                        "transform_direction": "",
+                                    }),
+                                )
+
+                total_calls += len(active_indices)
+                active_indices = [
+                    i for i in active_indices
+                    if self._is_pending_llm_result(results[i])
+                ]
+
+            # After all retry rounds, unresolved items remain as technical failures.
+            unresolved_indices = [
+                i for i, r in enumerate(results)
+                if self._is_pending_llm_result(r)
+            ]
+
+            for i in unresolved_indices:
+                results[i] = (
+                    None,
+                    ContextMatchType.PENDING.value,
+                    0.0,
+                    json.dumps({
+                        "status": "PARSE_ERROR",
+                        "reason": "pending_after_assess_retries",
+                        "transform": "",
+                        "transform_direction": "",
+                    }),
+                )
+
+            grouped = [[] for _ in range(len(groups))]
+
+            for fi, (g_idx, _) in enumerate(flat_meta):
+                grouped[g_idx].append(results[fi])
+
+            return grouped, {
+                "total_targets": len(prompts),
+                "total_llm_calls": total_calls,
+                "pending_after_retries": len(unresolved_indices),
+                "pending_rounds_used": pending_rounds_used,
+                "model": model,
+            }
+
+   

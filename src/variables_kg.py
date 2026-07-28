@@ -20,7 +20,8 @@ from .utils import (
     extract_tick_values,
     parse_joined_string,
     create_code_uri,
-    split_categories
+    split_categories,
+    has_real_value
 )
 from typing import Optional, Any
 
@@ -102,7 +103,8 @@ def process_variables_metadata_file(file_path:str, study_metadata_graph_file_pat
                     multi_class_categorical,
                     binary_categorical,
                     data_type=row["vartype"],
-                    unit = row['units'] if pd.notna(row['units']) else None
+                    unit = row['units'] if pd.notna(row['units']) else None,
+                    var_label = row['variablelabel'] if pd.notna(row['variablelabel']) else None,
                 )
             g.add((statistical_type_uri, RDF.type, URIRef(f"{OntologyNamespaces.CMEO.value}{statistical_type}"), cohort_graph))
             g.add((statistical_type_uri, OntologyNamespaces.CMEO.value.has_value, Literal(statistical_type, datatype=XSD.string), cohort_graph))
@@ -126,9 +128,9 @@ def process_variables_metadata_file(file_path:str, study_metadata_graph_file_pat
                 omop_id=safe_int(row['variable omop id']) if pd.notna(row['variable omop id']) else None,
             )]
          
-            if (pd.notna(row['additional context concept name']) and 
-            pd.notna(row['additional context concept code']) and 
-            pd.notna(row['additional context omop id'])):
+            if (has_real_value(row['additional context concept name']) and 
+            has_real_value(row['additional context concept code']) and 
+            has_real_value(row['additional context omop id'])):
                 try:
                     count1 = len(parse_joined_string(row['additional context concept name']))
                     count2 = len(str(row['additional context concept code']).split("|"))

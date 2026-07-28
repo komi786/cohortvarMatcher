@@ -39,7 +39,7 @@ def generate_studies_kg(filepath: str) -> Graph:
     metadata_graph = URIRef(OntologyNamespaces.CMEO.value + "graph/studies_metadata")
     # df.columns = df.columns.str.lower()
     # start from study design execution a process that realized plan which concretizes the study design 
-    for _, row in df.iterrows():
+    for row in df.to_dict(orient="records"):
         if pd.isna(row["study name"]):
             print("Study name is missing, skipping this row.")
             continue
@@ -360,7 +360,7 @@ def add_inclusion_criterion(g: Graph, row: pd.Series, study_uri: URIRef, eligibi
     g.add((inclusion_criterion_uri, RDF.type, OntologyNamespaces.OBI.value.inclusion_criterion, metadata_graph))
     g.add((inclusion_criterion_uri, OntologyNamespaces.RO.value.part_of, eligibility_criterion_uri, metadata_graph))
     g.add((eligibility_criterion_uri, OntologyNamespaces.RO.value.has_part, inclusion_criterion_uri, metadata_graph))
-    inclusion_criteria_columns = [col for col in row.index if "inclusion criterion" in col.lower()]
+    inclusion_criteria_columns = [ col for col in row.keys() if "inclusion criterion" in str(col).lower() ]
     for col in inclusion_criteria_columns:
         inclusion_criterion_name = normalize_text(col)
         row_value = row[col].lower().strip() if pd.notna(row[col]) else ""
@@ -431,7 +431,7 @@ def add_exclusion_criterion(g: Graph, row: pd.Series, study_uri: URIRef, eligibi
     g.add((exclusion_criterion_uri, RDF.type, OntologyNamespaces.OBI.value.exclusion_criterion, metadata_graph))
     g.add((exclusion_criterion_uri, OntologyNamespaces.RO.value.part_of, eligibility_criterion_uri, metadata_graph))
     g.add((eligibility_criterion_uri, OntologyNamespaces.RO.value.has_part, exclusion_criterion_uri, metadata_graph))
-    exclusion_criteria_columns = [col for col in row.index if "exclusion criterion" in col.lower()]
+    exclusion_criteria_columns = [ col for col in row.keys() if "exclusion criterion" in str(col).lower() ]
     for col in exclusion_criteria_columns:
         exclusion_criterion_name = normalize_text(col)
         dynamic_exclusion_criterion_type = URIRef(OntologyNamespaces.CMEO.value + "/" + exclusion_criterion_name)

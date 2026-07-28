@@ -1,3 +1,6 @@
+from llm.config import settings
+
+
 class SPARQLQueryBuilder:
     """Responsible solely for constructing valid SPARQL queries."""
     
@@ -13,10 +16,14 @@ class SPARQLQueryBuilder:
         PREFIX stato: <http://purl.obolibrary.org/obo/stato.owl/>
         PREFIX ro:    <http://purl.obolibrary.org/obo/ro.owl/>
         PREFIX xsd:   <http://www.w3.org/2001/XMLSchema#> 
+        PREFIX bfo: <http://purl.obolibrary.org/obo/bfo.owl/>
     """
+    METADATA_GRAPH = "https://w3id.org/CMEO/graph/studies_metadata"
+    GRAPHS_URI = settings.GRAPH_REPO
+
 
     @classmethod
-    def build_alignment_query(cls, source: str, target: str, graph_repo: str) -> str:
+    def build_alignment_query(cls, source: str, target: str) -> str:
         # Optimized query structure
         query= f""" 
             {cls.PREFIXES}
@@ -33,7 +40,7 @@ class SPARQLQueryBuilder:
                 {{
                     SELECT ?omop_id  ?lbl ?val ?src_de_str  ?src_combined ?src_val 
                     WHERE {{
-                        GRAPH <{graph_repo}/{source}> {{
+                        GRAPH <{cls.GRAPHS_URI}/{source}> {{
                              ?deA a cmeo:data_element ; 
                                 rdfs:label ?src_var_label ;
                                 dc:identifier ?src_var ;
@@ -57,7 +64,7 @@ class SPARQLQueryBuilder:
                 {{
                      SELECT ?omop_id ?lbl ?val ?tgt_de_str ?tgt_combined ?tgt_val 
                     WHERE {{
-                        GRAPH <{graph_repo}/{target}> {{
+                        GRAPH <{cls.GRAPHS_URI}/{target}> {{
                              ?deB a cmeo:data_element ; 
                                 rdfs:label ?tgt_var_label ;
                                 dc:identifier ?tgt_var ;
@@ -91,14 +98,14 @@ class SPARQLQueryBuilder:
 
 
    
-    def build_unmapped_variables_query(cls, study: str, graph_repo: str, use_filter:bool=False) -> str:
+    def build_unmapped_variables_query(cls, study: str, use_filter:bool=False) -> str:
         """Variables with no skos:closeMatch — raw label/visit/unit/stat for NE mode."""
         if use_filter:
             return f"""
             {cls.PREFIXES}
             SELECT ?var ?var_label ?visit_label ?domain_val ?stat_label ?unit_label
             WHERE {{
-                GRAPH <{graph_repo}/{study}> {{
+                GRAPH <{cls.GRAPHS_URI}/{study}> {{
                     ?de a cmeo:data_element ;
                         dc:identifier ?var ;
                         rdfs:label ?var_label .
@@ -117,7 +124,7 @@ class SPARQLQueryBuilder:
             {cls.PREFIXES}
             SELECT ?var ?var_label ?visit_label ?domain_val ?stat_label ?unit_label
             WHERE {{
-                GRAPH <{graph_repo}/{study}> {{
+                GRAPH <{cls.GRAPHS_URI}/{study}> {{
                     ?de a cmeo:data_element ;
                         dc:identifier ?var ;
                         rdfs:label ?var_label .
@@ -132,7 +139,7 @@ class SPARQLQueryBuilder:
             }}
             """
     @classmethod
-    def build_statistic_query(cls, source: str, values_str: str, graph_repo: str) -> str:
+    def build_statistic_query(cls, source: str, values_str: str) -> str:
         query =  f"""
         {cls.PREFIXES}
         SELECT 
@@ -145,12 +152,14 @@ class SPARQLQueryBuilder:
         (GROUP_CONCAT(DISTINCT STR(?cat_omop_id); SEPARATOR="||") AS ?cat_omop_ids)
         (GROUP_CONCAT(DISTINCT ?_catL; SEPARATOR="||") AS ?all_cat_labels)
         (GROUP_CONCAT(DISTINCT ?_catV; SEPARATOR="||") AS ?all_original_cat_values)
+        (GROUP_CONCAT(DISTINCT ?_catPair; SEPARATOR="||") AS ?all_cat_pairs)
+
         (SAMPLE(?_ordered_code_labels) AS ?code_label)
         (SAMPLE(?_ordered_code_values) AS ?code_value)
         (SAMPLE(?_ordered_omop_ids) AS ?omop_ids)
 
         WHERE {{
-            GRAPH <{graph_repo}/{source}> {{
+            GRAPH <{cls.GRAPHS_URI}/{source}> {{
             VALUES ?identifier {{ {values_str} }}
             ?dataElement a cmeo:data_element ;
                 dc:identifier ?identifier .
@@ -179,8 +188,19 @@ class SPARQLQueryBuilder:
             cmeo:has_value ?_max_v .
         }}
 
+        #unit 
+        OPTIONAL {{
+            ?dataElement obi:has_measurement_unit_label ?unit_node .
+
             OPTIONAL {{
-            ?dataElement obi:has_measurement_unit_label/skos:closeMatch/cmeo:has_value ?_unit_label .
+                ?unit_node skos:closeMatch/cmeo:has_value ?standard_unit .
+                }}
+
+            OPTIONAL {{
+                ?unit_node cmeo:has_value ?raw_unit .
+            }}
+
+            BIND(COALESCE(?standard_unit, ?raw_unit) AS ?_unit_label)
         }}
 
             # Categories
@@ -195,6 +215,8 @@ class SPARQLQueryBuilder:
             OPTIONAL {{ ?cat_code iao:denotes/cmeo:has_value ?cat_omop_id . }}
         
         }}
+        BIND(CONCAT(STR(?_catV), "=", COALESCE(STR(?_catL), STR(?_catV))) AS ?_catPair)
+
         }}
 
             # Codes subquery - OUTSIDE the GRAPH block but joined on ?dataElement
@@ -204,7 +226,7 @@ class SPARQLQueryBuilder:
             (GROUP_CONCAT(?cV; SEPARATOR="||") AS ?_ordered_code_values)
             (GROUP_CONCAT(str(?omop_id); SEPARATOR="||") AS ?_ordered_omop_ids)
             WHERE {{
-            GRAPH <{graph_repo}/{source}> {{
+            GRAPH <{cls.GRAPHS_URI}/{source}> {{
             SELECT ?dataElement ?cL ?cV ?omop_id ?seqNum WHERE {{
             ?dataElement skos:closeMatch ?codeSet .
             ?codeSet ?seqPred ?codeNode .
@@ -231,5 +253,94 @@ class SPARQLQueryBuilder:
         # print(query)
         return query
         
-        
-       
+    @classmethod
+    def build_study_context_query(cls,study_id: str) -> str:
+        study_id =  study_id.replace("_", " ")
+        query =  f"""
+        {cls.PREFIXES}
+                SELECT
+                    ?study_name
+                    (SAMPLE(?design_val)    AS ?study_design)
+                    (SAMPLE(?type_label)    AS ?study_type)
+                    (SAMPLE(?n_val)         AS ?n_participants)
+                    (GROUP_CONCAT(DISTINCT ?morb_label; SEPARATOR="; ") AS ?morbidities)
+                    (SAMPLE(?age_val)       AS ?age_distribution)
+                    (SAMPLE(?loc_val)       AS ?location)
+                    (SAMPLE(?obj_val)       AS ?objective)
+                    (GROUP_CONCAT(DISTINCT ?inc_val; SEPARATOR="; ")    AS ?inclusion_criteria)
+                WHERE {{
+                    GRAPH <{cls.METADATA_GRAPH}> {{
+                
+                        # ── Anchor: study design execution ──
+                        ?sde  a  obi:study_design_execution ;
+                            dc:identifier  ?study_name .
+                        FILTER(LCASE(STR(?study_name)) = LCASE("{study_id}"))
+                
+                        # ── Study design type (e.g., "randomized_controlled_trial") ──
+                        OPTIONAL {{
+                            ?sde  ro:concretizes  ?sd .
+                            ?sd   cmeo:has_value  ?design_val .
+                        }}
+                
+                        # ── Study descriptor (e.g., "interventional") ──
+                        OPTIONAL {{
+                            ?sd   iao:is_about  ?desc .
+                            ?desc a sio:descriptor ;
+                                rdfs:label ?type_label .
+                        }}
+                
+                        # ── Number of participants ──
+                        OPTIONAL {{
+                            ?sd   ro:has_part  ?protocol .
+                            ?protocol  a  obi:protocol .
+                            ?protocol  ro:has_part  ?np .
+                            ?np   a  cmeo:number_of_participants ;
+                                cmeo:has_value  ?n_val .
+                        }}
+                
+                        # ── Population morbidity (key: tells LLM what conditions are guaranteed) ──
+                        OPTIONAL {{
+                            ?sd   ro:has_part  ?protocol2 .
+                            ?protocol2 ro:has_part ?elig .
+                            ?elig a obi:eligibility_criterion .
+                            ?elig ro:is_concretized_by ?enroll .
+                            ?enroll ro:has_output ?pop .
+                            ?pop  ro:has_characteristic ?morb .
+                            ?morb a obi:morbidity ;
+                                rdfs:label ?morb_label .
+                        }}
+                
+                        # ── Age distribution ──
+                        OPTIONAL {{
+                            ?pop  ro:has_characteristic ?age .
+                            ?age  a obi:age_distribution ;
+                                cmeo:has_value ?age_val .
+                        }}
+                
+                        # ── Population location ──
+                        OPTIONAL {{
+                            ?site a bfo:site ;
+                                iao:is_about ?pop ;
+                                cmeo:has_value ?loc_val .
+                        }}
+                
+                        # ── Study objective ──
+                        OPTIONAL {{
+                            ?protocol ro:has_part ?obj .
+                            ?obj a obi:objective_specification ;
+                                cmeo:has_value ?obj_val .
+                        }}
+                
+                        # ── Inclusion criteria (concatenated) ──
+                        OPTIONAL {{
+                            ?elig ro:has_part ?inc_crit .
+                            ?inc_crit a obi:inclusion_criterion .
+                            ?inc_crit ro:has_part ?inc_item .
+                            ?inc_item cmeo:has_value ?inc_val .
+                        }}
+                    }}
+                }}
+                GROUP BY ?study_name
+                """
+        # print(query)
+        return query

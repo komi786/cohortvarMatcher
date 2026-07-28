@@ -13,10 +13,28 @@ from enum import Enum
 from typing import Dict, Any, List, Optional
 from datetime import datetime
 import logging
+import unicodedata
+# import re
 
 _VISIT_MONTH_RE = re.compile(r'(\d+)\s*months?', re.IGNORECASE)
 _VISIT_BASELINE_RE = re.compile(r'baseline|month\s*0|randomization', re.IGNORECASE)
-
+_PRE_BASELINE_MONTH_RE = re.compile(
+    r'(\d+)\s*months?\s*(?:prior to|before)\s*baseline',
+    re.IGNORECASE,
+)
+_BASELINE_PRIOR_MONTH_RE = re.compile(
+    r'baseline.*?(\d+)\s*months?\s*(?:prior|before)',
+    re.IGNORECASE,
+)
+_BETWEEN_BASELINE_VISIT_RE = re.compile(
+    r"\b(?:between|from)\s+(?:baseline|bl)\s+(?:and|to|-)\s+(?:visit\s*)?(\d+)\b",
+    re.IGNORECASE,
+)
+_BASELINE_TO_VISIT_RE = re.compile(
+    r"\b(?:baseline|bl)\s*(?:to|[-–—]|through|until)\s*"
+    r"(?:(?:visit|month|week|day)s?\s*)?(\d+)\b",
+    re.IGNORECASE,
+)
 
 _TEMPORAL_CONTEXT_RE = re.compile(
     r'(?:'
@@ -28,16 +46,44 @@ _TEMPORAL_CONTEXT_RE = re.compile(
         r'|\d+\s*(?:months?|years?|weeks?|days?)'
         r'|(?:visit\s+)?(?:month\s*)?\d+'
         r'|(?:visit\s*|v)\d+'
+
+        # NEW: follow-up expressions after "at"
+        r'|follow[-\s]*up'
+        r'|follow[-\s]*up\s+\d+\s*(?:months?|years?|weeks?|days?)'
+        r'|\d+\s*(?:months?|years?|weeks?|days?)\s+follow[-\s]*up'
       r')'
-      # Pattern B: trailing bare 'Month12' (no 'at' prefix)
-      r'|\s+Month\s*\d+\s*$'
+
+    #   # Pattern B: trailing bare 'Month12' (no 'at' prefix)
+    #   r'|\s+Month\s*\d+\s*$'
+
       # Pattern C: '[N months] prior to randomization' (no 'at' prefix)
       r'|\s+(?:\d+\s*months?\s+)?prior\s+to\s+randomization'
+
+      # NEW Pattern D: bare '{X} month follow-up' without "at"
+      r'|\s+\d+\s*(?:months?|years?|weeks?|days?)\s+follow[-\s]*up\b'
     r')',
     re.IGNORECASE
 )
+
+def is_interval_period(period: str) -> bool:
+    if not period:
+        return False
+
+    p = str(period).lower().strip()
+    return (
+        p.startswith("interval ")
+        or p.startswith("pre-baseline ")
+        or "between" in p
+        or " to " in p
+    )
+def has_real_value(x):
+    if x is None or pd.isna(x):
+        return False
+    s = str(x).strip()
+    return bool(s) and s.lower() not in {"na", "n/a", "nan", "none", "null"}
+
 def clean_label_remove_temporal_context(label: str) -> str:
-    if not label:
+    if not has_real_value(label):
         return label
     
     # Apply repeatedly for double-stamped labels like
@@ -46,7 +92,7 @@ def clean_label_remove_temporal_context(label: str) -> str:
     prev = None
     while prev != cleaned:
         prev = cleaned
-        cleaned = _TEMPORAL_CONTEXT_RE.sub('', cleaned)
+        cleaned = _TEMPORAL_CONTEXT_RE.sub(' ', cleaned)
     
     # Normalize whitespace and strip punctuation artifacts
     cleaned = re.sub(r'\s+', ' ', cleaned).strip().strip(' ,;-')
@@ -128,6 +174,48 @@ def is_identifier_like_variable(row: pd.Series) -> tuple[bool, list[str]]:
             reasons.append(f"{field} contains '{m.group(0)}'")
     return bool(reasons), reasons
 
+
+
+_INSTANCE_PREFIX_RE = re.compile(r"^\s*\d+\s*\.\s*")  # leading event index: "1.", "10."
+
+def canonical_var_key(x, strip_instance_prefix: bool = True) -> str:
+    """Robust key for comparing variable names across CSVs.
+
+    Encoding-invariant (mojibake repaired, diacritics folded) and
+    separator-invariant ('.', '_', '-', whitespace all unified), so names
+    differing only in punctuation or accent encoding collapse to one key.
+    """
+    if pd.isna(x):
+        return ""
+    s = str(x).strip()
+
+    # 1) Repair mojibake deterministically: ftfy if available, else fixed table.
+    try:
+        from ftfy import fix_text
+        s = fix_text(s)
+    except Exception:
+        for bad, good in {
+            "Ã¤": "ä", "Ã¶": "ö", "Ã¼": "ü", "ÃŸ": "ß",
+            "Ã„": "Ä", "Ã–": "Ö", "Ãœ": "Ü",
+            "√§": "ä", "√∂": "ö", "√º": "ü", "â¤": "ä",
+        }.items():
+            s = s.replace(bad, good)
+
+    # 2) Normalise + casefold + strip diacritics (ä->a, é->e): key no longer
+    #    depends on how the accent was encoded on disk.
+    s = unicodedata.normalize("NFKC", s).casefold()
+    s = "".join(ch for ch in unicodedata.normalize("NFKD", s)
+                if not unicodedata.combining(ch))
+
+    # 3) Optional: drop a leading repeated-event index so per-instance source
+    #    variables align with a single base dictionary entry.
+    if strip_instance_prefix:
+        s = _INSTANCE_PREFIX_RE.sub("", s)
+
+    # 4) Unify ALL separators so 'hf.first.diagnosed' == 'hf_first_diagnosed'.
+    s = re.sub(r"[\s._\-]+", "_", s)
+    s = re.sub(r"[^a-z0-9_]+", "", s)
+    return s.strip("_").lower()
 
 
 def is_absolute_vs_percent_dose(src_unit: Optional[str], tgt_unit: Optional[str]) -> bool:
@@ -389,25 +477,55 @@ def extract_age_range(text):
         return min_age, max_age
 
     return None
-def determine_var_uri(cohort_id: str | URIRef, var_name: str,multi_class_categorical: list[str], binary_categorical: list[str], data_type: str = None, unit:str=None) -> tuple[URIRef, str]:
-    print(f"data_type: {data_type}")
-    # cohort_uri = get_cohort_uri(cohort_id)
-    var_uri = get_var_uri(cohort_id, var_name)
-    if var_name in binary_categorical:
-        statistical_type_uri =  URIRef(var_uri + "/binary_class_variable")
-        statistical_type = "binary_class_variable"
+
+# def determine_var_uri(cohort_id: str | URIRef, var_name: str,multi_class_categorical: list[str], binary_categorical: list[str], data_type: str = None, unit:str=None) -> tuple[URIRef, str]:
+#     print(f"data_type: {data_type}")
+#     # cohort_uri = get_cohort_uri(cohort_id)
+#     var_uri = get_var_uri(cohort_id, var_name)
+#     if var_name in binary_categorical:
+#         statistical_type_uri =  URIRef(var_uri + "/binary_class_variable")
+#         statistical_type = "binary_class_variable"
         
-    elif var_name in multi_class_categorical:
-        statistical_type_uri =  URIRef(var_uri + "/multi_class_variable")
-        statistical_type = "multi_class_variable"
-    elif data_type  and data_type in  ["str",] and unit is None:
-        statistical_type_uri =  URIRef(var_uri + "/qualitative_variable")
-        statistical_type = "qualitative_variable"
-    else:
-        # date/time --- dosage/measurement variables variables
-        statistical_type_uri =  URIRef(var_uri + "/continuous_variable")
-        statistical_type = "continuous_variable"
-    return statistical_type_uri,statistical_type
+#     elif var_name in multi_class_categorical:
+#         statistical_type_uri =  URIRef(var_uri + "/multi_class_variable")
+#         statistical_type = "multi_class_variable"
+#     elif data_type  and data_type in  ["str"] and unit is None:
+#         statistical_type_uri =  URIRef(var_uri + "/qualitative_variable")
+#         statistical_type = "qualitative_variable"
+#     else:
+#         # date/time --- dosage/measurement variables variables
+#         statistical_type_uri =  URIRef(var_uri + "/continuous_variable")
+#         statistical_type = "continuous_variable"
+#     return statistical_type_uri,statistical_type
+
+# def  _uri(var_uri,str_label):
+#     return URIRef(var_uri + str_label)
+def determine_var_uri(cohort_id, var_name, multi_class_categorical, binary_categorical,
+                     data_type=None, unit=None, var_label=None):
+    var_uri = get_var_uri(cohort_id, var_name)
+
+    if var_name in binary_categorical:
+        return URIRef(var_uri + "/binary_class_variable"), "binary_class_variable"
+    if var_name in multi_class_categorical:
+        return URIRef(var_uri + "/multi_class_variable"), "multi_class_variable"
+    # Only now does str + no unit mean free-text
+    if data_type in ["str", "string"]:
+        return URIRef(var_uri + "/qualitative_variable"), "qualitative_variable"
+    # NEW: date/time variables → continuous (or a new temporal type)
+    label = (var_label or "").lower()
+    name  = (var_name or "").lower()
+    is_temporal = (
+        data_type == "datetime"
+        or any(tok in name  for tok in ("date", "dat", "dt_", "_dt", "time", "month", "year", "visit"))
+        or any(tok in label for tok in ("date", "time", "month", "year"))
+    )
+    if is_temporal:
+        return URIRef(var_uri + "/continuous_variable"), "continuous_variable"
+    numeric_types = {"int", "integer", "float", "double", "numeric", "real", "decimal"}
+    if data_type in numeric_types or unit is not None:
+        return URIRef(var_uri + "/continuous_variable"), "continuous_variable"
+    return URIRef(var_uri + "/qualitative_variable"), "qualitative_variable"
+    
 
 def parse_post_cordinating_concepts_ids(pipe_str) -> List[int]:
     if pd.isna(pipe_str) or not pipe_str: return []
@@ -439,20 +557,63 @@ def build_concept_text(main_label, composite_labels_str) -> str:
     """String form of the concept signature (kept for callers that expect a string)."""
     return " ".join(build_concept_parts(main_label, composite_labels_str)).strip()
 
+def is_interval_period(period: str) -> bool:
+    if not period:
+        return False
+
+    p = str(period).lower().strip()
+    return (
+        p.startswith("interval ")
+        or p.startswith("pre-baseline ")
+        or "between" in p
+        or " to " in p
+    )
 def extract_visit_period(visit: str) -> str:
     """Normalize visit string to comparable period label."""
     if not visit:
         return ""
-    if _VISIT_BASELINE_RE.search(visit):
+
+    v = str(visit).lower().strip()
+    m = _BETWEEN_BASELINE_VISIT_RE.search(v) or _BASELINE_TO_VISIT_RE.search(v)
+    if m:
+        return f"interval baseline to visit {m.group(1)}"
+    # Must come before generic baseline detection.
+    m = _PRE_BASELINE_MONTH_RE.search(v) or _BASELINE_PRIOR_MONTH_RE.search(v)
+    if m:
+        return f"pre-baseline {m.group(1)} months"
+
+    if _VISIT_BASELINE_RE.search(v):
         return "baseline time"
-    m = _VISIT_MONTH_RE.search(visit)
+
+    m = _VISIT_MONTH_RE.search(v)
     if m:
         return f"follow-up {m.group(1)} months"
-    m2 = re.search(r'month\s*(\d+)', visit, re.IGNORECASE)
+
+    m2 = re.search(r'month\s*(\d+)', v, re.IGNORECASE)
     if m2:
         return f"follow-up {m2.group(1)} months"
-    return visit
 
+    return v
+
+def is_determinate_period(visit: str) -> bool:
+    """Return True iff the visit string resolves to a recognised discrete or
+    interval period.
+
+    A visit that does not resolve — an undetermined label, a date field, or a
+    study-period axis such as 'study days'
+    """
+    if not visit:
+        return False
+    v = str(visit).lower().strip()
+    return bool(
+        _BETWEEN_BASELINE_VISIT_RE.search(v)
+        or _BASELINE_TO_VISIT_RE.search(v)
+        or _PRE_BASELINE_MONTH_RE.search(v)
+        or _BASELINE_PRIOR_MONTH_RE.search(v)
+        or _VISIT_BASELINE_RE.search(v)
+        or _VISIT_MONTH_RE.search(v)
+        or re.search(r'month\s*(\d+)', v, re.IGNORECASE)
+    )
 def extract_tick_values(texts: str) -> List[float]:
     """Extract numeric tick labels from a matplotlib Text() list‑string.
 
@@ -956,7 +1117,7 @@ def parse_joined_string(input_str: str) -> List[str]:
     
     Returns a list of extracted values, handling quoted values and internal pipes correctly.
     """
-    if not input_str or not isinstance(input_str, str):
+    if not has_real_value(input_str) or not isinstance(input_str, str):
         return []
 
     # Case 1: If the string has key=value pattern

@@ -242,7 +242,7 @@ def load_csv_points_dedup(csv_path: str, study_name: str = None,
     concept_groups = {}   # concept_key → accumulated data
     category_seen = {}    # cat_dedup_key → category point dict
 
-    for index, row in df.iterrows():
+    for index, row in enumerate(df.to_dict(orient="records")):
         if pd.isna(row.get('variable name', '')):
             continue
         parts, concept_categories = get_csv_text(row, embedding_mode=embedding_mode)
@@ -386,7 +386,9 @@ def search_in_db(vectordb, embedding_model, query_text,
                  collection_name="studies_metadata",
                  mapping_mode=MappingType.OEH.value,
                  min_threshold=settings.ADAPTIVE_THRESHOLD) -> List[Any]:
-    query_text = clean_label_remove_temporal_context(query_text)
+    query_text = clean_label_remove_temporal_context(query_text).lower()
+ 
+    # print(query_text)
     ck = _cache_key(embedding_model.model_name, query_text)
     query_vector = _embed_cache.get(ck)
     if query_vector is None:

@@ -143,6 +143,9 @@ class OmopGraphNX:
         print(f"forward rel = {rm_fwd}")
         MAPTO_INT = rm_fwd.get("maps to", -1)
         print(f"mapto edges: {MAPTO_INT}")
+        # MAPTO_INTS = frozenset(x for x in (
+        #         rm_fwd.get("maps to"), rm_fwd.get("mapped from")
+        #     ) if x)
         # isa_succ, subs_succ, equiv_bidir = {}, {}, {}
         # maps_to_count = {}  # node → count of outgoing maps_to edges
 
@@ -182,9 +185,7 @@ class OmopGraphNX:
             if rels & EQUIV:
                 equiv_bidir.setdefault(u, set()).add(v)
                 equiv_bidir.setdefault(v, set()).add(u)
-                # Track the outgoing equivalence to detect hubs
                 equiv_targets.setdefault(u, set()).add(v)
-
         self._isa_succ = {k: frozenset(v) for k, v in isa_succ.items()}
         self._subs_succ = {k: frozenset(v) for k, v in subs_succ.items()}
         self._equiv_bidir = {k: frozenset(v) for k, v in equiv_bidir.items()}
@@ -547,6 +548,156 @@ class OmopGraphNX:
             if self.get_node_attr(tid, "concept_name").lower() == start_name:
                 exact.add(tid)
         return exact
+    def _is_blocked_sibling_match(self, src: int, tid: int, allowed: int) -> bool:
+        # First use your existing ancestor-overlap sibling detector
+        # if self.is_sibling_path(src, tid, max_hops=allowed):
+        #     return True
+
+        # Then use explain_path because it already detects mixed is_a + subsumes paths
+        p = self.explain_path(src, tid, max_depth=allowed + 2)
+        # print(f"explain_path= {p}")
+        return p.get("path_type") == "sibling"
+
+    # ══════════════════════════════════════════════════════════════════
+    # Monotone hierarchical path validation
+    # ──────────────────────────────────────────────────────────────────
+    # A genuine SKOS broader/narrower mapping requires a *monotone* chain
+    # of subsumption edges (all in the same direction), possibly inter-
+    # leaved with equivalence rewrites (which are direction-neutral —
+    # see SKOS section 10.4 and OWL is_a transitivity). A path that goes
+    # UP then DOWN (or vice versa) is a *sibling-via-pivot* path and must
+    # not be reported as broader/narrower.
+    #
+    # We also gate every match by *semantic-type compatibility*: a Drug
+    # ingredient cannot legitimately be a "broader/narrower" of a
+    # Procedure/Regimen, even when a single OMOP edge bridges them —
+    # such edges are vocabulary-bridge artifacts of the OMOP CDM, not
+    # genuine subsumption (OMOP CDM v5.4 Vocabulary chapter).
+    # ══════════════════════════════════════════════════════════════════
+
+    # Coarse OMOP "domain kinds" inferred from vocabulary alone. This is
+    # deliberately generic — no hard-coded concept IDs. Vocabularies that
+    # span multiple domains (notably SNOMED CT) fall back to 'unknown',
+    # which the compatibility check treats permissively.
+    _VOCAB_KIND = {
+        # Drug / substance vocabularies
+        "rxnorm": "drug", "rxnorm extension": "drug",
+        "atc": "drug", "ndfrt": "drug", "ndc": "drug",
+        "cvx": "drug", "hcpcs": "drug",
+        # Measurement / lab vocabularies
+        "loinc": "measurement", "ucum": "measurement",
+        # Procedure-only vocabularies
+        "cpt4": "procedure", "icd9proc": "procedure", "icd10pcs": "procedure",
+        # Condition-only vocabularies
+        "icd10": "condition", "icd10cm": "condition", "icd9cm": "condition",
+        # Genomic / other
+        "omop genomic": "measurement",
+    }
+
+    # SNOMED concept_class → kind. SNOMED is multi-domain so we resolve
+    # by concept_class (which OMOP carries as a first-class field).
+    # Keep this list small and generic; unknown classes fall through.
+    _SNOMED_CLASS_KIND = {
+        "clinical finding": "condition",
+        "disorder": "condition",
+        "finding": "condition",
+        "morph abnormality": "condition",
+        "event": "condition",
+        "procedure": "procedure",
+        "regime/therapy": "procedure",
+        "context-dependent": "procedure",
+        "social context": "observation",
+        "observable entity": "measurement",
+        "measurement": "measurement",
+        "lab test": "measurement",
+        "staging / scales": "measurement",
+        "substance": "drug",
+        "pharma/biol product": "drug",
+        "physical object": "device",
+        "qualifier value": "qualifier",
+        "body structure": "anatomy",
+    }
+
+    def _concept_kind(self, cid: int) -> str:
+        """Return a coarse OMOP-domain category for *cid*.
+
+        Categories: drug, condition, measurement, procedure, observation,
+        device, anatomy, qualifier, unknown.
+
+        Resolution order:
+          1. Vocabulary-only rule (e.g. RxNorm → drug, LOINC → measurement).
+          2. SNOMED/multi-domain vocab → look up concept_class.
+          3. Fallback to 'unknown' (permissive at the compatibility gate).
+        """
+        v = self.get_node_attr(cid, "vocabulary").lower().strip()
+        v = VOCAB_ALIASES.get(v, v)
+        kind = self._VOCAB_KIND.get(v)
+        if kind:
+            return kind
+        cc = self.get_node_attr(cid, "concept_class").lower().strip()
+        return self._SNOMED_CLASS_KIND.get(cc, "unknown")
+
+    def _is_compatible_kind(self, src: int, tgt: int) -> bool:
+        """True iff src and tgt are in compatible OMOP domain categories.
+
+        Permissive on 'unknown' (missing/unmapped metadata should not block
+        legitimate matches). A genuine cross-vocab hierarchical mapping
+        (e.g. RxNorm drug → ATC drug class) is always within-kind once
+        both sides are resolved.
+        """
+        ks = self._concept_kind(src)
+        kt = self._concept_kind(tgt)
+        if ks == "unknown" or kt == "unknown":
+            return True
+        return ks == kt
+
+    def _monotone_hierarchical_depth(
+        self, src: int, tgt: int, direction: str, max_depth: int
+    ) -> int:
+        """Shortest *monotone* hierarchical hop-count from src to tgt.
+
+        A monotone path uses **only** is_a edges (direction='up') OR
+        **only** subsumes edges (direction='down'), with equivalence
+        edges allowed *anywhere* as direction-neutral rewrites
+        (equivalence does not count toward depth).
+
+        Returns the number of hierarchical hops, or ``-1`` if no monotone
+        path of length ≤ max_depth exists.
+
+        This is a layered BFS on the quotient graph G / ≡ where each
+        equivalence class is contracted to a single node, eliminating
+        sibling-via-pivot false positives by construction.
+        """
+        if src == tgt or max_depth <= 0:
+            return 0 if src == tgt else -1
+        adj = self._isa_succ if direction == "up" else self._subs_succ
+
+        # Frontier of *equivalence-closed* layers. layer_k = all nodes
+        # reachable from src using exactly k hierarchical hops (with
+        # arbitrary equiv hops between them).
+        eq = self._equiv_closure(src)
+        if tgt in eq:
+            return 0  # equivalent, distance 0 — caller handles separately
+        visited = set(eq)
+        frontier = set(eq)
+        for depth in range(1, max_depth + 1):
+            next_frontier = set()
+            for u in frontier:
+                for v in adj.get(u, ()):
+                    if v in visited:
+                        continue
+                    # Expand v through equivalence (free hops, no direction change).
+                    v_eq = self._equiv_closure(v)
+                    if tgt in v_eq:
+                        return depth
+                    new = v_eq - visited
+                    if new:
+                        visited |= new
+                        next_frontier |= new
+            if not next_frontier:
+                return -1
+            frontier = next_frontier
+        return -1
 
     def source_to_targets_paths(self, start, target_ids, max_depth=3, checking_method='omop'):
         try:
@@ -588,42 +739,74 @@ class OmopGraphNX:
                         results.append((tid, MappingRelation.SymbolicCloseMatch.value))
 
         remaining = resolved - handled
-        if remaining:
-       
+        if not remaining:
+            return results
 
-            ancestors   = self._bfs_dir(eq, max_depth + 2, 'up')
-            descendants = self._bfs_dir(eq, max_depth + 2, 'down')
+        for tid in remaining:
+            vg = self.get_node_attr(tid, "vocabulary").lower()
+            allowed = self._allowed_depth(vs, vg, max_depth)
 
-            for tid in remaining:
-                vg = self.get_node_attr(tid, "vocabulary").lower()
-                allowed = self._allowed_depth(vs, vg, max_depth)
+            # ── Gate 1: semantic-type / domain compatibility ──
+            # A genuine SKOS broader/narrower mapping requires both
+            # concepts to share an OMOP domain kind. Cross-domain
+            # edges in the OMOP graph (e.g. Drug→Procedure) are
+            # vocabulary-bridge artifacts, not real subsumption.
+            if not self._is_compatible_kind(start, tid):
+                continue
 
-                # Forward: from src, walk hierarchy
-                if tid in ancestors and ancestors[tid] <= allowed:
-                    results.append((tid, MappingRelation.SymbolicBroadMatch.value))
-                    continue
-                if tid in descendants and descendants[tid] <= allowed:
-                    results.append((tid, MappingRelation.SymbolicNarrowMatch.value))
-                    continue
+            # ── Gate 2: monotone hierarchical path ──
+            # Try src→tgt going UP (tgt is ancestor → broader match).
+            up_hops = self._monotone_hierarchical_depth(
+                start, tid, direction="up", max_depth=allowed
+            )
+            if up_hops > 0:
+                # Final sibling sanity-check on the actual annotated path.
+                if not self._is_blocked_sibling_match(start, tid, allowed):
+                    results.append(
+                        (tid, MappingRelation.SymbolicBroadMatch.value)
+                    )
+                continue
 
-                # Reverse: from tgt, walk hierarchy back into src's equiv closure
-                tgt_eq = self._equiv_closure(tid)
-                tgt_anc = self._bfs_dir(tgt_eq, allowed, 'up')      # tgt is descendant of src?
-                hit = next(((n, tgt_anc[n]) for n in tgt_anc if n in eq), None)
-                if hit is not None:
-                    results.append((tid, MappingRelation.SymbolicNarrowMatch.value))
-                    continue
+            # Try src→tgt going DOWN (tgt is descendant → narrower match).
+            down_hops = self._monotone_hierarchical_depth(
+                start, tid, direction="down", max_depth=allowed
+            )
+            if down_hops > 0:
+                if not self._is_blocked_sibling_match(start, tid, allowed):
+                    results.append(
+                        (tid, MappingRelation.SymbolicNarrowMatch.value)
+                    )
+                continue
 
-                tgt_desc = self._bfs_dir(tgt_eq, allowed, 'down')   # tgt is ancestor of src?
-                hit = next(((n, tgt_desc[n]) for n in tgt_desc if n in eq), None)
-                if hit is not None:
-                    results.append((tid, MappingRelation.SymbolicBroadMatch.value))
-                    continue
+            # ── Gate 3: reverse-direction monotone proof ──
+            # If tgt→src goes UP monotonically, then src is an ancestor
+            # of tgt, i.e. tgt is a NARROWER match for src. Equivalently
+            # for tgt→src DOWN ⇒ tgt is BROADER. This catches cross-
+            # vocab cases the forward search misses when equivalence
+            # bridging happens deep in tgt's hierarchy.
+            up_rev = self._monotone_hierarchical_depth(
+                tid, start, direction="up", max_depth=allowed
+            )
+            if up_rev > 0:
+                if not self._is_blocked_sibling_match(start, tid, allowed):
+                    results.append(
+                        (tid, MappingRelation.SymbolicNarrowMatch.value)
+                    )
+                continue
 
-                # Fallback (mixed paths, sibling-via-pivot, etc.)
-                dists = self._sssp_lengths(start, cutoff=max_depth + 2)
-                if tid in dists and dists[tid] <= allowed and not self.is_sibling_path(start, tid):
-                    results.append((tid, MappingRelation.SymbolicCloseMatch.value))
+            down_rev = self._monotone_hierarchical_depth(
+                tid, start, direction="down", max_depth=allowed
+            )
+            if down_rev > 0:
+                if not self._is_blocked_sibling_match(start, tid, allowed):
+                    results.append(
+                        (tid, MappingRelation.SymbolicBroadMatch.value)
+                    )
+                continue
+            # No monotone path within budget → not a hierarchical match.
+            # We intentionally drop the previous SSSP-based fallback:
+            # any path that requires a non-monotone (V-shaped) traversal
+            # is a sibling/cousin relationship, not broader/narrower.
         return results
 
     # ══════════════════════════════════════════════════════════════════
@@ -1011,7 +1194,12 @@ class OmopGraphNX:
                 path, edges = _annotate_path(raw)
                 has_up = any(r == "is a" for _, _, r in edges)
                 has_down = any(r == "subsumes" for _, _, r in edges)
-                ptype = "sibling" if (has_up and has_down) else "graph_traversal"
+                has_mapto = any(r == "maps to" for _, _, r in edges)
+                has_mapfrom = any(r == "mapped from" for _, _, r in edges)
+
+                ptype = "sibling" if (
+                    (has_up and has_down) or (has_mapto and has_mapfrom)
+                ) else "graph_traversal"
                 pivot = ""
                 if ptype == "sibling":
                     for i, (_, v, r) in enumerate(edges):
@@ -1125,7 +1313,7 @@ def run_pair_tests(omop_nx):
         (4248525, 4060832, True,
          "lying systolic BP vs systolic BP (parent-child)"),
         (4248525, 4326744, False,
-         "lying systolic BP vs blood pressure (grandparent-child)"),
+         "lying systolic BP vs blood pressure (too broad"),
 
         # ── Drug cross-vocab: unrelated vs related ──
         (4306892, 21601810, False,
@@ -1177,7 +1365,16 @@ def run_pair_tests(omop_nx):
          (3000963,3009744, False,
          "hemoglobin [mass/volume] in blood vs mchc [mass/volume] by automated count"),
          (3005456,3023103, True,
-         "Potassium [Moles/volume] in Serum or Plasma vs Potassium [Moles/volume] in Blood")
+         "Potassium [Moles/volume] in Serum or Plasma vs Potassium [Moles/volume] in Blood"),
+         (21601665,1332418, False,
+         "beta blocking agents vs amlodipine"),
+           (1326303,1243623, False,
+         "digoxin vs inotropic therapy"),
+         (3001308,3007070, False, "ldl vs hdl"),
+         (21601665,1318853,False,
+         "beta blocking agents,nifedipine"),
+         (970250,21601517, 
+         False, "spironolactone vs diuretics")
     ]
 
     passed = failed = 0
@@ -1216,16 +1413,19 @@ def run_pair_tests(omop_nx):
 if __name__ == "__main__":
     start_time = time.time()
     csv_path = "/Users/komalgilani/phd_projects/CohortVarLinker/data/concept_relationship_enriched.csv"
-
     omop_nx = OmopGraphNX(csv_path, output_file='graph_nx.pkl.gz')
-
-
     run_pair_tests(omop_nx)
-# #     p = omop_nx.explain_path(21600961, 3655005)
-# #     print(p['path'])        # [(21600961, name, vocab), (X, name, vocab), (3655005, name, vocab)]
-# #     print(omop_nx.get_edge_rels(p['path'][1][0], 3655005))   # every relation stored on X→365500
+    p = omop_nx.explain_path(970250, 21601517, max_depth=4)
+    print(p['explanation'])
+    for u, v, rel in p['edges']:
+        print(f"  {u} ({omop_nx.get_node_attr(u,'name')}, {omop_nx.get_node_attr(u,'vocabulary')}) "
+            f"--{rel}--> "
+            f"{v} ({omop_nx.get_node_attr(v,'name')}, {omop_nx.get_node_attr(v,'vocabulary')})")
+    # 970250,21601517, 
+#     print(p['path'])        # [(21600961, name, vocab), (X, name, vocab), (3655005, name, vocab)]
+#     print(omop_nx.get_edge_rels(p['path'][1][0], 3655005))   # every relation stored on X→365500
 
-# #     eq = omop_nx._equiv_closure(778939)
-# #     print(eq)
+#     eq = omop_nx._equiv_closure(778939)
+#     print(eq)
    
 

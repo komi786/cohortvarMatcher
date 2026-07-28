@@ -7,70 +7,58 @@ from sklearn.metrics import (
     f1_score, classification_report, confusion_matrix, 
     precision_recall_fscore_support, accuracy_score
 )
+import re
 import os
 import warnings
 warnings.filterwarnings('ignore')
-from llm.utils import clean_label_remove_temporal_context, setup_logger
+from llm.utils import clean_label_remove_temporal_context, setup_logger, determine_var_uri , canonical_var_key
 
 logger = setup_logger('eval.log')
 
-import unicodedata
-import re
+# import unicodedata
 
 
-def canonical_var_key(x) -> str:
-    """
-    Robust key for comparing variable names across CSVs.
+_INSTANCE_PREFIX_RE = re.compile(r"^\s*\d+\s*\.\s*")  # leading event index: "1.", "10."
 
-    Handles:
-    - normal unicode accents: harnsäure -> harnsaure
-    - UTF-8 read as cp1252: harnsÃ¤ure -> harnsaure
-    - UTF-8 read as mac_roman: harns√§ure -> harnsaure
-    - punctuation/spacing differences
-    """
-    if pd.isna(x):
-        return ""
+# def canonical_var_key(x, strip_instance_prefix: bool = True) -> str:
+#     """Robust key for comparing variable names across CSVs.""
 
-    s = str(x).strip()
+#     Encoding-invariant (mojibake repaired, diacritics folded) and
+#     separator-invariant ('.', '_', '-', whitespace all unified), so names
+#     differing only in punctuation or accent encoding collapse to one key.
+#     """
+#     if pd.isna(x):
+#         return ""
+#     s = str(x).strip()
 
-    # Common mojibake repairs
-    replacements = {
-        "Ã¤": "ä", "Ã¶": "ö", "Ã¼": "ü", "ÃŸ": "ß",
-        "Ã„": "Ä", "Ã–": "Ö", "Ãœ": "Ü",
-        "√§": "ä", "√∂": "ö", "√º": "ü",
-        "?â¤": "ä", "â¤": "ä",
-    }
-    for bad, good in replacements.items():
-        s = s.replace(bad, good)
+#     # 1) Repair mojibake deterministically: ftfy if available, else fixed table.
+#     try:
+#         from ftfy import fix_text
+#         s = fix_text(s)
+#     except Exception:
+#         for bad, good in {
+#             "Ã¤": "ä", "Ã¶": "ö", "Ã¼": "ü", "ÃŸ": "ß",
+#             "Ã„": "Ä", "Ã–": "Ö", "Ãœ": "Ü",
+#             "√§": "ä", "√∂": "ö", "√º": "ü", "â¤": "ä",
+#         }.items():
+#             s = s.replace(bad, good)
 
-    # Try reversing MacRoman mojibake, e.g. harns√§ure -> harnsäure
-    try:
-        repaired = s.encode("mac_roman").decode("utf-8")
-        if "�" not in repaired:
-            s = repaired
-    except Exception:
-        pass
+#     # 2) Normalise + casefold + strip diacritics (ä->a, é->e): key no longer
+#     #    depends on how the accent was encoded on disk.
+#     s = unicodedata.normalize("NFKC", s).casefold()
+#     s = "".join(ch for ch in unicodedata.normalize("NFKD", s)
+#                 if not unicodedata.combining(ch))
 
-    # Optional ftfy support if installed
-    try:
-        from ftfy import fix_text
-        s = fix_text(s)
-    except Exception:
-        pass
+#     # 3) Optional: drop a leading repeated-event index so per-instance source
+#     #    variables align with a single base dictionary entry.
+#     if strip_instance_prefix:
+#         s = _INSTANCE_PREFIX_RE.sub("", s)
 
-    s = unicodedata.normalize("NFKC", s).casefold().strip()
+#     # 4) Unify ALL separators so 'hf.first.diagnosed' == 'hf_first_diagnosed'.
+#     s = re.sub(r"[\s._\-]+", "_", s)
+#     s = re.sub(r"[^a-z0-9_]+", "", s)
+#     return s.strip("_").lower()
 
-    # Remove accents: ä -> a, é -> e
-    s = "".join(
-        ch for ch in unicodedata.normalize("NFKD", s)
-        if not unicodedata.combining(ch)
-    )
-
-    # Normalize separators
-    s = re.sub(r"\s+", "_", s)
-    s = re.sub(r"[^a-z0-9_]+", "", s)
-
-    return s
 
 # Set style for all plots
 PALETTE = {
@@ -104,7 +92,6 @@ MODE_COLORS = {
     'OED': '#D4764E',   # terracotta
 }
 
-
 def _mode_color(mode: str) -> str:
     """Return a consistent color for a given mode, with fallback."""
     return MODE_COLORS.get(mode, PALETTE['neutral'])
@@ -127,11 +114,302 @@ plt.rcParams.update({
 sns.set_palette([PALETTE['primary'], PALETTE['secondary'], PALETTE['metric_1'],
                  PALETTE['accent'], PALETTE['metric_3']])
 
+STUDY_FOLDER_ALIASES = {
+    'gissi-hf_outcomes': 'gissi-hf',
+}
+
+# Evaluation must stay at the annotated variable-pair level.
+# Dictionary labels are stored only as auxiliary/debug columns.
+EVAL_KEY_COLS = ["source_study", "target_study", "src_var", "tgt_var"]
+
+def _normalise_study_name(x) -> str:
+    return str(x).strip().lower()
+
+def ensure_display_columns(df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Ensure human-readable display columns exist.
+    Variable-level evaluation uses src_var/tgt_var as keys;
+    src_var_orig/tgt_var_orig are only for output display.
+    """
+    d = df.copy()
+
+    if "src_var_orig" not in d.columns:
+        if "src_var_raw" in d.columns:
+            d["src_var_orig"] = d["src_var_raw"]
+        else:
+            d["src_var_orig"] = d["src_var"]
+
+    if "tgt_var_orig" not in d.columns:
+        if "tgt_var_raw" in d.columns:
+            d["tgt_var_orig"] = d["tgt_var_raw"]
+        else:
+            d["tgt_var_orig"] = d["tgt_var"]
+
+    return d
+
+def _require_columns(df: pd.DataFrame, cols: list[str], frame_name: str) -> None:
+    missing = [c for c in cols if c not in df.columns]
+    if missing:
+        raise KeyError(f"{frame_name} is missing required column(s): {missing}")
+
+def _dedupe_eval_keys(df: pd.DataFrame, label_col: str | None = None, frame_name: str = "dataframe") -> pd.DataFrame:
+    """Keep one row per variable-level evaluation key and log true key duplicates.
+
+    This is not label-level collapsing. It only protects metric merges from
+    accidental repeated rows with the same source/target study and raw variable key.
+    """
+    _require_columns(df, EVAL_KEY_COLS, frame_name)
+    dup_mask = df.duplicated(EVAL_KEY_COLS, keep=False)
+    if dup_mask.any():
+        log_cols = [c for c in [
+            "source_study", "target_study", "src_var_raw", "tgt_var_raw",
+            "src_var", "tgt_var", label_col, "domain"
+        ] if c and c in df.columns]
+        logger.warning(
+            f"{frame_name}: found {int(dup_mask.sum())} rows sharing the same "
+            f"variable-level evaluation key {EVAL_KEY_COLS}; keeping the first row per key."
+        )
+        logger.warning("Duplicate variable-level rows:\n" + df.loc[dup_mask, log_cols].to_string(index=False))
+    return df.drop_duplicates(EVAL_KEY_COLS, keep="first").reset_index(drop=True)
+
+def normalize_text_value(x):
+    if pd.isna(x):
+        return ""
+    return str(x).strip().lower()
+
+
+def split_joined_values(x):
+    """
+    Handles category strings like:
+    - 'yes||no'
+    - '0||1'
+    - '0=no||1=yes'
+    - ''
+    """
+    x = normalize_text_value(x)
+
+    if not x or x in {"nan", "none", "null", "[]"}:
+        return []
+
+    # Support both || and | just in case
+    if "||" in x:
+        parts = x.split("||")
+    elif "|" in x:
+        parts = x.split("|")
+    else:
+        parts = [x]
+
+    cleaned = []
+    for p in parts:
+        p = p.strip()
+        if not p:
+            continue
+
+        # If encoded as 0=no, keep the label part if available
+        if "=" in p:
+            left, right = p.split("=", 1)
+            p = right.strip() if right.strip() else left.strip()
+
+        cleaned.append(p)
+
+    return cleaned
+
+
+def canonical_category_set(x):
+    values = split_joined_values(x)
+
+    bool_aliases = {
+        "yes": "1", "true": "1", "y": "1", "positive": "1", "present": "1", "on": "1",
+        "no": "0", "false": "0", "n": "0", "negative": "0", "absent": "0", "off": "0",
+    }
+
+    return {bool_aliases.get(v.strip().lower(), v.strip().lower()) for v in values}
+
+
+def infer_variable_structure(vartype, categories_labels=None, original_categories=None):
+    """
+    Infer statistical/structural variable type from raw datatype and categories.
+
+    Returns:
+    - continuous
+    - binary
+    - multiclass
+    - qualitative
+    - datetime
+    - unknown
+    """
+    vt = normalize_text_value(vartype)
+
+    cat_set = canonical_category_set(categories_labels)
+    if not cat_set:
+        cat_set = canonical_category_set(original_categories)
+
+    n_cats = len(cat_set)
+
+    # Datetime variables are structurally different from continuous measurements.
+    if vt in {"datetime", "date", "timestamp"}:
+        return "datetime"
+
+    # Numeric variables can be continuous or encoded categorical.
+    if vt in {"float", "float64", "double", "int", "int64", "integer", "numeric"}:
+        if n_cats == 0:
+            return "continuous"
+        if n_cats == 2:
+            return "binary"
+        if n_cats > 2:
+            return "multiclass"
+        return "continuous"
+
+    # String variables can be categorical or free text.
+    if vt in {"str", "string", "object", "text"}:
+        if n_cats == 2:
+            return "binary"
+        if n_cats > 2:
+            return "multiclass"
+        return "qualitative"
+
+    # Fallback if vartype is missing but categories exist.
+    if n_cats == 2:
+        return "binary"
+    if n_cats > 2:
+        return "multiclass"
+
+    return "unknown"
+
+
+# def normalize_text_value(x):
+#     if pd.isna(x):
+#         return ""
+#     return str(x).strip().lower()
+
+
+def has_categories(x):
+    x = normalize_text_value(x)
+    return bool(x and x not in {"nan", "none", "null", "[]"})
+
+
+def normalize_var_type(x):
+    x = normalize_text_value(x)
+
+    aliases = {
+        "continuous_variable": "continuous",
+        "continuous": "continuous",
+        "numeric": "continuous",
+        "float": "continuous",
+        "integer": "continuous",
+
+        "binary_class_variable": "binary",
+        "binary": "binary",
+        "boolean": "binary",
+
+        "multi_class_variable": "multiclass",
+        "multiclass": "multiclass",
+        "multi-class": "multiclass",
+        "categorical": "multiclass",
+
+        "qualitative_variable": "qualitative",
+        "qualitative": "qualitative",
+    }
+
+    return aliases.get(x, x)
+
+
+def same_category_values(src_vals, tgt_vals):
+    src = normalize_text_value(src_vals)
+    tgt = normalize_text_value(tgt_vals)
+
+    if not src or not tgt:
+        return False
+
+    src_set = {v.strip().lower() for v in src.split("||") if v.strip()}
+    tgt_set = {v.strip().lower() for v in tgt.split("||") if v.strip()}
+
+    bool_aliases = {
+        "yes": "1", "true": "1", "y": "1", "positive": "1", "present": "1",
+        "no": "0", "false": "0", "n": "0", "negative": "0", "absent": "0",
+    }
+
+    src_set = {bool_aliases.get(v, v) for v in src_set}
+    tgt_set = {bool_aliases.get(v, v) for v in tgt_set}
+
+    return src_set == tgt_set
+
+
+def derive_structure_pattern(row):
+    s_type = normalize_var_type(row.get("source_type", ""))
+    t_type = normalize_var_type(row.get("target_type", ""))
+
+    s_unit = normalize_text_value(row.get("source_unit", ""))
+    t_unit = normalize_text_value(row.get("target_unit", ""))
+
+    s_cats = row.get("source_categories_labels", "")
+    t_cats = row.get("target_categories_labels", "")
+
+    s_visit = normalize_text_value(row.get("source_visit", ""))
+    t_visit = normalize_text_value(row.get("target_visit", ""))
+
+    relation = normalize_text_value(row.get("mapping_relation", ""))
+    source_context = normalize_text_value(row.get("source_composite_code_labels", ""))
+    target_context = normalize_text_value(row.get("target_composite_code_labels", ""))
+
+    # 1. Temporal mismatch should be captured separately because it affects harmonisation.
+    if s_visit and t_visit and s_visit != t_visit:
+        return "temporal-context mismatch"
+
+    # 2. Medication class-member / hierarchy relations.
+    if relation in {"symbolic:broadmatch", "symbolic:narrowmatch"}:
+        return "hierarchical concept relation"
+
+    # 3. Context asymmetry.
+    if bool(source_context) != bool(target_context):
+        return "context-asymmetric pair"
+
+    # 4. Continuous--continuous.
+    if s_type == "continuous" and t_type == "continuous":
+        if s_unit and t_unit:
+            if s_unit == t_unit:
+                return "continuous--continuous, same unit"
+            return "continuous--continuous, different unit"
+        if bool(s_unit) != bool(t_unit):
+            return "continuous--continuous, one-sided unit"
+        return "continuous--continuous, no unit"
+
+    # 5. Binary--binary.
+    if s_type == "binary" and t_type == "binary":
+        if same_category_values(s_cats, t_cats):
+            return "binary--binary, equivalent value set"
+        return "binary--binary, different value encoding"
+
+    # 6. Binary--multiclass / multiclass--binary.
+    if {s_type, t_type} == {"binary", "multiclass"}:
+        return "binary--multiclass granularity mismatch"
+
+    # 7. Multiclass--multiclass.
+    if s_type == "multiclass" and t_type == "multiclass":
+        if same_category_values(s_cats, t_cats):
+            return "multiclass--multiclass, equivalent value set"
+        return "multiclass--multiclass, different value set"
+
+    # 8. Continuous--binary.
+    if {s_type, t_type} == {"continuous", "binary"}:
+        return "continuous--binary transformation"
+
+    # 9. Continuous--multiclass.
+    if {s_type, t_type} == {"continuous", "multiclass"}:
+        return "continuous--multiclass transformation"
+
+    # 10. Fallback.
+    if s_type and t_type:
+        return f"{s_type}--{t_type}"
+
+    return "unclassified structure"
+    
 def load_dictionaries(cohorts_dir: str) -> dict[str, dict[str, str]]:
     """
     cohorts_dir/
       time-chf/*.csv
-      aric/*.csv
+      gissi-hf/*.csv
+      gissi-hf_outcomes/*.csv   # merged into 'gissi-hf'
       ...
     Each CSV must have columns 'variablename' and 'variablelabel' (case-insensitive).
     Returns: {study_name_lower: {variablename_lower: canonical_label}}
@@ -140,7 +418,7 @@ def load_dictionaries(cohorts_dir: str) -> dict[str, dict[str, str]]:
     if not os.path.isdir(cohorts_dir):
         raise FileNotFoundError(f"Cohorts directory not found: {cohorts_dir}")
 
-    maps = {}
+    maps: dict[str, dict[str, str]] = {}
     for entry in sorted(os.listdir(cohorts_dir)):
         study_dir = os.path.join(cohorts_dir, entry)
         if not os.path.isdir(study_dir) or entry.startswith('.'):
@@ -163,39 +441,71 @@ def load_dictionaries(cohorts_dir: str) -> dict[str, dict[str, str]]:
             raise ValueError(f"[{entry}] {path}: expected 'variablename' and 'variablelabel', "
                              f"got {list(df.columns)}")
 
-        m = {}
+        # Route aliased folders onto their canonical study key and MERGE
+        # (do not overwrite) so split dictionaries accumulate into one map.
+        study_key = STUDY_FOLDER_ALIASES.get(entry.lower(), entry.lower())
+        m = maps.setdefault(study_key, {})
+
+        added = 0
         for _, r in df[['variablename', 'variablelabel']].iterrows():
             name = canonical_var_key(r['variablename'])
             raw   = str(r['variablelabel'] or '').strip().lower()
             label = clean_label_remove_temporal_context(raw) or name
+            label = label.replace(" ", "_")
             if name in m and m[name] != label:
-                logger.warning(f"[{entry}] label conflict for '{name}': '{m[name]}' vs '{label}' — keeping first")
+                logger.warning(f"[{entry}] label conflict for '{name}': "
+                               f"'{m[name]}' vs '{label}' — keeping first")
             else:
+                if name not in m:
+                    added += 1
                 m.setdefault(name, label)
 
-        maps[entry.lower()] = m
-        logger.info(f"[{entry}] loaded {len(m)} entries from {path}")
+        logger.info(f"[{entry}] loaded {added} entries from {path} "
+                    f"→ study key '{study_key}' (total {len(m)})")
 
     if not maps:
         raise FileNotFoundError(f"No study dictionaries found under {cohorts_dir}")
     return maps
-
-
-def _build_name_to_canonical_label(pred_df: pd.DataFrame) -> tuple[dict, dict]:
-    """From prediction file, build {src_name: canonical_label}, {tgt_name: canonical_label}."""
-    s_map, t_map = {}, {}
-    for _, r in pred_df.iterrows():
-        s, sl = str(r['source']).strip().lower(), clean_label_remove_temporal_context(str(r.get('source_label', '')).strip().lower())
-        t, tl = str(r['target']).strip().lower(), clean_label_remove_temporal_context(str(r.get('target_label', '')).strip().lower())
-        # first-write-wins; optional: warn on conflict
-        s_map.setdefault(s, sl or s)
-        t_map.setdefault(t, tl or t)
-    return s_map, t_map
     
+
+
+def add_label_keys(df: pd.DataFrame, s_map: dict, t_map: dict) -> pd.DataFrame:
+    """Attach dictionary-label keys without changing the evaluation identity.
+
+    src_var/tgt_var remain canonical variable-name keys. src_label_key/tgt_label_key
+    are only for debugging, reporting label-level collisions, or optional concept-level
+    analyses.
+    """
+    d = df.copy()
+    d["src_label_key"] = d["src_var"].map(lambda x: s_map.get(x, x))
+    d["tgt_label_key"] = d["tgt_var"].map(lambda x: t_map.get(x, x))
+    return d
+
+
+def log_label_level_collisions(df: pd.DataFrame, label_col: str, frame_name: str) -> None:
+    """Log label-level collisions without dropping rows."""
+    keys = [c for c in ["source_study", "target_study", "src_label_key", "tgt_label_key"] if c in df.columns]
+    if not keys:
+        return
+    dup_mask = df.duplicated(keys, keep=False)
+    if not dup_mask.any():
+        return
+    log_cols = [c for c in [
+        "source_study", "target_study", "src_var_raw", "tgt_var_raw",
+        "src_var", "tgt_var", "src_label_key", "tgt_label_key", label_col, "domain"
+    ] if c in df.columns]
+    logger.warning(
+        f"{frame_name}: found {int(dup_mask.sum())} rows involved in label-level collisions "
+        f"after dictionary-label mapping. These rows are preserved for variable-level evaluation. "
+        f"Collision keys={keys}; label_col='{label_col}'."
+    )
+    # logger.warning("Label-level collision rows preserved:\n" + df.loc[dup_mask, log_cols].to_string(index=False))
+
+
 def _collapse_by_label(df, label_col, s_map, t_map, rank=None):
     rank = rank or {
         'identical match': 0,
-        'complete match': 1,
+        # 'complete match': 1,
         'compatible match': 1,
         'partial match': 2,
         'not applicable': 3
@@ -207,30 +517,111 @@ def _collapse_by_label(df, label_col, s_map, t_map, rank=None):
         _rank=df[label_col].map(rank).fillna(99),
     )
 
+    # Sort first so the best-ranked harmonization label is kept.
+    d_sorted = d.sort_values('_rank', kind='mergesort').copy()
+
+    # Important: collapse inside each study pair, not globally across all studies.
+    collapse_keys = [
+        c for c in [
+            'source_study',
+            'target_study',
+            'src_key',
+            'tgt_key'
+        ]
+        if c in d_sorted.columns
+    ]
+
+    dup_mask = d_sorted.duplicated(collapse_keys, keep='first')
+    skipped = d_sorted.loc[dup_mask].copy()
+    kept = d_sorted.loc[~dup_mask].copy()
+
+    if not skipped.empty:
+        log_cols = [
+            c for c in [
+                'source_study',
+                'target_study',
+                'src_var_raw',
+                'tgt_var_raw',
+                'src_var',
+                'tgt_var',
+                'src_key',
+                'tgt_key',
+                label_col,
+                '_rank',
+                'domain'
+            ]
+            if c in skipped.columns
+        ]
+
+        logger.warning(
+            f"_collapse_by_label found {len(skipped)} label-level collisions after dictionary-label mapping. "
+            f"These are not necessarily duplicate raw GT/prediction variable pairs. "
+            f"Collision keys={collapse_keys}; label_col='{label_col}'."
+        )
+        logger.warning(
+            "Skipped collapsed rows:\n"
+            + skipped[log_cols].to_string(index=False)
+        )
+
+        collapsed_summary = (
+            d_sorted
+            .groupby(collapse_keys)
+            .size()
+            .reset_index(name='n_rows_before_collapse')
+            .query("n_rows_before_collapse > 1")
+            .sort_values('n_rows_before_collapse', ascending=False)
+        )
+
+        logger.warning(
+    "Label-level collision summary after dictionary-label mapping:\n"
+    + collapsed_summary.to_string(index=False)
+)
+
     d = (
-        d.sort_values('_rank', kind='mergesort')
-         .drop_duplicates(['src_key', 'tgt_key'], keep='first')
-         .drop(columns='_rank')
-         .rename(columns={
-             'src_var': 'src_var_orig',
-             'tgt_var': 'tgt_var_orig',
-             'src_key': 'src_var',
-             'tgt_key': 'tgt_var'
-         })
-         .reset_index(drop=True)
+        kept
+        .drop(columns='_rank')
+        .rename(columns={
+            'src_var': 'src_var_orig',
+            'tgt_var': 'tgt_var_orig',
+            'src_key': 'src_var',
+            'tgt_key': 'tgt_var'
+        })
+        .reset_index(drop=True)
     )
 
-    # Use raw display names if present
+    # Use raw display names if present.
     if 'src_var_raw' in d.columns:
         d['src_var_orig'] = d['src_var_raw']
     if 'tgt_var_raw' in d.columns:
         d['tgt_var_orig'] = d['tgt_var_raw']
 
-    return d[['src_var', 'tgt_var', 'src_var_orig', 'tgt_var_orig', label_col]]
+    base_cols = ['src_var', 'tgt_var', 'src_var_orig', 'tgt_var_orig', label_col]
+
+    extra_cols = [
+        c for c in [
+            'source_study',
+            'target_study',
+            'domain'
+        ]
+        if c in d.columns
+    ]
+
+    return d[base_cols + extra_cols]
+
+
+
+
 
 def load_predictions(file_path: str, s_map: dict, t_map: dict,
+                     source_study: str | None = None,
+                     target_study: str | None = None,
                      collapse_temporal: bool = True) -> pd.DataFrame:
-    """Read predictions. s_map/t_map come from study dictionaries (authoritative)."""
+    """Read predictions at variable-pair level.
+
+    collapse_temporal is kept for backwards-compatible calls but no longer
+    triggers dictionary-label collapse. Main evaluation must use
+    source_study + target_study + canonical source variable + canonical target variable.
+    """
     for enc in ('utf-8-sig', 'utf-8', 'latin-1', 'cp1252'):
         try:
             p_df = pd.read_csv(file_path, encoding=enc)
@@ -238,66 +629,130 @@ def load_predictions(file_path: str, s_map: dict, t_map: dict,
         except UnicodeDecodeError:
             continue
     else:
-        # Fallback if all encodings fail to avoid crashes
-        p_df = pd.read_csv(file_path, encoding='utf-8', errors='replace')
+        p_df = pd.read_csv(file_path, encoding='utf-8', encoding_errors="replace")
+
+    # Normalize column names once.
+    p_df.columns = p_df.columns.str.strip().str.lower()
+
+    # These are the structural columns needed for variable-structure error analysis.
+    structure_cols = [
+        "source_type", "target_type",
+        "source_unit", "target_unit",
+        "source_categories_labels", "target_categories_labels",
+        "source_original_categories", "target_original_categories",
+        "source_categories_omop_ids", "target_categories_omop_ids",
+        "source_visit", "target_visit",
+        "mapping_relation", "context_match_type",
+        "source_composite_code_labels", "target_composite_code_labels",
+        "source_composite_code_omop_ids", "target_composite_code_omop_ids",
+        "category", "source_label", "target_label",
+        "slabel", "tlabel", "somop_id", "tomop_id",
+        "scode", "tcode", "sim_score",
+    ]
+
+    _require_columns(p_df, ["source", "target", "harmonization_status"], "prediction file")
+
     pred = pd.DataFrame({
-    'src_var': p_df['source'].map(canonical_var_key),
-    'tgt_var': p_df['target'].map(canonical_var_key),
-    'src_var_raw': p_df['source'].astype(str),
-    'tgt_var_raw': p_df['target'].astype(str),
-    'predicted class': p_df['harmonization_status'].astype(str).str.strip().str.lower(),
-})
-    if not collapse_temporal:
-        return pred
+        'source_study': _normalise_study_name(source_study) if source_study is not None else "",
+        'target_study': _normalise_study_name(target_study) if target_study is not None else "",
+        'src_var': p_df['source'].map(canonical_var_key),
+        'tgt_var': p_df['target'].map(canonical_var_key),
+        'src_var_raw': p_df['source'].astype(str),
+        'tgt_var_raw': p_df['target'].astype(str),
+        'predicted class': p_df['harmonization_status'].astype(str).str.strip().str.lower(),
+    })
+
+    # Attach structural metadata from the prediction file.
+    for col in [c for c in structure_cols if c in p_df.columns]:
+        pred[col] = p_df[col]
+
+    if source_study is None or target_study is None:
+        logger.warning(
+            "load_predictions was called without source_study/target_study. "
+            "Study-aware evaluation keys will be incomplete."
+        )
+
     missing_s = set(pred['src_var']) - set(s_map)
     missing_t = set(pred['tgt_var']) - set(t_map)
-    if missing_s: logger.warning(f"{len(missing_s)} prediction source names absent from dictionary: {sorted(missing_s)[:10]}")
-    if missing_t: logger.warning(f"{len(missing_t)} prediction target names absent from dictionary: {sorted(missing_t)[:10]}")
-    return _collapse_by_label(pred, 'predicted class', s_map, t_map)
 
+    if missing_s:
+        logger.warning(
+            f"{len(missing_s)} prediction source names absent from source dictionary: "
+            f"{sorted(missing_s)[:10]}"
+        )
+    if missing_t:
+        logger.warning(
+            f"{len(missing_t)} prediction target names absent from target dictionary: "
+            f"{sorted(missing_t)[:10]}"
+        )
 
+    pred = add_label_keys(pred, s_map, t_map)
+    pred = ensure_display_columns(pred)
+    log_label_level_collisions(pred, 'predicted class', 'predictions')
+    pred = _dedupe_eval_keys(pred, label_col='predicted class', frame_name='predictions')
+    return pred
 
 def load_ground_truth(file_path: str, source_study: str, target_study: str,
                       s_map: dict | None = None, t_map: dict | None = None,
                       collapse_temporal: bool = True) -> pd.DataFrame:
 
-    t_df = pd.read_excel(ground_truth_file, sheet_name=0)
-       
-    logger.info(f"GT total pairs: {len(t_df)} | study pairs:\n"
+    t_df = pd.read_excel(file_path, sheet_name=0)
+    t_df = t_df.drop_duplicates(
+    subset=["source_study", "target_study", "source_var_name", "target_var_name"],
+    keep="first"
+)
+    logger.info(f"before collaspe GT total pairs: {len(t_df)} | study pairs:\n"
                 f"{t_df.groupby(['source_study','target_study'])['harmonization level'].value_counts()}")
+
     src_l, tgt_l = source_study.lower(), target_study.lower()
+
     mask = (t_df['source_study'].str.strip().str.lower() == src_l) & \
            (t_df['target_study'].str.strip().str.lower() == tgt_l)
     gt = pd.DataFrame({
+    'source_study': t_df.loc[mask, 'source_study'].astype(str).str.strip().str.lower(),
+    'target_study': t_df.loc[mask, 'target_study'].astype(str).str.strip().str.lower(),
+
     'src_var': t_df.loc[mask, 'source_var_name'].map(canonical_var_key),
     'tgt_var': t_df.loc[mask, 'target_var_name'].map(canonical_var_key),
     'src_var_raw': t_df.loc[mask, 'source_var_name'].astype(str),
     'tgt_var_raw': t_df.loc[mask, 'target_var_name'].astype(str),
     'correct class': t_df.loc[mask, 'harmonization level'].astype(str).str.strip().str.lower(),
+    'domain': t_df.loc[mask, 'domain'].astype(str).str.strip().str.lower(),
 }).reset_index(drop=True)
     if not collapse_temporal or s_map is None:
         return gt
     missing_s = set(gt['src_var']) - set(s_map)
     missing_t = set(gt['tgt_var']) - set(t_map)
-    if missing_s: logger.warning(f"{len(missing_s)} GT source names absent from predictions: {sorted(missing_s)[:10]}")
-    if missing_t: logger.warning(f"{len(missing_t)} GT target names absent from predictions: {sorted(missing_t)[:10]}")
-    return _collapse_by_label(gt, 'correct class', s_map, t_map)
+    if missing_s: logger.warning(f"{len(missing_s)} GT source names absent from dictionaries: {sorted(missing_s)[:10]}")
+    if missing_t: logger.warning(f"{len(missing_t)} GT target names absent from dictionaries: {sorted(missing_t)[:10]}")
+
+    d_final = add_label_keys(gt, s_map, t_map)
+    d_final = ensure_display_columns(d_final)
+    log_label_level_collisions(d_final, 'correct class', 'ground truth')
+    d_final = _dedupe_eval_keys(d_final, label_col='correct class', frame_name='ground truth')
+
+    logger.info(f"after variable-level GT load total pairs: {len(d_final)} | study pairs:\n"
+                f"{d_final.groupby(['source_study','target_study'])['correct class'].value_counts()}")
+    logger.info(f"ground truth total pairs are {len(d_final)}")
+    return d_final
 
 
-def analyze_class_distribution(ground_truth: pd.DataFrame, predictions: pd.DataFrame, 
+
+def analyze_class_distribution(ground_truth: pd.DataFrame, predictions: pd.DataFrame,
                                 study_pair: str = "") -> dict:
-    """
-    Analyze and compare class distributions between ground truth and predictions.
-    Returns distribution stats and flags imbalance issues.
-    """
-    merged_df = pd.merge(ground_truth, predictions, on=['src_var', 'tgt_var'], 
-                         how='left', suffixes=('_gt', '_pred'))
+    """Analyze and compare class distributions between ground truth and predictions."""
+    _require_columns(ground_truth, EVAL_KEY_COLS + ['correct class'], 'ground_truth')
+    _require_columns(predictions, EVAL_KEY_COLS + ['predicted class'], 'predictions')
+
+    gt_m = ground_truth[EVAL_KEY_COLS + ['correct class']]
+    pr_m = predictions[EVAL_KEY_COLS + ['predicted class']]
+    merged_df = pd.merge(gt_m, pr_m, on=EVAL_KEY_COLS, how='left')
     merged_df['predicted class'] = merged_df['predicted class'].fillna('not applicable')
-    
+
     gt_dist = ground_truth['correct class'].value_counts()
     pred_dist = merged_df['predicted class'].value_counts()
     all_classes = sorted(set(gt_dist.index) | set(pred_dist.index))
-    
+
     comparison = pd.DataFrame({
         'class': all_classes,
         'gt_count': [gt_dist.get(c, 0) for c in all_classes],
@@ -306,12 +761,12 @@ def analyze_class_distribution(ground_truth: pd.DataFrame, predictions: pd.DataF
     comparison['gt_pct'] = (comparison['gt_count'] / comparison['gt_count'].sum() * 100).round(1)
     comparison['pred_pct'] = (comparison['pred_count'] / comparison['pred_count'].sum() * 100).round(1)
     comparison['diff_pct'] = (comparison['pred_pct'] - comparison['gt_pct']).round(1)
-    
+
     total_samples = len(ground_truth)
     min_class_count = gt_dist.min() if len(gt_dist) > 0 else 0
     max_class_count = gt_dist.max() if len(gt_dist) > 0 else 0
     imbalance_ratio = max_class_count / min_class_count if min_class_count > 0 else float('inf')
-    
+
     warnings_list = []
     for cls in all_classes:
         count = gt_dist.get(cls, 0)
@@ -319,7 +774,7 @@ def analyze_class_distribution(ground_truth: pd.DataFrame, predictions: pd.DataF
             warnings_list.append(f"⚠️  Class '{cls}' has only {count} samples - metrics unreliable")
     if imbalance_ratio > 5:
         warnings_list.append(f"⚠️  High class imbalance (ratio {imbalance_ratio:.1f}:1) - consider macro-averaged metrics")
-    
+
     return {
         'comparison': comparison,
         'gt_distribution': gt_dist,
@@ -332,25 +787,28 @@ def analyze_class_distribution(ground_truth: pd.DataFrame, predictions: pd.DataF
 
 
 def compute_comprehensive_metrics(ground_truth: pd.DataFrame, predictions: pd.DataFrame) -> dict:
-    """Compute comprehensive metrics including per-class and aggregate measures."""
-    gt_m = ground_truth[['src_var', 'tgt_var', 'correct class']]
-    pr_m = predictions[['src_var', 'tgt_var', 'predicted class']]
-    merged_df = pd.merge(gt_m, pr_m, on=['src_var', 'tgt_var'], how='left')
+    """Compute comprehensive metrics at variable-pair level."""
+    _require_columns(ground_truth, EVAL_KEY_COLS + ['correct class'], 'ground_truth')
+    _require_columns(predictions, EVAL_KEY_COLS + ['predicted class'], 'predictions')
+
+    gt_m = ground_truth[EVAL_KEY_COLS + ['correct class']]
+    pr_m = predictions[EVAL_KEY_COLS + ['predicted class']]
+    merged_df = pd.merge(gt_m, pr_m, on=EVAL_KEY_COLS, how='left')
     merged_df['predicted class'] = merged_df['predicted class'].fillna('not applicable')
-    
+
     y_true = merged_df['correct class']
     y_pred = merged_df['predicted class']
     labels = sorted(set(y_true) | set(y_pred))
-    
+
     accuracy = accuracy_score(y_true, y_pred)
     f1_weighted = f1_score(y_true, y_pred, average='weighted', zero_division=0)
     f1_macro = f1_score(y_true, y_pred, average='macro', zero_division=0)
     f1_micro = f1_score(y_true, y_pred, average='micro', zero_division=0)
-    
+
     precision, recall, f1, support = precision_recall_fscore_support(
         y_true, y_pred, labels=labels, zero_division=0
     )
-    
+
     per_class_metrics = pd.DataFrame({
         'class': labels,
         'precision': precision.round(3),
@@ -358,10 +816,10 @@ def compute_comprehensive_metrics(ground_truth: pd.DataFrame, predictions: pd.Da
         'f1_score': f1.round(3),
         'support': support
     })
-    
+
     cm = confusion_matrix(y_true, y_pred, labels=labels)
     report = classification_report(y_true, y_pred, zero_division=0)
-    
+
     return {
         'accuracy': accuracy,
         'f1_weighted': f1_weighted,
@@ -375,51 +833,373 @@ def compute_comprehensive_metrics(ground_truth: pd.DataFrame, predictions: pd.Da
         'classification_report': report
     }
 
-def evaluate_predictions(ground_truth: pd.DataFrame, predictions: pd.DataFrame,
-                         data_dir: str, predict_studies_names: str) -> dict:
-    """Evaluate; human-facing CSVs use variable names (labels are the merge key only)."""
-    gt_m = ground_truth[['src_var', 'tgt_var', 'src_var_orig', 'tgt_var_orig', 'correct class']]
-    pr_m = predictions[['src_var', 'tgt_var', 'src_var_orig', 'tgt_var_orig', 'predicted class']]
-    merged = pd.merge(gt_m, pr_m, on=['src_var', 'tgt_var'], how='left',
-                      suffixes=('_gt', '_pred'))
+def compute_domain_metrics(ground_truth: pd.DataFrame, predictions: pd.DataFrame) -> pd.DataFrame:
+    _require_columns(ground_truth, EVAL_KEY_COLS + ['correct class', 'domain'], 'ground_truth')
+    _require_columns(predictions, EVAL_KEY_COLS + ['predicted class'], 'predictions')
+
+    gt_m = ground_truth[EVAL_KEY_COLS + ['correct class', 'domain']]
+    pr_m = predictions[EVAL_KEY_COLS + ['predicted class']]
+
+    merged = pd.merge(gt_m, pr_m, on=EVAL_KEY_COLS, how='left')
     merged['predicted class'] = merged['predicted class'].fillna('not applicable')
+    merged['domain'] = merged['domain'].fillna('unknown').astype(str).str.strip().str.lower()
 
-    total   = len(merged)
-    correct = (merged['correct class'] == merged['predicted class']).sum()
-    accuracy = correct / total if total > 0 else 0.0
+    rows = []
 
-    # Name-based display frame for incorrect predictions (GT-side names)
-    display = (merged[['src_var_orig_gt', 'tgt_var_orig_gt', 'correct class', 'predicted class']]
-               .rename(columns={'src_var_orig_gt': 'src_var', 'tgt_var_orig_gt': 'tgt_var'}))
-    all_incorrect = display[display['correct class'] != display['predicted class']]
-    all_incorrect.to_csv(f"{data_dir}/incorrect_predictions_{predict_studies_names}.csv", encoding='utf-8',index=False)
-    logger.info("Incorrect Predictions:"); logger.info(all_incorrect)
+    for domain, g in merged.groupby('domain'):
+        y_true = g['correct class']
+        y_pred = g['predicted class']
 
-    # Diff sets computed on canonical labels (correct semantics); output uses names
-    gt_pairs   = set(zip(ground_truth['src_var'], ground_truth['tgt_var']))
-    pred_pairs = set(zip(predictions['src_var'],  predictions['tgt_var']))
-    not_in_gt, not_in_pred = pred_pairs - gt_pairs, gt_pairs - pred_pairs
+        rows.append({
+            'domain': domain,
+            'n_pairs': len(g),
+            'n_classes_present': y_true.nunique(),
+            'accuracy': round(accuracy_score(y_true, y_pred), 4),
+            'f1_macro': round(f1_score(y_true, y_pred, average='macro', zero_division=0), 4),
+            'f1_weighted': round(f1_score(y_true, y_pred, average='weighted', zero_division=0), 4),
+            'f1_micro': round(f1_score(y_true, y_pred, average='micro', zero_division=0), 4),
+            'class_distribution': dict(y_true.value_counts())
+        })
 
-    name_rename = {'src_var_orig': 'src_var', 'tgt_var_orig': 'tgt_var'}
-    not_in_gt_df = (predictions[predictions.apply(
-                        lambda r: (r['src_var'], r['tgt_var']) in not_in_gt, axis=1)]
-                    .drop(columns=['src_var', 'tgt_var'])
-                    .rename(columns=name_rename).copy())
-    not_in_pred_df = (ground_truth[ground_truth.apply(
-                        lambda r: (r['src_var'], r['tgt_var']) in not_in_pred, axis=1)]
-                      .drop(columns=['src_var', 'tgt_var'])
-                      .rename(columns=name_rename).copy())
-    not_in_gt_df.to_csv(f"{data_dir}/predicted_not_in_ground_truth_{predict_studies_names}.csv",encoding='utf-8', index=False)
+    return pd.DataFrame(rows)
 
-    logger.info(f"\n{'='*60}\nPredicted pairs NOT in ground truth: {len(not_in_gt_df)}\n"
-                f"Saved to: {data_dir}/predicted_not_in_ground_truth_{predict_studies_names}.csv\n{'='*60}")
-    logger.info(f"\n{'='*60}\nGround truth pairs NOT in predictions: {len(not_in_pred_df)}\n{'='*60}")
-    logger.info(not_in_pred_df.to_string(index=False))
+def compute_collective_metrics(collective_data: list, source_study: str) -> pd.DataFrame:
+    """
+    Across-target summary for each (model, mode), computed as the unweighted MEAN
+    of per-target metrics (each target study weighted equally). This matches the
+    aggregation used in the comparison figures (mean across study pairs), so the
+    summary table and the figures report the same numbers.
+    """
+    from collections import OrderedDict
+    buckets = OrderedDict()
+    for d in collective_data:
+        key = (d['model'], d['mode'])
+        b = buckets.setdefault(key, {'yt': [], 'yp': [], 'targets': []})
+        b['yt'].append(pd.Series(d['y_true']).reset_index(drop=True))
+        b['yp'].append(pd.Series(d['y_pred']).reset_index(drop=True))
+        b['targets'].append(d.get('target_study'))
 
-    return {'total': total, 'correct': correct, 'accuracy': accuracy,
-            'incorrect_predictions': all_incorrect,
-            'not_in_ground_truth': not_in_gt_df,
-            'not_in_predictions': not_in_pred_df}
+    rows = []
+    for (model, mode), b in buckets.items():
+        acc, f1m, f1w, f1mi, n_pairs = [], [], [], [], 0
+        for yt, yp in zip(b['yt'], b['yp']):
+            acc.append(accuracy_score(yt, yp))
+            f1m.append(f1_score(yt, yp, average='macro',    zero_division=0))
+            f1w.append(f1_score(yt, yp, average='weighted', zero_division=0))
+            f1mi.append(f1_score(yt, yp, average='micro',   zero_division=0))
+            n_pairs += len(yt)
+        rows.append({
+            'model': model,
+            'mode': mode,
+            'source_study': source_study,
+            'target_scope': 'MEAN_OF_TARGETS',
+            'n_targets': len([t for t in b['targets'] if t is not None]),
+            'n_pairs': int(n_pairs),
+            'accuracy':    round(float(np.mean(acc)),  4),
+            'f1_macro':    round(float(np.mean(f1m)),  4),
+            'f1_weighted': round(float(np.mean(f1w)),  4),
+            'f1_micro':    round(float(np.mean(f1mi)), 4),
+        })
+
+    df = pd.DataFrame(rows)
+    if not df.empty:
+        df = df.sort_values('f1_macro', ascending=False).reset_index(drop=True)
+    return df
+
+
+POSITIVE_GT_CLASSES = {
+    "identical match",
+    # "complete match",
+    "compatible match",
+    "partial match",
+}
+
+
+def _pair_set(df: pd.DataFrame) -> set[tuple]:
+    _require_columns(df, EVAL_KEY_COLS, 'pair dataframe')
+    return set(df[EVAL_KEY_COLS].itertuples(index=False, name=None))
+
+def _label_pair_set(df: pd.DataFrame) -> set[tuple]:
+    """
+    Diagnostic-only pair set using temporal-neutral dictionary labels.
+
+    Used for predicted_not_in_ground_truth only.
+    Do not use this for the main metric merge.
+    """
+    _require_columns(
+        df,
+        ["source_study", "target_study", "src_label_key", "tgt_label_key"],
+        "label-pair dataframe"
+    )
+
+    return set(
+        df[["source_study", "target_study", "src_label_key", "tgt_label_key"]]
+        .itertuples(index=False, name=None)
+    )
+
+
+def _rows_for_pairs(df: pd.DataFrame, pairs: set[tuple]) -> pd.DataFrame:
+    if df.empty or not pairs:
+        return df.iloc[0:0].copy()
+
+    _require_columns(df, EVAL_KEY_COLS, 'pair dataframe')
+    pair_index = pd.MultiIndex.from_tuples(list(pairs), names=EVAL_KEY_COLS)
+    row_index = pd.MultiIndex.from_frame(df[EVAL_KEY_COLS])
+    mask = row_index.isin(pair_index)
+    return df.loc[mask].copy()
+
+
+def _display_pair_df(df: pd.DataFrame) -> pd.DataFrame:
+    name_rename = {"src_var_orig": "src_var", "tgt_var_orig": "tgt_var"}
+    return (
+        df.drop(columns=["src_var", "tgt_var"], errors="ignore")
+          .rename(columns=name_rename)
+          .copy()
+    )
+
+def summarize_errors_by_structure(merged):
+    label_rank = {
+        "identical match": 0,
+        "compatible match": 1,
+        "partial match": 2,
+        "not applicable": 3,
+    }
+
+    merged = merged.copy()
+
+    merged["true_rank"] = merged["correct class"].map(label_rank)
+    merged["pred_rank"] = merged["predicted class"].map(label_rank)
+    merged["error_delta"] = merged["pred_rank"] - merged["true_rank"]
+
+    merged["is_correct"] = merged["correct class"] == merged["predicted class"]
+    merged["over_harmonisation"] = merged["error_delta"] < 0
+    merged["under_harmonisation"] = merged["error_delta"] > 0
+    merged["severe_error"] = merged["error_delta"].abs() >= 2
+
+    summary = (
+        merged
+        .groupby("structure_pattern")
+        .agg(
+            n_pairs=("structure_pattern", "size"),
+            accuracy=("is_correct", "mean"),
+            over_harmonisation_rate=("over_harmonisation", "mean"),
+            under_harmonisation_rate=("under_harmonisation", "mean"),
+            severe_error_rate=("severe_error", "mean"),
+        )
+        .reset_index()
+    )
+
+    for col in [
+        "accuracy",
+        "over_harmonisation_rate",
+        "under_harmonisation_rate",
+        "severe_error_rate",
+    ]:
+        summary[col] = summary[col].round(3)
+
+    summary = summary.sort_values(
+        ["severe_error_rate", "over_harmonisation_rate", "n_pairs"],
+        ascending=[False, False, False],
+    )
+
+    return summary
+
+
+def evaluate_predictions(
+    ground_truth: pd.DataFrame,
+    predictions: pd.DataFrame,
+    data_dir: str,
+    predict_studies_names: str,
+    source_study: str,
+    target_study: str
+) -> dict:
+    """Evaluate final classification and variable-level candidate-generation coverage.
+
+    - Classification metrics use all GT variable pairs.
+    - Candidate-retrieval missing-GT report uses only positive/harmonizable GT pairs.
+    - Predicted-not-in-GT remains against the full GT annotation set.
+    """
+    _require_columns(ground_truth, EVAL_KEY_COLS + ["src_var_orig", "tgt_var_orig", "correct class"], 'ground_truth')
+    _require_columns(predictions, EVAL_KEY_COLS + ["src_var_orig", "tgt_var_orig", "predicted class"], 'predictions')
+
+    gt_cols = EVAL_KEY_COLS + [
+        c for c in ground_truth.columns
+        if c not in EVAL_KEY_COLS and c in {
+            "src_var_orig", "tgt_var_orig", "correct class", "domain",
+            "src_label_key", "tgt_label_key"
+        }
+    ]
+    pred_cols = EVAL_KEY_COLS + [c for c in predictions.columns if c not in EVAL_KEY_COLS]
+
+    gt_m = ground_truth[gt_cols]
+    pr_m = predictions[pred_cols]
+
+    merged = pd.merge(
+        gt_m,
+        pr_m,
+        on=EVAL_KEY_COLS,
+        how="left",
+        suffixes=("_gt", "_pred"),
+    )
+
+    merged["predicted class"] = merged["predicted class"].fillna("not applicable")
+    merged["structure_pattern"] = merged.apply(derive_structure_pattern, axis=1)
+    structure_summary = summarize_errors_by_structure(merged)
+
+    structure_summary.to_csv(
+        f"{data_dir}/{predict_studies_names}_error_by_variable_structure.csv",
+        index=False
+    )
+    total = len(merged)
+    correct = int((merged["correct class"] == merged["predicted class"]).sum())
+    accuracy = correct / total if total else 0.0
+
+    all_incorrect_cols = [
+        c for c in [
+            "source_study", "target_study", "src_var_orig_gt", "tgt_var_orig_gt",
+            "src_var", "tgt_var", "src_label_key_gt", "tgt_label_key_gt",
+            "correct class", "predicted class", "structure_pattern"
+        ] if c in merged.columns
+    ]
+
+    all_incorrect = (
+        merged.loc[merged["correct class"] != merged["predicted class"], all_incorrect_cols]
+        .rename(columns={
+            "src_var_orig_gt": "src_var_raw",
+            "tgt_var_orig_gt": "tgt_var_raw",
+        })
+        .copy()
+    )
+
+    all_incorrect.to_csv(
+        f"{data_dir}/incorrect_predictions_{predict_studies_names}.csv",
+        encoding="utf-8",
+        index=False,
+    )
+
+    logger.info("Incorrect Predictions:")
+    logger.info(all_incorrect)
+
+    # ------------------------------------------------------------------
+    # Diagnostic 1:
+    # Predicted pairs outside the GT reference.
+    #
+    # Use temporal-neutral label-pair keys here, not raw variable names.
+    # This avoids counting follow-up variables as outside GT when the GT
+    # contains only the baseline version.
+    # ------------------------------------------------------------------
+
+    gt_label_pairs = _label_pair_set(ground_truth)
+    pred_label_pairs = _label_pair_set(predictions)
+
+    pred_tmp = predictions.copy()
+    pred_tmp["__label_pair"] = list(
+        pred_tmp[["source_study", "target_study", "src_label_key", "tgt_label_key"]]
+        .itertuples(index=False, name=None)
+    )
+
+    predicted_not_in_gt_pairs = pred_label_pairs - gt_label_pairs
+
+    not_in_gt_df = pred_tmp[
+        pred_tmp["__label_pair"].isin(predicted_not_in_gt_pairs)
+    ].drop(columns="__label_pair")
+
+    not_in_gt_df = _display_pair_df(not_in_gt_df)
+
+
+    # ------------------------------------------------------------------
+    # Diagnostic 2:
+    # Positive GT pairs not retrieved by candidate generation.
+    #
+    # Also use temporal-neutral label-pair keys here. Otherwise, a baseline
+    # GT pair can be falsely counted as "not retrieved" when only its
+    # follow-up versions were predicted.
+    # ------------------------------------------------------------------
+
+    gt_positive = ground_truth[
+        ground_truth["correct class"]
+        .astype(str)
+        .str.strip()
+        .str.lower()
+        .isin(POSITIVE_GT_CLASSES)
+    ].copy()
+
+    gt_positive_label_pairs = _label_pair_set(gt_positive)
+    positive_gt_not_retrieved_pairs = gt_positive_label_pairs - pred_label_pairs
+
+    gt_positive_tmp = gt_positive.copy()
+    gt_positive_tmp["__label_pair"] = list(
+        gt_positive_tmp[["source_study", "target_study", "src_label_key", "tgt_label_key"]]
+        .itertuples(index=False, name=None)
+    )
+
+    not_in_pred_df = gt_positive_tmp[
+        gt_positive_tmp["__label_pair"].isin(positive_gt_not_retrieved_pairs)
+    ].drop(columns="__label_pair")
+
+    not_in_pred_df = _display_pair_df(not_in_pred_df)
+
+    positive_candidate_recall = (
+        1.0 - len(positive_gt_not_retrieved_pairs) / len(gt_positive_label_pairs)
+        if gt_positive_label_pairs else 0.0
+    )
+
+
+    # ------------------------------------------------------------------
+    # Save diagnostic files
+    # ------------------------------------------------------------------
+
+    not_in_gt_df.to_csv(
+        f"{data_dir}/predicted_not_in_ground_truth_{predict_studies_names}.csv",
+        encoding="utf-8",
+        index=False,
+    )
+
+    not_in_pred_df.to_csv(
+        f"{data_dir}/positive_gt_not_retrieved_{predict_studies_names}.csv",
+        encoding="utf-8",
+        index=False,
+    )
+
+
+    # ------------------------------------------------------------------
+    # Logs
+    # ------------------------------------------------------------------
+
+    logger.info(
+        f"\n{'=' * 60}\n"
+        f"Predicted variable pairs NOT in ground truth: {len(not_in_gt_df)} rows "
+        f"({len(predicted_not_in_gt_pairs)} unique temporal-neutral label pairs)\n"
+        f"Saved to: {data_dir}/predicted_not_in_ground_truth_{predict_studies_names}.csv\n"
+        f"{'=' * 60}"
+    )
+
+    logger.info(
+        f"\n{'=' * 60}\n"
+        f"Positive GT variable pairs NOT retrieved: {len(not_in_pred_df)} rows "
+        f"({len(positive_gt_not_retrieved_pairs)} unique temporal-neutral label pairs)\n"
+        f"Positive candidate recall: {positive_candidate_recall:.3f}\n"
+        f"Saved to: {data_dir}/positive_gt_not_retrieved_{predict_studies_names}.csv\n"
+        f"{'=' * 60}"
+    )
+    # logger.info(not_in_pred_df.to_string(index=False))
+
+    return {
+        "source_study": source_study,
+        "target_study": target_study,
+        "total": total,
+        "correct": correct,
+        "accuracy": accuracy,
+        "incorrect_predictions": all_incorrect,
+        "not_in_ground_truth": not_in_gt_df,
+        "not_in_predictions": not_in_pred_df,
+        "positive_candidate_recall": positive_candidate_recall,
+
+        # temporal-neutral diagnostic counts
+        "n_positive_gt_pairs": len(gt_positive_label_pairs),
+        "n_positive_gt_not_retrieved": len(positive_gt_not_retrieved_pairs),
+        "n_predicted_not_in_ground_truth": len(predicted_not_in_gt_pairs),
+    }
 def plot_class_distribution_comparison(dist_results: dict, output_path: str = None):
     """Create side-by-side bar chart comparing GT vs Predicted class distributions."""
     comparison = dist_results['comparison']
@@ -492,7 +1272,7 @@ def plot_confusion_matrix(metrics: dict, study_pair: str = "", output_path: str 
     plt.setp(ax1.get_yticklabels(), rotation=0)
     
     ax2 = axes[1]
-    sns.heatmap(cm_normalized, annot=True, fmt='.2f', cmap=PALETTE['cmap_div'], xticklabels=labels, 
+    sns.heatmap(cm_normalized, annot=True, fmt='.3f', cmap=PALETTE['cmap_div'], xticklabels=labels, 
                 yticklabels=labels, ax=ax2, vmin=0, vmax=1, cbar_kws={'label': 'Recall'})
     ax2.set_xlabel('Predicted', fontsize=11)
     ax2.set_ylabel('Ground Truth', fontsize=11)
@@ -560,7 +1340,7 @@ def plot_multi_study_comparison(all_study_metrics: list, output_path: str = None
     ax1.set_ylim(0, 1.1)
     ax1.axhline(y=0.8, color=PALETTE['good'], linestyle='--', alpha=0.5, linewidth=0.8)
     for bar, val in zip(bars, f1_macro):
-        ax1.annotate(f'{val:.2f}', xy=(bar.get_x() + bar.get_width()/2, bar.get_height()),
+        ax1.annotate(f'{val:.3f}', xy=(bar.get_x() + bar.get_width()/2, bar.get_height()),
                      xytext=(0, 3), textcoords="offset points", ha='center', va='bottom', fontsize=10)
     
     ax2 = axes[1]
@@ -692,7 +1472,7 @@ def plot_aggregate_comparison(master_df: pd.DataFrame, output_path: str = None):
                 color=_mode_color('OO'), alpha=0.85,
                 edgecolor='white', linewidth=0.3,
                 hatch='///', label='OO (no model)')
-        ax.text(oo_mean + 0.006, 0, f'{oo_mean:.2f}',
+        ax.text(oo_mean + 0.006, 0, f'{oo_mean:.3f}',
                 va='center', ha='left', fontsize=8,
                 fontweight='bold', color=_mode_color('OO'))
 
@@ -708,7 +1488,7 @@ def plot_aggregate_comparison(master_df: pd.DataFrame, output_path: str = None):
         for bar, v in zip(bars, vals):
             if v > 0:
                 ax.text(v + 0.006, bar.get_y() + bar.get_height() / 2,
-                        f'{v:.2f}', va='center', ha='left', fontsize=7.5,
+                        f'{v:.3f}', va='center', ha='left', fontsize=7.5,
                         fontweight='bold', color=_mode_color(mode))
 
     # --- Y-axis ---
@@ -781,7 +1561,7 @@ def plot_mode_comparison_per_model(master_df: pd.DataFrame, output_path: str = N
                color=_mode_color('OO'), alpha=0.85,
                edgecolor='white', linewidth=0.3,
                hatch='///', label='OO (no model)')
-        ax.annotate(f'{oo_mean:.2f}',
+        ax.annotate(f'{oo_mean:.3f}',
                     xy=(0, oo_mean), xytext=(0, 3),
                     textcoords='offset points', ha='center', va='bottom',
                     fontsize=9, fontweight='bold', color=_mode_color('OO'))
@@ -798,7 +1578,7 @@ def plot_mode_comparison_per_model(master_df: pd.DataFrame, output_path: str = N
         for bar in bars:
             h = bar.get_height()
             if h > 0:
-                ax.annotate(f'{h:.2f}',
+                ax.annotate(f'{h:.3f}',
                             xy=(bar.get_x() + bar.get_width() / 2, h),
                             xytext=(0, 3), textcoords='offset points',
                             ha='center', va='bottom', fontsize=6.5,
@@ -848,7 +1628,7 @@ def plot_per_class_heatmap(all_per_class: pd.DataFrame, metric: str = 'f1_score'
     fig, ax = plt.subplots(figsize=(max(12, len(pivot.columns) * 1.5),
                                      max(5, len(pivot) * 0.8)))
     
-    sns.heatmap(pivot.astype(float), annot=True, fmt='.2f', cmap='RdYlGn',
+    sns.heatmap(pivot.astype(float), annot=True, fmt='.3f', cmap='RdYlGn',
                 vmin=0, vmax=1, linewidths=0.5, ax=ax,
                 cbar_kws={'label': metric.replace('_', ' ').title()})
     
@@ -929,51 +1709,65 @@ def plot_coverage_comparison(summary_df: pd.DataFrame, output_path: str = None):
     return fig
 def analyze_prediction_coverage(all_predictions: list, output_dir: str,
                                 exclude_not_applicable: bool = False) -> tuple:
-    """Set ops on canonical labels (mode-invariant); unique-rows CSV uses variable names."""
-    mode_pairs = {}   # (mode, ts) -> set of (src_label, tgt_label)
-    pair_names = {}   # (mode, ts, src_label, tgt_label) -> (src_name, tgt_name)
+    """Set ops on canonical variable pairs; unique-rows CSV uses raw variable names."""
+    mode_pairs = {}
+    pair_names = {}
     for item in all_predictions:
         df = item['pred_df']
         if exclude_not_applicable:
             df = df[df['predicted class'] != 'not applicable']
-        key = (item['mode'], item['target_study'])
+        if df.empty:
+            continue
+        _require_columns(df, EVAL_KEY_COLS + ['src_var_orig', 'tgt_var_orig'], 'prediction coverage dataframe')
+        src_study = item.get('source_study', df['source_study'].iloc[0])
+        tgt_study = item.get('target_study', df['target_study'].iloc[0])
+        key = (item['mode'], src_study, tgt_study)
         bucket = mode_pairs.setdefault(key, set())
-        for s_lbl, t_lbl, s_nm, t_nm in zip(df['src_var'], df['tgt_var'],
-                                             df['src_var_orig'], df['tgt_var_orig']):
-            bucket.add((s_lbl, t_lbl))
-            pair_names.setdefault((item['mode'], item['target_study'], s_lbl, t_lbl), (s_nm, t_nm))
+        for row in df.itertuples(index=False):
+            pair = (getattr(row, 'source_study'), getattr(row, 'target_study'), getattr(row, 'src_var'), getattr(row, 'tgt_var'))
+            bucket.add(pair)
+            pair_names.setdefault((item['mode'],) + pair, (getattr(row, 'src_var_orig'), getattr(row, 'tgt_var_orig')))
 
-    target_studies = sorted({t for _, t in mode_pairs})
-    modes          = sorted({m for m, _ in mode_pairs})
+    study_pairs = sorted({(s, t) for _, s, t in mode_pairs})
+    modes = sorted({m for m, _, _ in mode_pairs})
 
     summary, unique_rows = [], []
-    for ts in target_studies:
-        ts_map    = {m: mode_pairs.get((m, ts), set()) for m in modes}
+    for src, tgt in study_pairs:
+        ts_map = {m: mode_pairs.get((m, src, tgt), set()) for m in modes}
         union_all = set().union(*ts_map.values()) if ts_map else set()
-        nonempty  = [ts_map[m] for m in modes if ts_map[m]]
+        nonempty = [ts_map[m] for m in modes if ts_map[m]]
         shared_all = set.intersection(*nonempty) if len(nonempty) == len(modes) else set()
 
         for m in modes:
-            mine   = ts_map[m]
+            mine = ts_map[m]
             others = set().union(*(p for mm, p in ts_map.items() if mm != m))
             unique = mine - others
             summary.append({
-                'target_study': ts, 'mode': m,
+                'source_study': src,
+                'target_study': tgt,
+                'mode': m,
                 'total_predicted': len(mine),
                 'unique_to_this_mode': len(unique),
                 'shared_with_all_modes': len(shared_all),
                 'pct_of_union': round(len(mine) / max(len(union_all), 1) * 100, 1),
             })
-            for s_lbl, t_lbl in sorted(unique):
-                s_nm, t_nm = pair_names.get((m, ts, s_lbl, t_lbl), (s_lbl, t_lbl))
-                unique_rows.append({'target_study': ts, 'mode': m,
-                                    'src_var': s_nm, 'tgt_var': t_nm})
+            for pair in sorted(unique):
+                s_nm, t_nm = pair_names.get((m,) + pair, (pair[2], pair[3]))
+                unique_rows.append({
+                    'source_study': pair[0],
+                    'target_study': pair[1],
+                    'mode': m,
+                    'src_var': s_nm,
+                    'tgt_var': t_nm,
+                    'src_key': pair[2],
+                    'tgt_key': pair[3],
+                })
 
     summary_df = pd.DataFrame(summary)
-    unique_df  = pd.DataFrame(unique_rows)
+    unique_df = pd.DataFrame(unique_rows)
     tag = '_matches_only' if exclude_not_applicable else '_all'
-    summary_df.to_csv(os.path.join(output_dir, f'prediction_coverage_summary{tag}.csv'), encoding='utf-8',index=False)
-    unique_df.to_csv(os.path.join(output_dir, f'predictions_unique_to_mode{tag}.csv'),encoding='utf-8', index=False)
+    summary_df.to_csv(os.path.join(output_dir, f'prediction_coverage_summary{tag}.csv'), encoding='utf-8', index=False)
+    unique_df.to_csv(os.path.join(output_dir, f'predictions_unique_to_mode{tag}.csv'), encoding='utf-8', index=False)
     logger.info(f"  Coverage summary ({len(summary_df)} rows) + unique pairs ({len(unique_df)} rows) "
                 f"saved [{tag.strip('_')}]")
     return summary_df, unique_df
@@ -990,10 +1784,12 @@ def run_full_evaluation(base_dir: str, cohorts_dir:str, ground_truth_file: str, 
     master_rows = []
     all_predictions = []
     per_class_rows = []
+    domain_rows = []
     all_incorrect = []
     all_not_in_gt = []
     all_not_in_pred = []
     skipped = []
+    collective_data = []   # per (model, mode): aligned y_true/y_pred for pooling across targets
     
     model_specific_modes = [m for m in modes if m != 'OO']
     has_oo = 'OO' in modes
@@ -1011,7 +1807,8 @@ def run_full_evaluation(base_dir: str, cohorts_dir:str, ground_truth_file: str, 
     logger.info(f"Source: {source_study}  →  Targets: {target_studies}")
     logger.info(f"Total configurations: {total_combos}")
     logger.info("=" * 90)
-    
+    compute_study_pair_class_imbalance(ground_truth_file=ground_truth_file, output_dir= output_dir)
+
     def _evaluate_combo(model_label, mode, data_dir, filename_model):
         nonlocal combo_idx
         results = []
@@ -1038,7 +1835,9 @@ def run_full_evaluation(base_dir: str, cohorts_dir:str, ground_truth_file: str, 
             
             pred = load_predictions(pred_file,
                         dict_maps[source_study.lower()],
-                        dict_maps[target_study.lower()])
+                        dict_maps[target_study.lower()],
+                        source_study=source_study,
+                        target_study=target_study)
             gt   = load_ground_truth(ground_truth_file, source_study, target_study,
                                     dict_maps[source_study.lower()],
                                     dict_maps[target_study.lower()])
@@ -1055,29 +1854,51 @@ def run_full_evaluation(base_dir: str, cohorts_dir:str, ground_truth_file: str, 
             
             metrics = compute_comprehensive_metrics(gt, pred)
             dist = analyze_class_distribution(gt, pred, study_pair)
+            domain_df = compute_domain_metrics(gt, pred)
+
+            for _, row in domain_df.iterrows():
+                domain_rows.append({
+                    'model': model_label,
+                    'mode': mode,
+                    'source_study': source_study,
+                    'target_study': target_study,
+                    'study_pair': study_pair,
+                    'domain': row['domain'],
+                    'n_pairs': row['n_pairs'],
+                    'n_classes_present': row['n_classes_present'],
+                    'accuracy': row['accuracy'],
+                    'f1_macro': row['f1_macro'],
+                    'f1_weighted': row['f1_weighted'],
+                    'f1_micro': row['f1_micro'],
+                    'class_distribution': row['class_distribution'],
+                })
+            collective_data.append({'model': model_label, 'mode': mode,
+                                     'target_study': target_study,
+                                     'y_true': metrics['y_true'], 'y_pred': metrics['y_pred']})
             
             combo_output_dir = os.path.join(output_dir, mode) if model_label == "N/A" else os.path.join(output_dir, model_label, mode)
             os.makedirs(combo_output_dir, exist_ok=True)
-            basic = evaluate_predictions(gt, pred, combo_output_dir, predict_studies_names)
+            basic = evaluate_predictions(gt, pred, combo_output_dir, predict_studies_names, source_study, target_study)
             all_predictions.append({'model': model_label, 'mode': mode,
-                        'target_study': target_study, 'pred_df': pred})
+                        'source_study': source_study, 'target_study': target_study, 'pred_df': pred})
             master_rows.append({
-                'model': model_label,
-                'mode': mode,
-                'source_study': source_study,
-                'target_study': target_study,
-                'study_pair': study_pair,
-                'total_gt_pairs': basic['total'],
-                'correct': basic['correct'],
-                'accuracy': round(metrics['accuracy'], 4),
-                'f1_weighted': round(metrics['f1_weighted'], 4),
-                'f1_macro': round(metrics['f1_macro'], 4),
-                'f1_micro': round(metrics['f1_micro'], 4),
-                'imbalance_ratio': round(dist['imbalance_ratio'], 2),
-                'predicted_not_in_gt': len(basic['not_in_ground_truth']),
-                'gt_not_in_pred': len(basic['not_in_predictions']),
-                'warnings': '; '.join(dist['warnings']) if dist['warnings'] else '',
-            })
+                    "model": model_label,
+                    "mode": mode,
+                    "source_study": source_study,
+                    "target_study": target_study,
+                    "study_pair": study_pair,
+                    "total_gt_pairs": basic["total"],
+                    "correct": basic["correct"],
+                    "accuracy": round(metrics["accuracy"], 4),
+                    "f1_weighted": round(metrics["f1_weighted"], 4),
+                    "f1_macro": round(metrics["f1_macro"], 4),
+                    "f1_micro": round(metrics["f1_micro"], 4),
+                    "imbalance_ratio": round(dist["imbalance_ratio"], 2),
+                    "predicted_not_in_gt": len(basic["not_in_ground_truth"]),
+                    "positive_gt_not_retrieved": len(basic["not_in_predictions"]),
+                    "positive_candidate_recall": round(basic["positive_candidate_recall"], 4),
+                    "warnings": "; ".join(dist["warnings"]) if dist["warnings"] else "",
+                })
             
             pcm = metrics['per_class_metrics']
             for _, row in pcm.iterrows():
@@ -1251,7 +2072,9 @@ def run_full_evaluation(base_dir: str, cohorts_dir:str, ground_truth_file: str, 
                     
                     pred = load_predictions(pred_file,
                         dict_maps[source_study.lower()],
-                        dict_maps[target_study.lower()])
+                        dict_maps[target_study.lower()],
+                        source_study=source_study,
+                        target_study=target_study)
                     gt   = load_ground_truth(ground_truth_file, source_study, target_study,
                                             dict_maps[source_study.lower()],
                                             dict_maps[target_study.lower()])
@@ -1261,24 +2084,68 @@ def run_full_evaluation(base_dir: str, cohorts_dir:str, ground_truth_file: str, 
                         continue
                     metrics = compute_comprehensive_metrics(gt, pred)
                     dist = analyze_class_distribution(gt, pred, study_pair)
+                    domain_df = compute_domain_metrics(gt, pred)
+
+                    for _, row in domain_df.iterrows():
+                        domain_rows.append({
+                            'model': 'N/A',
+                        'mode': 'OO',
+                            'source_study': source_study,
+                            'target_study': target_study,
+                            'study_pair': study_pair,
+                            'domain': row['domain'],
+                            'n_pairs': row['n_pairs'],
+                            'n_classes_present': row['n_classes_present'],
+                            'accuracy': row['accuracy'],
+                            'f1_macro': row['f1_macro'],
+                            'f1_weighted': row['f1_weighted'],
+                            'f1_micro': row['f1_micro'],
+                            'class_distribution': row['class_distribution'],
+                        })
+                    collective_data.append({'model': 'N/A', 'mode': 'OO',
+                                             'target_study': target_study,
+                                             'y_true': metrics['y_true'], 'y_pred': metrics['y_pred']})
                     combo_output_dir = os.path.join(output_dir, "OO")
                     os.makedirs(combo_output_dir, exist_ok=True)
-                    basic = evaluate_predictions(gt, pred, combo_output_dir, predict_studies_names)
+                    basic = evaluate_predictions(gt, pred, combo_output_dir, predict_studies_names, source_study, target_study)
+                    all_predictions.append({'model': 'N/A', 'mode': 'OO',
+                                            'source_study': source_study,
+                                            'target_study': target_study, 'pred_df': pred})
+                    if len(basic['incorrect_predictions']) > 0:
+                        inc = basic['incorrect_predictions'].copy()
+                        inc['model'] = 'N/A'
+                        inc['mode'] = 'OO'
+                        all_incorrect.append(inc)
+                    if len(basic['not_in_ground_truth']) > 0:
+                        nig = basic['not_in_ground_truth'].copy()
+                        nig['model'] = 'N/A'
+                        nig['mode'] = 'OO'
+                        all_not_in_gt.append(nig)
+                    if len(basic['not_in_predictions']) > 0:
+                        nip = basic['not_in_predictions'].copy()
+                        nip['model'] = 'N/A'
+                        nip['mode'] = 'OO'
+                        all_not_in_pred.append(nip)
                     
                     master_rows.append({
                         'model': 'N/A', 'mode': 'OO',
-                        'source_study': source_study, 'target_study': target_study,
-                        'study_pair': study_pair,
-                        'total_gt_pairs': basic['total'], 'correct': basic['correct'],
-                        'accuracy': round(metrics['accuracy'], 4),
-                        'f1_weighted': round(metrics['f1_weighted'], 4),
-                        'f1_macro': round(metrics['f1_macro'], 4),
-                        'f1_micro': round(metrics['f1_micro'], 4),
-                        'imbalance_ratio': round(dist['imbalance_ratio'], 2),
-                        'predicted_not_in_gt': len(basic['not_in_ground_truth']),
-                        'gt_not_in_pred': len(basic['not_in_predictions']),
-                        'warnings': '; '.join(dist['warnings']) if dist['warnings'] else '',
+                        "source_study": source_study,
+                        "target_study": target_study,
+                        "study_pair": study_pair,
+                        "total_gt_pairs": basic["total"],
+                        "correct": basic["correct"],
+                        "accuracy": round(metrics["accuracy"], 4),
+                        "f1_weighted": round(metrics["f1_weighted"], 4),
+                        "f1_macro": round(metrics["f1_macro"], 4),
+                        "f1_micro": round(metrics["f1_micro"], 4),
+                        "imbalance_ratio": round(dist["imbalance_ratio"], 2),
+                        "predicted_not_in_gt": len(basic["not_in_ground_truth"]),
+                        "positive_gt_not_retrieved": len(basic["not_in_predictions"]),
+                        "positive_candidate_recall": round(basic["positive_candidate_recall"], 4),
+                        "warnings": "; ".join(dist["warnings"]) if dist["warnings"] else ""
                     })
+
+            
                     for _, row in metrics['per_class_metrics'].iterrows():
                         per_class_rows.append({
                             'model': 'N/A', 'mode': 'OO', 'study_pair': study_pair,
@@ -1309,7 +2176,9 @@ def run_full_evaluation(base_dir: str, cohorts_dir:str, ground_truth_file: str, 
                     
                     pred = load_predictions(pred_file,
                         dict_maps[source_study.lower()],
-                        dict_maps[target_study.lower()])
+                        dict_maps[target_study.lower()],
+                        source_study=source_study,
+                        target_study=target_study)
                     gt   = load_ground_truth(ground_truth_file, source_study, target_study,
                                             dict_maps[source_study.lower()],
                                             dict_maps[target_study.lower()])
@@ -1319,23 +2188,64 @@ def run_full_evaluation(base_dir: str, cohorts_dir:str, ground_truth_file: str, 
                         continue
                     metrics = compute_comprehensive_metrics(gt, pred)
                     dist = analyze_class_distribution(gt, pred, study_pair)
+                    domain_df = compute_domain_metrics(gt, pred)
+                    for _, row in domain_df.iterrows():
+                        domain_rows.append({
+                            'model': 'N/A',
+                            'mode': 'OO',
+                            'source_study': source_study,
+                            'target_study': target_study,
+                            'study_pair': study_pair,
+                            'domain': row['domain'],
+                            'n_pairs': row['n_pairs'],
+                            'n_classes_present': row['n_classes_present'],
+                            'accuracy': row['accuracy'],
+                            'f1_macro': row['f1_macro'],
+                            'f1_weighted': row['f1_weighted'],
+                            'f1_micro': row['f1_micro'],
+                            'class_distribution': row['class_distribution'],
+                        })
+                    collective_data.append({'model': 'N/A', 'mode': 'OO',
+                                             'target_study': target_study,
+                                             'y_true': metrics['y_true'], 'y_pred': metrics['y_pred']})
                     combo_output_dir = os.path.join(output_dir, "OO")
                     os.makedirs(combo_output_dir, exist_ok=True)
-                    basic = evaluate_predictions(gt, pred, combo_output_dir, predict_studies_names)
+                    basic = evaluate_predictions(gt, pred, combo_output_dir, predict_studies_names, source_study, target_study)
+                    all_predictions.append({'model': 'N/A', 'mode': 'OO',
+                                            'source_study': source_study,
+                                            'target_study': target_study, 'pred_df': pred})
+                    if len(basic['incorrect_predictions']) > 0:
+                        inc = basic['incorrect_predictions'].copy()
+                        inc['model'] = 'N/A'
+                        inc['mode'] = 'OO'
+                        all_incorrect.append(inc)
+                    if len(basic['not_in_ground_truth']) > 0:
+                        nig = basic['not_in_ground_truth'].copy()
+                        nig['model'] = 'N/A'
+                        nig['mode'] = 'OO'
+                        all_not_in_gt.append(nig)
+                    if len(basic['not_in_predictions']) > 0:
+                        nip = basic['not_in_predictions'].copy()
+                        nip['model'] = 'N/A'
+                        nip['mode'] = 'OO'
+                        all_not_in_pred.append(nip)
                     
                     master_rows.append({
                         'model': 'N/A', 'mode': 'OO',
-                        'source_study': source_study, 'target_study': target_study,
-                        'study_pair': study_pair,
-                        'total_gt_pairs': basic['total'], 'correct': basic['correct'],
-                        'accuracy': round(metrics['accuracy'], 4),
-                        'f1_weighted': round(metrics['f1_weighted'], 4),
-                        'f1_macro': round(metrics['f1_macro'], 4),
-                        'f1_micro': round(metrics['f1_micro'], 4),
-                        'imbalance_ratio': round(dist['imbalance_ratio'], 2),
-                        'predicted_not_in_gt': len(basic['not_in_ground_truth']),
-                        'gt_not_in_pred': len(basic['not_in_predictions']),
-                        'warnings': '; '.join(dist['warnings']) if dist['warnings'] else '',
+                        "source_study": source_study,
+                        "target_study": target_study,
+                        "study_pair": study_pair,
+                        "total_gt_pairs": basic["total"],
+                        "correct": basic["correct"],
+                        "accuracy": round(metrics["accuracy"], 4),
+                        "f1_weighted": round(metrics["f1_weighted"], 4),
+                        "f1_macro": round(metrics["f1_macro"], 4),
+                        "f1_micro": round(metrics["f1_micro"], 4),
+                        "imbalance_ratio": round(dist["imbalance_ratio"], 2),
+                        "predicted_not_in_gt": len(basic["not_in_ground_truth"]),
+                        "positive_gt_not_retrieved": len(basic["not_in_predictions"]),
+                        "positive_candidate_recall": round(basic["positive_candidate_recall"], 4),
+                        "warnings": "; ".join(dist["warnings"]) if dist["warnings"] else ""
                     })
                     for _, row in metrics['per_class_metrics'].iterrows():
                         per_class_rows.append({
@@ -1377,6 +2287,7 @@ def run_full_evaluation(base_dir: str, cohorts_dir:str, ground_truth_file: str, 
     # =========================================================================
     master_df = pd.DataFrame(master_rows)
     per_class_df = pd.DataFrame(per_class_rows)
+    domain_df = pd.DataFrame(domain_rows)
     skipped_df = pd.DataFrame(skipped) if skipped else pd.DataFrame()
     
     if master_df.empty:
@@ -1393,6 +2304,33 @@ def run_full_evaluation(base_dir: str, cohorts_dir:str, ground_truth_file: str, 
     per_class_path = os.path.join(output_dir, "master_per_class_metrics.csv")
     per_class_df.to_csv(per_class_path, encoding='utf-8', index=False)
     logger.info(f"  Saved per-class metrics ({len(per_class_df)} rows) to: {per_class_path}")
+
+    if not domain_df.empty:
+        domain_path = os.path.join(output_dir, "master_domain_metrics.csv")
+        domain_df.to_csv(domain_path, encoding='utf-8', index=False)
+        logger.info(f"Saved domain metrics ({len(domain_df)} rows) to: {domain_path}")
+    pooled_domain_df = (
+                domain_df
+                .groupby(['model', 'mode', 'domain'], as_index=False)
+                .agg(
+                    n_pairs=('n_pairs', 'sum'),
+                    mean_accuracy=('accuracy', 'mean'),
+                    mean_f1_macro=('f1_macro', 'mean'),
+                    mean_f1_weighted=('f1_weighted', 'mean')
+                )
+            )
+    pooled_domain_df.to_csv(
+    os.path.join(output_dir, "pooled_domain_metrics.csv"),
+    encoding='utf-8',
+    index=False
+)
+    # Collective (pooled-over-all-targets) metrics per model × mode
+    collective_df = compute_collective_metrics(collective_data, source_study)
+    if not collective_df.empty:
+        collective_path = os.path.join(output_dir, "collective_evaluation_summary.csv")
+        collective_df.to_csv(collective_path, encoding='utf-8', index=False)
+        logger.info(f"  Saved collective (pooled-over-targets) summary "
+                    f"({len(collective_df)} rows) to: {collective_path}")
     
     if all_incorrect:
         inc_df = pd.concat(all_incorrect, ignore_index=True)
@@ -1471,48 +2409,134 @@ def run_full_evaluation(base_dir: str, cohorts_dir:str, ground_truth_file: str, 
     logger.info("=" * 90)
     logger.info(master_df.to_string(index=False))
     
+    if not collective_df.empty:
+        logger.info("\n" + "=" * 90)
+        logger.info(f"COLLECTIVE METRICS — pooled over ALL targets ({source_study} → all), per model × mode")
+        logger.info("=" * 90)
+        logger.info(collective_df.to_string(index=False))
+    
     # Ranking by F1 Macro (averaged across study pairs)
-    ranking = master_df.groupby(['model', 'mode']).agg({
-        'f1_macro': 'mean',
-    }).reset_index().sort_values('f1_macro', ascending=False)
-    ranking.columns = ['Model', 'Mode', 'Avg F1(M)']
+    # ranking = master_df.groupby(['model', 'mode']).agg({
+    #     'f1_macro': 'mean',
+    # }).reset_index().sort_values('f1_macro', ascending=False)
+    # ranking.columns = ['Model', 'Mode', 'Avg F1(M)']
     
-    logger.info("\n" + "=" * 90)
-    logger.info("RANKING BY AVG F1 MACRO (across all study pairs)")
-    logger.info("=" * 90)
-    for rank, (_, row) in enumerate(ranking.iterrows(), 1):
-        avg_f1_macro = round(row['Avg F1(M)'], 2)
-        model_label = 'OO (baseline)' if row['Mode'] == 'OO' else f"{row['Model']:>10s} / {row['Mode']:<5s}"
-        logger.info(f"  #{rank}  {model_label}  |  "
-              f"F1(M)={avg_f1_macro:>5.2f}")
+    # logger.info("\n" + "=" * 90)
+    # logger.info("RANKING BY AVG F1 MACRO (across all study pairs)")
+    # logger.info("=" * 90)
+    # for rank, (_, row) in enumerate(ranking.iterrows(), 1):
+    #     avg_f1_macro = round(row['Avg F1(M)'], 2)
+    #     model_label = 'OO (baseline)' if row['Mode'] == 'OO' else f"{row['Model']:>10s} / {row['Mode']:<5s}"
+    #     logger.info(f"  #{rank}  {model_label}  |  "
+    #           f"F1(M)={avg_f1_macro:>5.3f}")
     
-    ranking_path = os.path.join(output_dir, "ranking_by_f1_macro.csv")
-    ranking.to_csv(ranking_path,encoding='utf-8', index=False)
-    logger.info(f"\n  Saved ranking to: {ranking_path}")
+    # ranking_path = os.path.join(output_dir, "ranking_by_f1_macro.csv")
+    # ranking.to_csv(ranking_path,encoding='utf-8', index=False)
+    # logger.info(f"\n  Saved ranking to: {ranking_path}")
     
     return master_df, per_class_df
 
 
 def evaluate_f1_score(ground_truth: pd.DataFrame, predictions: pd.DataFrame) -> dict:
-    """Evaluates the predictions against the ground truth and returns F1 score."""
-    merged_df = pd.merge(ground_truth, predictions, on=['src_var', 'tgt_var'], 
-                         how='left', suffixes=('_gt', '_pred'))
+    """Evaluates predictions against ground truth at variable-pair level."""
+    _require_columns(ground_truth, EVAL_KEY_COLS + ['correct class'], 'ground_truth')
+    _require_columns(predictions, EVAL_KEY_COLS + ['predicted class'], 'predictions')
+
+    gt_m = ground_truth[EVAL_KEY_COLS + ['correct class']]
+    pr_m = predictions[EVAL_KEY_COLS + ['predicted class']]
+    merged_df = pd.merge(gt_m, pr_m, on=EVAL_KEY_COLS, how='left')
     merged_df['predicted class'] = merged_df['predicted class'].fillna('not applicable')
-    
+
     y_true = merged_df['correct class']
     y_pred = merged_df['predicted class']
-    
+
     f1_weighted = f1_score(y_true, y_pred, average='weighted', zero_division=0)
     f1_macro = f1_score(y_true, y_pred, average='macro', zero_division=0)
     report = classification_report(y_true, y_pred, zero_division=0)
-    
+
     logger.info("Classification Report:")
     logger.info(report)
-    
+
     return {
         'f1_score': f1_weighted,
         'f1_macro': f1_macro
     }
+
+def compute_study_pair_class_imbalance(
+    ground_truth_file: str,
+    positive_only: bool = False,
+    output_dir: str | None = None,
+) -> pd.DataFrame:
+    """Per (source_study, target_study) harmonization-level distribution and imbalance ratio.
+
+    The imbalance ratio is the majority-class count divided by the minority-class
+    count, computed over classes that are *present* in the pair (zero-support
+    classes are ignored, consistent with analyze_class_distribution). With
+    positive_only=True the 'not applicable' tier is excluded, so the ratio reflects
+    imbalance among the harmonizable tiers (identical / complete / compatible /
+    partial) only.
+
+    Counts are taken on de-duplicated (source_var, target_var) pairs within each
+    study pair, i.e. before temporal collapsing — they reproduce the raw GT
+    value_counts logged at load time.
+    """
+    gt = pd.read_excel(ground_truth_file, sheet_name=0)
+    gt = gt.drop_duplicates(
+        subset=["source_study", "target_study", "source_var_name", "target_var_name"],
+        keep="first",
+    )
+
+    gt["__study_src"] = gt["source_study"].astype(str).str.strip().str.lower()
+    gt["__study_tgt"] = gt["target_study"].astype(str).str.strip().str.lower()
+    gt["__level"] = gt["harmonization level"].astype(str).str.strip().str.lower()
+
+    if positive_only:
+        gt = gt[gt["__level"].isin(POSITIVE_GT_CLASSES)]
+
+    level_order = [
+        "identical match", "compatible match",
+        "partial match", "not applicable",
+    ]
+
+    rows = []
+    for (src, tgt), g in gt.groupby(["__study_src", "__study_tgt"]):
+        counts = g["__level"].value_counts()
+        present = counts[counts > 0]
+        if present.empty:
+            continue
+        imbalance = present.max() / present.min()
+
+        row = {
+            "source_study": src,
+            "target_study": tgt,
+            "n_pairs": int(counts.sum()),
+            "n_classes_present": int((counts > 0).sum()),
+        }
+        for lvl in level_order:
+            row[lvl] = int(counts.get(lvl, 0))
+        row["majority_class"] = present.idxmax()
+        row["minority_class"] = present.idxmin()
+        row["imbalance_ratio"] = round(float(imbalance), 2)
+        rows.append(row)
+
+    cols = (
+        ["source_study", "target_study", "n_pairs", "n_classes_present"]
+        + level_order
+        + ["majority_class", "minority_class", "imbalance_ratio"]
+    )
+    out = (
+        pd.DataFrame(rows)[cols]
+        .sort_values(["source_study", "target_study"])
+        .reset_index(drop=True)
+    )
+
+    if output_dir is not None:
+        tag = "positive_only" if positive_only else "all_classes"
+        path = os.path.join(output_dir, f"study_pair_class_imbalance_{tag}.csv")
+        out.to_csv(path, encoding="utf-8", index=False)
+        logger.info(f" Saved study-pair imbalance table ({len(out)} rows) to: {path}")
+
+    return out
 
 
 # ============================================================================
@@ -1527,14 +2551,12 @@ if __name__ == "__main__":
     #                     "sapbert+llama-4-maverick"
     parser = argparse.ArgumentParser(description="Comprehensive cross-model × cross-mode evaluation")
     parser.add_argument('--models', nargs='+',
-                        default=["biolord+no_llm","sapbert+no_llm", "cardioembed+no_llm", "biolord+gpt-oss-120b","biolord+llama-4-maverick",
-                        "biolord+gemini-3.1-flash-lite-preview","sapbert+gpt-oss-120b","sapbert+llama-4-maverick","sapbert+gemini-3.1-flash-lite-preview",
-                        "cardioembed+gpt-oss-120b","cardioembed+llama-4-maverick","cardioembed+gemini-3.1-flash-lite-preview"],
+                        default=["biolord+no_llm","openai+no_llm","sapbert+no_llm", "biolord+gpt-oss_120b_local","biolord+gemini-3.1-flash-lite_ng","biolord+gemini-3.1-flash-lite","biolord+deepseek-v4-pro","biolord+deepseek-v4-flash_ng","biolord+gpt-oss-120b_ng","sapbert+gemini-3.1-flash-lite","sapbert+gpt-oss-120b","biolord+gpt-oss-120b","sapbert+deepseek-v4-flash","biolord+deepseek-v4-flash","openai+gemini-3.1-flash-lite","openai+gpt-oss-120b","openai+deepseek-v4-flash"],
                         help='Embedding model names to evaluate')
     parser.add_argument('--modes', nargs='+', default=["OO","NE", "OEH"],
                         help='Mapping modes to evaluate')
     parser.add_argument('--source', default="time-chf", help='Source study name')
-    parser.add_argument('--targets', nargs='+', default=["aachen-hf", "gissi-hf", "viennahf-register"],
+    parser.add_argument('--targets', nargs='+', default=["aachen-hf", "gissi-hf",  "viennahf-register", "biostat-chf"],
                         help='Target study names')
     parser.add_argument('--single-model', type=str, default=None,
                         help='Run evaluation for a single model only (e.g. sapbert)')

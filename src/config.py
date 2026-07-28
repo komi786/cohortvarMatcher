@@ -8,13 +8,17 @@ load_dotenv()  # reads .env into os.environ
 @dataclass(frozen=True)
 class Settings:
     # Thresholds
-    ADAPTIVE_THRESHOLD: float = 0.55 # minimum score for adaptive retrival from vector db
-    ADAPTIVE_ALPHA = 0.9 # upper bound
-    LIMIT: int = 5 # limit for adaptive retrival from vector db
+    ADAPTIVE_THRESHOLD: float = 0.5 # minimum score for adaptive retrival from vector db
+    ADAPTIVE_ALPHA = 0.8 # upper bound
+    LIMIT: int = 10 # limit for adaptive retrival from vector db
 
     DATE_HINTS: List[str] = field(default_factory=lambda: ["visit date", "date of visit", "date of event", "event date"])
     # TOGETHER_API_KEY: str = field(default_factory=lambda: os.getenv("TOGETHER_API_KEY"))   
     OPENROUTER_API_KEY: str = field(default_factory=lambda: os.getenv("OPENROUTER_API_KEY"))
+    FIREWORKS_API_KEY: str = field(default_factory=lambda: os.getenv("FIREWORKS_API_KEY"))
+    FIREWORKS_BASE_URL: str = "https://api.fireworks.ai/inference/v1"
+    LITELLM_BASE_URL: str = field(default_factory=lambda: os.getenv("LITELLM_BASE_URL", "https://litellm.137.120.31.164.nip.io/v1"))
+    LITELLM_API_KEY: str = field(default_factory=lambda: os.getenv("LITELLM_API_KEY", "sk-noauth"))
     OLLAMA_URL = "localhost:11434"
     CROSS_CATS: Set[str] = field(default_factory=lambda: {
         "measurement", "observation", "condition_occurrence", 
@@ -39,7 +43,7 @@ class Settings:
         "code": "loinc:39156-5",
         "label": "Body mass index (BMI) [Ratio]",
         "unit": "ucum:kg/m2",
-        "required_omops": [3016723, 3025315],  # Weight, Height
+        "required_omops": [3036277, 3025315],  #  Height,Weight
         "category": "measurement",
         "data_type": "continuous_variable"
     },
@@ -49,7 +53,7 @@ class Settings:
         "code": "snomed:1556501000000100",
         "label": "Estimated creatinine clearance calculated using actual body weight Cockcroft-Gault formula",
         "unit": "ucum:ml/min",
-        "required_omops": [3025315, 3016723, 3022304, 46235213],  # Height, Weight, Creatinine, Age/Gender proxy
+        "required_omops": [3036277, 3025315, 3022304, 46235213,4324383],  # Height, Weight,  Age/Gender proxy, Creatinine
         "category": "measurement",
         "data_type": "continuous_variable"
     },
@@ -59,7 +63,7 @@ class Settings:
         "code": "loinc:33914-3",
         "label": "Glomerular filtration rate/1.73 sq M.predicted by Creatinine-based formula (CKD-EPI)",
         "unit": "ucum:mL/min/{1.73_m2}",
-        "required_omops": [4324383, 4265453, 46235213],       # Creatinine, Age, Sex assigned at birth
+        "required_omops": [3025315, 3016723, 3022304, 46235213],  # Weight, Serum creatinine, Age, Sex/Gender proxy
         "category": "measurement",
         "data_type": "continuous_variable",
         "formula": "CKD-EPI 2021 race-free: 142*min(Scr/k,1)^a*max(Scr/k,1)^-1.200*0.9938^Age*1.012[F] ; k=0.7[F]/0.9[M], a=-0.241[F]/-0.302[M]"
@@ -70,7 +74,7 @@ class Settings:
         "code": "loinc:48643-1",
         "label": "Glomerular filtration rate/1.73 sq M predicted by Creatinine-based formula (MDRD)",
         "unit": "ucum:mL/min/{1.73_m2}",
-        "required_omops": [4324383, 4265453, 46235213],        # Creatinine, Age, Sex
+        "required_omops": [4324383, 3022304, 46235213],        # Creatinine, Age, Sex assigned at birth
         "category": "measurement",
         "data_type": "continuous_variable",
         "formula": "175 * Scr^-1.154 * Age^-0.203 * 0.742[F] * 1.212[Black]"
@@ -151,7 +155,32 @@ class Settings:
         "category": "measurement",
         "data_type": "continuous_variable",
         "formula": "QTc = QT_ms / sqrt(RR_s) ; RR_s = 60/HR"
-    }
+    },
+    {
+    "name": "Eosinophils",
+    "omop_id": 3013115,                                    # Eosinophils [#/volume] in blood
+    "code": "loinc:26449-9",
+    "label": "Eosinophils [#/volume] in blood",
+    "unit": "ucum:/nL",                                    # CSV stored 'ucum:/nl' — confirm casing
+    "required_omops": [43055367,4298431],    # Eosinophils/Leukocytes number fraction, Leukocytes [#/volume]  — verify
+    "category": "measurement",
+    "data_type": "continuous_variable",
+    "formula": "Eos[#/vol] = Eos_fraction × Leukocytes[#/vol] ; Eos_fraction = pct/100 when reported in %"
+},
+{
+    "name": "Age_at_baseline",
+    "omop_id": 3022304,
+    "code": "loinc:30525-0",
+    "label": "Age",
+    "unit": "ucum:a",
+    "required_omops": [
+        4083587,  # Date of birth
+        4231970,  # Date of visit
+    ],
+    "category": "person",
+    "data_type": "continuous_variable",
+    "formula": "completed calendar years between date of birth and baseline date",
+}
 
     ])
     admins: str = field(default_factory=lambda: os.getenv("ADMINS", ""))

@@ -22,6 +22,7 @@ from src.utils import (
         OntologyNamespaces,
         get_member_studies
     )
+from src.utils import canonical_var_key
 from src.vector_db import generate_studies_embeddings, _embed_cache
 
 from src.graph_similarity import _EMBED_CACHE
@@ -50,8 +51,8 @@ def create_study_metadata_graph(file_path, recreate=False):
             return g
         else:
             return None
-    else:
-        print("Recreate flag is set to False. Skipping processing of study metadata.")
+    # else:
+    #     print("Recreate flag is set to False. Skipping processing of study metadata.")
 
 
 def create_cohort_specific_metadata_graph(dir_path, recreate=False):
@@ -78,7 +79,7 @@ def create_cohort_specific_metadata_graph(dir_path, recreate=False):
                     # Optionally single out an EDA JSON
                     if os.path.basename(file).lower().startswith("eda") and file.lower().endswith(".json"):
                         eda_file = file
-                # print(f"Processing cohort: {cohort_folder} at path: {cohort_path} for metadata file: {cohort_metadata_file}")
+                print(f"Processing cohort: {cohort_folder} at path: {cohort_path} for metadata file: {cohort_metadata_file}")
                 if cohort_metadata_file:
 
                     g, cohort_id = process_variables_metadata_file(cohort_metadata_file, cohort_name=cohort_folder, eda_file_path=eda_file, study_metadata_graph_file_path=f"{base_path}/data/graphs/studies_metadata.trig")
@@ -94,7 +95,7 @@ def create_cohort_specific_metadata_graph(dir_path, recreate=False):
                 
             else:
                 print(f"Skipping non-directory file: {cohort_folder}")
-            # print(f"Base path: {base_path}")
+            print(f"Base path: {base_path}")
     else:
         print("Recreate flag is set to False. Skipping processing of cohort metadata.")
 
@@ -108,19 +109,19 @@ def combine_all_mappings_to_json(source_study, target_studies, output_dir, json_
             f"{source_study}_{target}_{model_name}+{llm_tag}_{mapping_mode}_full.csv",
         )
         if not os.path.exists(csv_file):
-            print(f"⚠️ Missing: {csv_file}")
+            # print(f"⚠️ Missing: {csv_file}")
             continue
         df = pd.read_csv(csv_file)
-        for _, row in df.iterrows():
+        for row in df.to_dict(orient="records"):
             src_var = str(row["source"]).strip()
             if not src_var:
                 continue
-            entry = {"target_study": target, **row.drop(labels=["source"]).to_dict()}
+            entry = {"target_study": target, **{k: v for k, v in row.items() if k != "source"}}
             mappings.setdefault(src_var, []).append(entry)
     final_json = {k: {"from": source_study, "mappings": v} for k, v in mappings.items()}
     with open(json_path, "w", encoding="utf-8") as f:
         json.dump(final_json, f, indent=2, ensure_ascii=False, default=str)
-    print(f"✅ saved {len(final_json)} source vars → {json_path}")
+    # print(f"✅ saved {len(final_json)} source vars → {json_path}")
 
 def concatenate_member_csvs_to_parent(
     source_study: str,
@@ -155,12 +156,12 @@ def concatenate_member_csvs_to_parent(
             member_df = pd.read_csv(member_csv_path)
             member_df['member_study'] = member  # Mark rows as from member
             dfs_to_concat.append(member_df)
-            print(f"  📎 Appending {member} ({len(member_df)} rows) to {parent_study}")
+            # print(f"  📎 Appending {member} ({len(member_df)} rows) to {parent_study}")
             # delete memeber csv after appending
             os.remove(member_csv_path)
-            print(f"    🗑️ Deleted member CSV: {member_csv_path}")
-        else:
-            print(f"  ⚠️ Member CSV not found: {member_csv_path}")
+            # print(f"    🗑️ Deleted member CSV: {member_csv_path}")
+        # else:
+        #     print(f"  ⚠️ Member CSV not found: {member_csv_path}")
     
     # Concatenate all DataFrames
     if len(dfs_to_concat) > 1:
@@ -171,13 +172,98 @@ def concatenate_member_csvs_to_parent(
             
         # Save back to parent CSV (overwrites with combined data)
         combined_df.to_csv(parent_csv_path, encoding='utf-8',index=False)
-        print(f"✅ Combined {len(dfs_to_concat)} CSVs into {parent_study}: {len(combined_df)} total rows")
+        # print(f"✅ Combined {len(dfs_to_concat)} CSVs into {parent_study}: {len(combined_df)} total rows")
+
+def load_study_variables(cohort_dir: str, study_name: str) -> list:
+    """Read a study's full variable list straight from its data dictionary.
+
+    Deliberately independent of the pipeline's VariableCollection: that one is
+    narrowed by `_restrict_source_variables` to the benchmark scope, whereas the
+    expansion needs every column a downstream merge will actually meet in the
+    data. Reading the dictionary also means nothing in llm/run.py has to change.
+
+    Returns [] when no dictionary is found, so a missing study degrades to
+    "no expansion" instead of failing the run.
+    """
+    folder = None
+    for entry in os.listdir(cohort_dir):
+        if entry.lower() == study_name.lower() and os.path.isdir(os.path.join(cohort_dir, entry)):
+            folder = os.path.join(cohort_dir, entry)
+            break
+    if folder is None:
+        return []
+
+    candidates = [p for p in glob.glob(os.path.join(folder, "*.csv")) if os.path.isfile(p)]
+    if not candidates:
+        return []
+
+    df = pd.read_csv(sorted(candidates)[-1], low_memory=False)
+    df = df.rename(columns={c: c.strip().lower() for c in df.columns})
+
+    def pick(*aliases):
+        return next((a for a in aliases if a in df.columns), None)
+
+    name_col = pick("variablename", "variable_name", "name")
+    visit_col = pick("visit concept name", "visits", "visit")
+    omop_col = pick("variable omop id", "variable_omop_id")
+    ctx_col = pick("additional context omop id", "additional_context_omop_id")
+    if not name_col or not omop_col:
+        return []
+
+    cat_col = pick("categorical")
+    unit_col = pick("units", "unit")
+    type_col = pick("vartype", "var_type")
+
+    return [
+        {
+            "name": row[name_col],
+            "visit": row[visit_col] if visit_col else "",
+            "main_id": row[omop_col],
+            "context_ids": row[ctx_col] if ctx_col else None,
+            # Encoding, used to decide whether a sibling at another timepoint is
+            # really the same variable — Orthopnea3 (0/1/2/3) and Orthopnea3_01
+            # (yes/no) share a concept but are not interchangeable.
+            "categorical": row[cat_col] if cat_col else "",
+            "units": row[unit_col] if unit_col else "",
+            "vartype": row[type_col] if type_col else "",
+        }
+        for _, row in df.iterrows()
+    ]
+
+
+
+
+
+def study_family(study: str) -> list[str]:
+    """Every study reachable from `study` through obi:has_member, itself first.
+
+    get_member_studies() already looks both ways, so the family is the same set
+    whichever member is named: study_family('gissi-hf') and
+    study_family('gissi-hf_outcomes') both return the pair. The walk is a
+    closure rather than a single hop so a chain (A has_member B has_member C)
+    still collapses to one family.
+    """
+    family, queue = [study], [study]
+    while queue:
+        for member in get_member_studies(queue.pop()):
+            if member not in family:
+                family.append(member)
+                queue.append(member)
+    return family
+
+
+def get_requested_variables(gt_excel, source_study="time-chf"):
+    df = pd.read_excel(gt_excel)                 # was read_excel("gt_excel") — reads a literal string
+    df = df[df["source_study"].str.strip().str.lower() == source_study]
+    names = df["source_var_name"].dropna().map(canonical_var_key)  # match the eval's key exactly
+    return sorted(set(names))                     # dedupe; raw .tolist() has duplicates
 
 if __name__ == '__main__':
     start_time = time.time()
     data_dir = 'data'
-    cohort_file_path = f"{data_dir}/cross_mapping_article_data"
-    cohorts_metadata_file = f"{data_dir}/studies_metadata-2.xlsx"
+    cohort_file_path = f"{data_dir}/cohorts"
+    # cohorts_metadata_file = f"{data_dir}/studies_metadata-2.xlsx"
+    cohorts_metadata_file = f"{data_dir}/studies_metadata-2_all.xlsx"
     output_dir = f"{data_dir}/output/cross_mapping"
 
     model_name = "biolord"
@@ -190,9 +276,11 @@ if __name__ == '__main__':
     embedding_model, _ = get_model(model_name)     
     # llm_matcher = LocalLLMConceptMatcher(models=["llama3.3:70b", "llama3.1:latest"])
     vector_db, embedding_model = generate_studies_embeddings(cohort_file_path, "localhost", collection_name, model_name=model_name, embedding_mode=embedding_mode, recreate_db=False)
-    source_study = "time-chf"
-    target_studies = ["viennahf-register","gissi-hf","aachen-hf"]
-    # target_studies = ["gissi-hf"]
+    # source_study = "time-chf"
+    # target_studies = ["aachen-hf","biostat-chf", "viennahf-register", "gissi-hf", "tim-hf","check-hf"]
+
+    source_study = "gissi-hf"
+    target_studies = ["time-chf","biostat-chf", "viennahf-register", "aachen-hf"]
     clear_all_caches()
     new_studies = []
     parent_to_members = defaultdict[Any, list](list)
@@ -202,15 +290,11 @@ if __name__ == '__main__':
             parent_to_members.setdefault(tstudy, []).extend(member_studies)
             new_studies.extend(member_studies)
     target_studies.extend(new_studies)
-
     print(f"connected studies: {parent_to_members}")
-    omop_id_tracker = {} 
-    # "gpt-4.1-2025-04-14" 
-    # llama3.3:70b,openrouter/openai/gpt-oss-120b:free,  openrouter/google/gemini-3.1-flash-lite-preview, openrouter/meta-llama/llama-4-maverick:nitro "gpt-5-mini", gemini-2.5-flash,llama3.3:70b, meta-llama/Llama-3.3-70B-Instruct-Turbo, meta-llama/Llama-4-Maverick-17B-128E-Instruct-FP8, openai/gpt-oss-120b, gemini-3.1-flash-lite-preview
-    llm_model = "openrouter/deepseek/deepseek-v4-flash:nitro"
-    # llm_model = None
-    # llm_model = "gemini-3.1-flash-lite-preview"
 
+    omop_id_tracker = {} 
+    # llm_models_used = ["litellm/gpt-oss:120b","gemini-3.1-flash-lite","openrouter/deepseek/deepseek-v4-flash:exacto"]
+    llm_model = "litellm/gpt-oss:120b" # running in openai with temp 0.5, top_p = 0.95 and thinking low
     mapping_dict = {}  
     omop_graph = None if mapping_mode == MappingType.NE.value else OmopGraphNX(csv_file_path=settings.concepts_file_path)
     mapper = StudyMapper(
@@ -219,11 +303,10 @@ if __name__ == '__main__':
          embedding_model=embedding_model, 
          omop_graph=omop_graph,
          mapping_mode=mapping_mode,
-         llm_model=llm_model
+         llm_model=llm_model,
          )
     llm_tag = llm_model.split("/")[-1] if llm_model and mapping_mode != MappingType.OO.value else "no_llm" 
-    llm_tag = llm_tag.replace(":nitro","")
-    llm_tag = llm_tag.replace(":free","")
+    llm_tag = llm_tag.replace(":120b","-120b")
     print(f"llm_tag: {llm_tag}")
     for tstudy in target_studies:
         print(f"Running experiment for {source_study} -> {tstudy} with model: {model_name} and mapping mode: {mapping_mode}")
@@ -231,7 +314,10 @@ if __name__ == '__main__':
             src_study=source_study,
             tgt_study=tstudy,
             mapping_mode=mapping_mode)        
-        mapping_transformed.to_csv(f'{output_dir}/{model_name}/{mapping_mode}/{source_study}_{tstudy}_{model_name}+{llm_tag}_{mapping_mode}_full.csv', index=False)
+        csv_path = f'{output_dir}/{model_name}/{mapping_mode}/{source_study}_{tstudy}_{model_name}+{llm_tag}_{mapping_mode}_full.csv'
+        if not mapping_transformed.empty:
+            mapping_transformed = mapping_transformed[mapping_transformed["harmonization_status"].str.strip().str.lower() != "not applicable"]
+        mapping_transformed.to_csv(csv_path, index=False)
     tstudy_str = "_".join(target_studies)
     
     for parent_study, members in parent_to_members.items():
@@ -255,4 +341,3 @@ if __name__ == '__main__':
         llm_tag=llm_tag
     )
     print(f"Total time taken: {time.time() - start_time:.2f} seconds")
-    # add_data_access_spec(study_name="time-chf", data_policy=['disease specific research'], data_modifier=['ethics approval required'], disease_concept_code="snomed:42343007", disease_concept_label="congestive heart failure", disease_concept_omop_id="42343007", study_metadata_graph_file_path=f"{data_dir}/graphs/studies_metadata.trig")

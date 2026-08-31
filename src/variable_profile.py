@@ -21,6 +21,7 @@ class VariableProfile:
                     identifier=identifier,
                     stat_label=val('stat_label'),
                     unit_label=val('unit_label'),
+                    unit_omop_id=val('unit_omop_id'),
                     data_type=val('data_type_val'),
                     categories_labels=val('all_cat_labels'),
                     categories_omop_ids=val('cat_omop_ids'),
@@ -34,7 +35,8 @@ class VariableProfile:
                 )
                 results.append(row.model_dump())
         except Exception as e:
-            print(f"Error chunk fetch: {e}")
+            return e
+            # print(f"Error chunk fetch: {e}")
         return results
 
   

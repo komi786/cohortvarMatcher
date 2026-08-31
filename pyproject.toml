@@ -1,7 +1,7 @@
 [project]
-name = "ClinVarMatcher"
+name = "cohortvarMatcher"
 version = "0.1.0"
-description = "clinical metadata variables harmonization"
+description = "cross studies clinical variables matching for automated data pooling"
 authors = [
     {name = "Komal Gilani",email = "komalsyeda29@gmail.com"}
 ]

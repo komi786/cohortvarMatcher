@@ -1,5 +1,5 @@
+import re
 from llm.config import settings
-
 
 class SPARQLQueryBuilder:
     """Responsible solely for constructing valid SPARQL queries."""
@@ -146,6 +146,7 @@ class SPARQLQueryBuilder:
         ?identifier 
         (SAMPLE(?_stat_label)    AS ?stat_label)
         (SAMPLE(?_unit_label)    AS ?unit_label)
+        (SAMPLE(?_unit_omop_id)  AS ?unit_omop_id)
         (SAMPLE(?_data_type_val) AS ?data_type_val)
         (MAX(?_min_v)            AS ?min_val)
         (MAX(?_max_v)            AS ?max_val)
@@ -188,7 +189,7 @@ class SPARQLQueryBuilder:
             cmeo:has_value ?_max_v .
         }}
 
-        #unit 
+        #unit
         OPTIONAL {{
             ?dataElement obi:has_measurement_unit_label ?unit_node .
 
@@ -198,6 +199,13 @@ class SPARQLQueryBuilder:
 
             OPTIONAL {{
                 ?unit_node cmeo:has_value ?raw_unit .
+            }}
+
+            # The unit's OMOP concept. UCUM strings are spelled many ways for one
+            # unit across these dictionaries, so the id is what says two units are
+            # the same; the label is kept for display and for the conversion table.
+            OPTIONAL {{
+                ?unit_node skos:closeMatch/iao:denotes/cmeo:has_value ?_unit_omop_id .
             }}
 
             BIND(COALESCE(?standard_unit, ?raw_unit) AS ?_unit_label)
@@ -253,9 +261,20 @@ class SPARQLQueryBuilder:
         # print(query)
         return query
         
+    @staticmethod
+    def _separator_insensitive(study_id: str) -> str:
+        """Collapse spaces, underscores and hyphens so the same study matches
+        regardless of how its name was punctuated in the source spreadsheet.
+        Mirrors the REPLACE() applied to dc:identifier inside the query."""
+        return re.sub(r"[\s_-]+", " ", str(study_id).strip().lower())
+
     @classmethod
     def build_study_context_query(cls,study_id: str) -> str:
-        study_id =  study_id.replace("_", " ")
+        # Study ids reach us as cohort folder / graph names ("gissi-hf_outcomes"),
+        # while dc:identifier carries the spreadsheet spelling of the same study
+        # ("gissi-hf outcomes"). Collapse separators on both sides so either
+        # spelling matches instead of rewriting one into the other.
+        study_key = cls._separator_insensitive(study_id)
         query =  f"""
         {cls.PREFIXES}
                 SELECT
@@ -270,72 +289,76 @@ class SPARQLQueryBuilder:
                     (GROUP_CONCAT(DISTINCT ?inc_val; SEPARATOR="; ")    AS ?inclusion_criteria)
                 WHERE {{
                     GRAPH <{cls.METADATA_GRAPH}> {{
-                
-                        # ── Anchor: study design execution ──
-                        ?sde  a  obi:study_design_execution ;
-                            dc:identifier  ?study_name .
-                        FILTER(LCASE(STR(?study_name)) = LCASE("{study_id}"))
-                
-                        # ── Study design type (e.g., "randomized_controlled_trial") ──
+
+                        ?sde a obi:study_design_execution ;
+                            dc:identifier ?study_name .
+                        FILTER(REPLACE(LCASE(STR(?study_name)), "[ _-]+", " ") = "{study_key}")
+
+                        # ── Study design ──
+                        OPTIONAL {{ ?sde ro:concretizes ?sdA . ?sdA cmeo:has_value ?design_val . }}
+
+                        # ── Study descriptor ──
                         OPTIONAL {{
-                            ?sde  ro:concretizes  ?sd .
-                            ?sd   cmeo:has_value  ?design_val .
+                            ?sde ro:concretizes ?sdB .
+                            ?sdB iao:is_about ?desc .
+                            ?desc a sio:descriptor ; rdfs:label ?type_label .
                         }}
-                
-                        # ── Study descriptor (e.g., "interventional") ──
-                        OPTIONAL {{
-                            ?sd   iao:is_about  ?desc .
-                            ?desc a sio:descriptor ;
-                                rdfs:label ?type_label .
-                        }}
-                
+
                         # ── Number of participants ──
                         OPTIONAL {{
-                            ?sd   ro:has_part  ?protocol .
-                            ?protocol  a  obi:protocol .
-                            ?protocol  ro:has_part  ?np .
-                            ?np   a  cmeo:number_of_participants ;
-                                cmeo:has_value  ?n_val .
+                            ?sde ro:concretizes ?sdC .
+                            ?sdC ro:has_part ?protC .
+                            ?protC a obi:protocol ; ro:has_part ?np .
+                            ?np a cmeo:number_of_participants ; cmeo:has_value ?n_val .
                         }}
-                
-                        # ── Population morbidity (key: tells LLM what conditions are guaranteed) ──
+
+                        # ── Population morbidity ──
                         OPTIONAL {{
-                            ?sd   ro:has_part  ?protocol2 .
-                            ?protocol2 ro:has_part ?elig .
-                            ?elig a obi:eligibility_criterion .
-                            ?elig ro:is_concretized_by ?enroll .
-                            ?enroll ro:has_output ?pop .
-                            ?pop  ro:has_characteristic ?morb .
-                            ?morb a obi:morbidity ;
-                                rdfs:label ?morb_label .
+                            ?sde ro:concretizes ?sdD .
+                            ?sdD ro:has_part ?protD .
+                            ?protD ro:has_part ?eligD .
+                            ?eligD a obi:eligibility_criterion ; ro:is_concretized_by ?enrollD .
+                            ?enrollD ro:has_output ?popD .
+                            ?popD ro:has_characteristic ?morb .
+                            ?morb a obi:morbidity ; rdfs:label ?morb_label .
                         }}
-                
+
                         # ── Age distribution ──
                         OPTIONAL {{
-                            ?pop  ro:has_characteristic ?age .
-                            ?age  a obi:age_distribution ;
-                                cmeo:has_value ?age_val .
+                            ?sde ro:concretizes ?sdE .
+                            ?sdE ro:has_part ?protE .
+                            ?protE ro:has_part ?eligE .
+                            ?eligE a obi:eligibility_criterion ; ro:is_concretized_by ?enrollE .
+                            ?enrollE ro:has_output ?popE .
+                            ?popE ro:has_characteristic ?age .
+                            ?age a obi:age_distribution ; cmeo:has_value ?age_val .
                         }}
-                
+
                         # ── Population location ──
                         OPTIONAL {{
-                            ?site a bfo:site ;
-                                iao:is_about ?pop ;
-                                cmeo:has_value ?loc_val .
+                            ?sde ro:concretizes ?sdF .
+                            ?sdF ro:has_part ?protF .
+                            ?protF ro:has_part ?eligF .
+                            ?eligF a obi:eligibility_criterion ; ro:is_concretized_by ?enrollF .
+                            ?enrollF ro:has_output ?popF .
+                            ?site a bfo:site ; iao:is_about ?popF ; cmeo:has_value ?loc_val .
                         }}
-                
+
                         # ── Study objective ──
                         OPTIONAL {{
-                            ?protocol ro:has_part ?obj .
-                            ?obj a obi:objective_specification ;
-                                cmeo:has_value ?obj_val .
+                            ?sde ro:concretizes ?sdG .
+                            ?sdG ro:has_part ?protG .
+                            ?protG a obi:protocol ; ro:has_part ?obj .
+                            ?obj a obi:objective_specification ; cmeo:has_value ?obj_val .
                         }}
-                
-                        # ── Inclusion criteria (concatenated) ──
+
+                        # ── Inclusion criteria ──
                         OPTIONAL {{
-                            ?elig ro:has_part ?inc_crit .
-                            ?inc_crit a obi:inclusion_criterion .
-                            ?inc_crit ro:has_part ?inc_item .
+                            ?sde ro:concretizes ?sdH .
+                            ?sdH ro:has_part ?protH .
+                            ?protH ro:has_part ?eligH .
+                            ?eligH a obi:eligibility_criterion ; ro:has_part ?inc_crit .
+                            ?inc_crit a obi:inclusion_criterion ; ro:has_part ?inc_item .
                             ?inc_item cmeo:has_value ?inc_val .
                         }}
                     }}

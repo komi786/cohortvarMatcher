@@ -101,50 +101,31 @@ class LLMDiskCache:
     def delete(self, model: str, prompt: str, mode: str = ""):
         self._path(model, prompt, mode).unlink(missing_ok=True)
 
-_INPUT_NE = """
-# INPUT
-Two variables are provided: Source and Target. Source/Target are positional labels only — they do not imply which side is finer or coarser, nor which side is the reference.
-Each variable has:
-- description: variable label from study metadata
-- unit: measurement unit, if available
-- categories: allowed values in format [original value=readable label|original value=readable label]
-"""
 
-_BATCH_INPUT_NE = """
-# INPUT
-One Source variable and multiple target variables are provided. Source/Target are positional labels only — they do not imply which side is finer or coarser, nor which side is the reference.
-Each variable has:
-- description: variable label from study metadata
-- unit: measurement unit, if available
-- categories: allowed values in format [original value=readable label|original value=readable label]
-"""
+
+# _BATCH_INPUT_NE = """
+# # INPUT
+# One Source variable and multiple target variables are provided. Source/Target are positional labels only — they do not imply which side is finer or coarser, nor which side is the reference.
+# Each variable has:
+# - description: variable label from study metadata
+# - unit: measurement unit, if available
+# - categories: allowed values in format [original value=readable label|original value=readable label]
+# """
  
-_INPUT_EV = """
-# INPUT
-The source and target variables originate from separate studies. Harmonization pools these patients into a single patient-level analysis variable, one row per patient; the two sides are therefore never repeated measurements of the same individual.
-Two variables are provided: Source and Target. Source/Target are positional labels only.
-Each variable may include:
-- Description: short variable label
-- Concepts: ordered concepts separated by " | "
-  - first concept = primary concept (authoritative for meaning)
-  - remaining concepts = refinements that may narrow or qualify meaning
-- categories: allowed values in format [original value=readable label|original value=readable label]
-- Unit: measurement unit, if available
-- Graph evidence: optional hierarchical structure of primary standard concept from controlled vocabularies
-"""
 
-_BATCH_INPUT_EV = """
-# INPUT
-One Source variable and multiple target variables are provided. Source/Target are positional labels only — they do not imply which side is finer or coarser, nor which side is the reference.
-Each variable may include:
-- Description: short variable label
-- Concepts: ordered concepts separated by " | "
-  - first concept = primary concept (authoritative for meaning)
-  - remaining concepts = refinements that may narrow or qualify meaning
-- categories: allowed values in format [original value=readable label|original value=readable label]
-- Unit: measurement unit, if available
-- Graph evidence: hierarchical structure of primary standard concept from controlled vocabularies
-"""
+
+# _BATCH_INPUT_EV = """
+# # INPUT
+# One Source variable and multiple target variables are provided. Source/Target are positional labels only — they do not imply which side is finer or coarser, nor which side is the reference.
+# Each variable may include:
+# - Description: short variable label
+# - Concepts: ordered concepts separated by " | "
+#   - first concept = primary concept (authoritative for meaning)
+#   - remaining concepts = refinements that may narrow or qualify meaning
+# - categories: allowed values in format [original value=readable label|original value=readable label]
+# - Unit: measurement unit, if available
+# - Graph evidence: hierarchical structure of primary standard concept from controlled vocabularies
+# """
 
 # _RULES_EV_ONLY = """- The first concept is authoritative for variable meaning. Treat additional concepts as refinements only if they materially change clinical interpretation; otherwise treat them as annotation context. 
 # - If Description and concepts conflict, use concepts as the primary meaning. 
@@ -161,38 +142,61 @@ Each variable may include:
 # - alignment_direction: "bidirectional" | "source to target" | "target to source" | "both for derivation" | ""
 # """
 
+
+# _OUTPUT_BATCH = """
+# # OUTPUT CONSTRAINTS
+# - Each verdict has the same fields and limits as the single-pair schema.
+# - Evaluate each (Source, Target i) pair independently. Targets must not influence one another.
+# # OUTPUT FORMAT
+# Return ONLY one valid JSON array, one object per target, in the same order as Target 1 .. Target N:
+# [
+#   {{
+#     "status": "<COMPLETE|COMPATIBLE|PARTIAL|IMPOSSIBLE>",
+#     "confidence": <float>,
+#     "reason": "<50 words or fewer>",
+#     "transform": "<40 words or fewer, or empty>",
+#     "harmonized_variable": "<snake_case or empty>",
+#     "alignment_direction": "<direction or empty>"
+#   }}
+# ]
+# """
+
+_INPUT_NE = """
+# INPUT
+The input may begin with a "# STUDY CONTEXT" block describing the two cohorts; it describes the studies, not the variables.
+Two variables follow: Source and Target. Source/Target are positional labels only — they do not imply which side is finer or coarser, nor which side is the reference.
+Each variable may include:
+- description: variable label from study metadata
+- unit: measurement unit, if available
+- categories: allowed values in format [original value=readable label|original value=readable label]
+"""
+
+_INPUT_EV = """
+# INPUT
+The input may begin with a "# STUDY CONTEXT" block describing the two cohorts; it describes the studies, not the variables.
+Two variables follow: Source and Target. Source/Target are positional labels only — they do not imply which side is finer or coarser, nor which side is the reference.
+Each variable may include:
+- Description: short variable label
+- Concepts: ordered concepts separated by pipe symbol "|"
+  - first concept = primary concept (authoritative for meaning)
+  - remaining concepts = refinements that may narrow or qualify meaning
+- categories: allowed values in format [original value=readable label|original value=readable label] (separated by pipe symbol "|")
+- Unit: measurement unit, if available
+- Graph evidence: optional hierarchical structure of primary standard concept from controlled vocabulary
+"""
 _OUTPUT_PAIR = """
 # OUTPUT FORMAT
 Return ONLY one valid JSON object:
-{{
+{
   "status_code": <1|2|3|4> (1=COMPLETE, 2=COMPATIBLE, 3=PARTIAL, 4=IMPOSSIBLE),
   "status": "<COMPLETE|COMPATIBLE|PARTIAL|IMPOSSIBLE>",
   "confidence": <float>,
-  "reason": "<50 words or fewer; prioritize clarity and explanation over word count. explain which rules you applied and why.>",
-  "transform": "<40 words or fewer, or empty>",
-  "harmonized_variable": "<12 words or fewer; snake_case or empty>",
+  "reason": "<30 words or fewer; prioritize clarity and explanation over word count. explain which rules you applied and why.>",
+  "transform": <structured transformation object, or "">,
+   "harmonized_variable": "<5 words or fewer; snake_case or empty>",
   "alignment_direction": "<direction or empty>"
-}}
+}
 """
-
-_OUTPUT_BATCH = """
-# OUTPUT CONSTRAINTS
-- Each verdict has the same fields and limits as the single-pair schema.
-- Evaluate each (Source, Target i) pair independently. Targets must not influence one another.
-# OUTPUT FORMAT
-Return ONLY one valid JSON array, one object per target, in the same order as Target 1 .. Target N:
-[
-  {{
-    "status": "<COMPLETE|COMPATIBLE|PARTIAL|IMPOSSIBLE>",
-    "confidence": <float>,
-    "reason": "<50 words or fewer>",
-    "transform": "<40 words or fewer, or empty>",
-    "harmonized_variable": "<snake_case or empty>",
-    "alignment_direction": "<direction or empty>"
-  }}
-]
-"""
-
 _STUDY_CONTEXT_RULES = """
 
 # STUDY CONTEXT
@@ -202,79 +206,75 @@ Use cohort population, inclusion criteria, and shared morbidities to identify va
 _SHARED_BODY = """
 {study_context_block}
 
-### MANDATORY SEMANTIC GATES
-Assess harmonizability for pooled patient-level analysis, not surface semantic similarity.
+# MANDATORY SEMANTIC GATES
 
-For each variable, where the metadata allows, identify:
+Assess harmonizability for pooled patient-level analysis, not surface semantic similarity. For each variable, identify where supported by metadata:
 1. Clinical entity — condition, measurement, medication, procedure, or event.
-2. Information axis — presence, severity, amount, dose, date, frequency, cause, method, or other attribute.
-3. Observation frame — history/ever, current state, during a specified test, incident event, cumulative period, or point-in-time assessment.
-4. Anatomical scope — general, organ-specific, regional, unilateral, bilateral, or other site restriction.
-5. Composition — single entity, parent class, subtype/member, union, sum, aggregate, or residual "other" field.
-6. Value support — which clinical states are explicitly represented and what a missing value means.
-7. If visit is omitted, assume source and target are recorded at the same timepoint.
+2. Information axis — presence, severity, amount, dose, date, frequency, cause, method, or another attribute.
+3. Temporal context — history/ever, current state, specified test, incident event, cumulative period, or point-in-time assessment. For duration or time-to-event variables, compare start and end anchors, event meaning, direction, unit, and censoring. Different intervals are IMPOSSIBLE; missing duration means unknown or censored. Different representations of the same interval may be COMPATIBLE or PARTIAL.
+4. Anatomical scope — general, organ-specific, regional, unilateral, bilateral, or another site restriction.
+5. Composition — single entity, parent class, subtype/member, union, sum, aggregate, or residual field.
+6. Value support — explicitly represented clinical states and the meaning of missing values.
 
-Apply the following gates before assigning a status.
-** Composite/component gate. On each side identify whether it is a single entity, a parent class, a member/subtype, or a pre-composed aggregate (sum or union), and whether the axis is dose or presence.
-    - A pre-composed aggregate of members matched to the parent class they exhaust, with the axis-correct operator (sum for dose, logical OR for presence), equals the class total → valid. Classify by representation: COMPLETE if value and unit align, COMPATIBLE if a lossless reversible recode/conversion is needed, PARTIAL if lossy or external-reference dependent. If the members do not exhaust the class, PARTIAL, or IMPOSSIBLE where the shortfall cannot be quantified.
-    - An aggregate or composite matched to a single member, or to a different aggregate, would require isolating a component from a combined figure → IMPOSSIBLE.
-    - An operator that does not match the axis (sum on presence, OR on dose) constructs a different variable → IMPOSSIBLE.
-    - Rolling members up to their class is permitted; pulling a component out of a composite is not.
-** Residual-field gate. "Other X" or "remaining X" excludes the separately itemized members of X, so its membership is unknown from the pair alone. It cannot align to a single itemized member (disjoint by construction) or to total X (unknown membership) → IMPOSSIBLE. A true parent "any X" that excludes nothing is not a residual field; a specific member maps to it as subtype→parent (PARTIAL).
-** Anatomical-scope gate. Laterality and site restriction are defining when one variable can be positive while the other is negative for the same patient. Identical category sets do not override a scope difference.
-** Setting/default gate. A defining qualifier (posture, physiological state, specimen, provocation, assay) present on one side and omitted on the other is read as the conventional default for that measurement, but only where a recognized clinical default exists. COMPLETE/COMPATIBLE only if the specified value is that default; if it departs from the default, or if both sides specify conflicting values, no single pooled variable exists → IMPOSSIBLE. Where no recognized default exists (assay/method, device scale, anatomical site), an omitted qualifier stays unverifiable — do not upgrade to COMPLETE.
-** Value-mapping gate. For every explicit observed value, determine whether it maps to a valid harmonized value or must remain unknown. Never map missing, not recorded, not assessed, or an unsupported negative to "No".
-** When dealing with clinical observations versus true physiological states, the goal shifts to preserving diagnostic precision.
+Apply these decision gates before assigning a status.
 
-### STATUS BOUNDARIES
+**Composite/component gate.** Applies only when one variable IS the aggregate or parent class — never construct one. Operator must preserve the axis: sum for additive quantities (dose, amount, count, duration), logical OR for presence, maximum for severity or extent. Aggregate vs the class it exhausts: COMPLETE if values and units align; COMPATIBLE if reversible recoding or conversion is needed; PARTIAL if lossy or externally referenced. Members that do not exhaust the class: PARTIAL, or IMPOSSIBLE if the shortfall cannot be quantified. Members may roll up to that class; components may not be inferred from a composite. IMPOSSIBLE: extracting a member from an aggregate; matching two aggregates; wrong operator for the axis; combining two members into an ancestor that is neither variable (a union).
+**Residual-field gate.** “Other X” or “remaining X” excludes separately recorded members, and its membership is unknown from the pair alone. It cannot align with an itemized member or total X and is therefore IMPOSSIBLE. A true parent variable such as “any X” is not residual; a specific member may map to it as PARTIAL.
+**Anatomical-scope gate.** Laterality and site restriction are defining when one variable may be positive while the other is negative for the same patient. Identical categories do not override an anatomical-scope difference.
+**Setting/default gate.** A qualifier such as posture, physiological state, specimen, provocation, or assay may be inferred from an unqualified variable only when a recognized clinical default exists. COMPLETE or COMPATIBLE is permitted only when the specified qualifier equals that default. Conflicting specified qualifiers are IMPOSSIBLE. When no recognized default exists, an omitted qualifier remains unresolved and must not be upgraded to COMPLETE.
+**Value-mapping gate.** Map every explicit value to a valid harmonized value or retain it as unknown. Never map missing, unrecorded, unassessed, or unsupported negative values to “No.” When a test finding is mapped to an underlying condition, a positive finding may support condition presence, but a negative finding remains unknown unless the test and metadata justify excluding the condition.
 
-COMPLETE
-Same clinical entity, information axis, observation frame, anatomical scope, granularity, and value meaning; values merge as-is, with no recoding, conversion, threshold reinterpretation, or category normalization. Mathematically equivalent unit notation is allowed only when the numeric values are unchanged.
+# STATUS BOUNDARIES
+
+## COMPLETE
+Same clinical entity, information axis, temporal context, anatomical scope, granularity, and value meaning; values merge as-is, with no recoding, conversion, threshold reinterpretation, or category normalization. Mathematically equivalent unit notation is allowed only when the numeric values are unchanged.
 Examples:
-- source: systolic BP (mmHg) vs target: sitting systolic BP (mmHg)  [seated is the office-BP default]
-- source: NT-proBNP (ug/L) vs target: NT-proBNP (ng/mL)  [1 ug/L = 1 ng/mL]
-- source: history of atrial fibrillation(1=yes|0=no) vs target: Atrial fibrillation during ECG(yes=yes|no=no) : maps target-to-source (more complete path) — yes→1, no→0 (observation-frame abstraction).
-- source: central venous pressure > 6 cm H2O (0=no|1=yes) vs target: jugular vein elevated (0=no|1=yes): maps target-to-source (more complete direction) — 1→1, 0→0 
+- source: systolic BP (mmHg) and target: sitting systolic BP (mmHg)  [seated position is implicit context when missing]
+- source: NT-proBNP (ug/L) and target: NT-proBNP (ng/mL)  [1 ug/L = 1 ng/mL]
+- source: history of atrial fibrillation (yes=yes|no=no) and target: presence of atrial fibrillation (yes=yes|no=no): values merge as-is — yes to yes; no to no.
+- source: central venous pressure > 6 cm H2O (0=no|1=yes) and target: jugular vein elevated (0=no|1=yes): values merge as-is — 1 to 1; 0 to 0.
 
-
-COMPATIBLE
+## COMPATIBLE
 The same six attributes as COMPLETE, but value representations differ and a deterministic, lossless, reversible transformation aligns them — unit conversion, or bijective recoding (equal number of distinct clinical states). Clinical association or approximate interchangeability is not sufficient; a surrogate qualifies only where the metadata or adjudication policy establishes equivalence and a deterministic mapping.
-Examples:
-- source: weight (kg) vs target:weight (lb)
-- source: myocardial infarction (yes|no) vs target: myocardial infarction (t=yes|f=no)  [recoding only]
-- source: aspartate aminotransferase [enzymatic activity/volume]/L vs target: AST measurement (U/L)
-- source: jugular vein elevated (0=no|1=yes) vs target: central venous pressure > 6 cm H2O (3=yes|1=no): maps target-to-source (more complete direction) — 3→1, 1→0.
-- source: atrial fibrillation on ECG at baseline (t=yes|f=no) vs target: history of atrial fibrillation (t=yes|f=no): maps source-to-target (more complete path) — t→1, f→0 (observation-frame abstraction).
-PARTIAL
-One clinically meaningful variable can be built through a lossy, directional, or externally supported transformation. All must hold:
+**Examples**:
+- source: weight (kg) and target: weight (lb)
+- source: myocardial infarction (1=yes|0=no) and target: myocardial infarction (t=yes|f=no)  [recoding only]: target values are recoded into the source representation — t to 1; f to 0.
+- source: aspartate aminotransferase enzymatic activity (U/L) and target: AST enzymatic activity (µkat/L): target values are converted into the source representation — multiply by 60 because 1 µkat/L = 60 U/L.
+- source: jugular vein elevated (0=no|1=yes) and target: central venous pressure > 6 cm H2O (3=yes|1=no): target values are recoded into the source representation — 3 to 1; 1 to 0.
+
+##  PARTIAL
+One clinically meaningful variable for data pooling can be built through a lossy, directional, or externally supported transformation, provided that the derived variable delivers distinct clinical meaning and actionable utility for analysis considering the specific context of the pooled studies. All must hold:
 1. Same entity, or a subtype/member/scope-restriction relationship identifiable from the provided metadata.
-2. The harmonized variable is one clinical concept, not a union or sum.
+2. The harmonized variable is one clinical concept, not a union or sum. When one side is a subtype or scope restriction of the other, name the harmonized variable for the concept BOTH sides can produce: the parent class when the broader side records only presence and cannot express the subtype; the subtype when the broader side encodes it among its own categories and can be collapsed onto it.
 3. Every explicit observed value is mapped validly or retained as unknown.
 4. No unsupported negative or missing value becomes "No".
-5. The transformation names the information loss: category collapse, positive-only derivation, observation-frame reduction, anatomical reduction, datetime approximation, or external-reference conversion.
-Examples:
-- source: Year/date of diabetes diagnosis vs target: diabetes history: maps source-to-target (more complete direction) — recorded date→yes, missing→unknown (positive-only derivation)
-- source: date of stroke event (dd/mm/yyyy) vs target: year of stroke event: maps source-to-target (more complete direction) — exact date→extracted year, missing→missing (datetime approximation).
-- source: LVEF <40% (1=yes|0=no) vs target: LVEF category (1:<40%, 2:40-49%, 3:>=50%): maps target-to-source (more complete direction) — cat1→1, cat2->0 and 3→0 (category collapse).
-- source: Ordinal pulmonary-rales extent (0=absent|1=basal|2=lower-third|3=upper-zones) vs target: basal rales (1=yes|0=no): maps source-to-target (more complete direction) — 1→1, 0→0, cat2→0 and 3→0(extent exceeds basal zone, category collapse)
-- source: Left-leg edema (0=no|1=yes) vs target: lower-limb edema (0=no|1=yes): maps source-to-target (more complete direction) — 1→1, 0→unknown (anatomical scope reduction).
-- source: captopril dose (mg) vs target: ACE-inhibitor dose (% target): maps source-to-target (more complete direction) — single member to parent class via external target-dose conversion factor (external-reference conversion).
-
-IMPOSSIBLE
+5. The transformation names the information loss: category collapse, positive-only derivation, anatomical reduction, datetime approximation, or downstream external-reference conversion.
+**Examples**:
+- source: Year/date of diabetes diagnosis and target: diabetes history (0=no|1=yes): maps source-to-target (more complete direction) — recorded date maps to 1; missing date maps to unknown (positive-only derivation)
+- source: date of stroke event (dd/mm/yyyy) and target: year of stroke event (yyyy): maps source-to-target (more complete direction) — converted date (dd/mm/yyyy) maps to to year (yyyy);missing date maps to missing (datetime approximation).
+- source: LVEF <40% (1=yes|0=no) and target: LVEF category (1:<40%, 2:40-49%, 3:>=50%): maps target-to-source (more complete direction) — 1 maps to 1; 2 maps to 0; 3 maps to 0 (category collapse).
+- source: Ordinal pulmonary-rales extent (0=absent|1=basal|2=lower-third|3=upper-zones) and target: basal rales (1=yes|0=no): maps source-to-target (more complete direction) — 1 maps to 1; 0 maps to 0; 2 maps to 0; 3 maps to 0 (extent exceeds basal zone, category collapse)
+- source: Left-leg edema (0=no|1=yes) and target: lower-limb edema (0=no|1=yes): maps source-to-target (more complete direction) — 1 maps to 1; 0 maps to unknown (right-leg status is unavailable).
+- source: captopril dose (mg) and target: ACE-inhibitor dose (% target): maps source-to-target (more complete direction) — single member to parent class via downstream external target-dose conversion factor (external-reference conversion).
+- source: atrial fibrillation on ECG at baseline (t=yes|f=no) and target: history of atrial fibrillation at baseline (t=yes|f=no): maps source-to-target (more complete direction) — t maps to yes; f maps to unknown (a normal ECG does not exclude a prior episode; clinical-context abstraction).
+## IMPOSSIBLE
 No single pooled variable can be built without ambiguous decomposition or unsupported inference:
-- source: ARB-or-ACE use (yes/no) vs target: ACE-inhibitor use (yes/no)  [union → component].
-- source: Sum of ACE-inhibitor and ARB dose vs target: ARB dose  [aggregate → component].
-- source: "Other ARB" dose vs target: total ARB dose  [residual; membership unknown].
-- source: captopril dose (mg) vs target: trandolapril dose (mg)  [sibling drugs; raw mg not comparable across agents].
-- source: disease severity vs target: disease etiology  [different axes].
-- source: sitting systolic BP (mmHg) vs target: standing systolic BP (mmHg)  [conflicting specified settings].
+**Examples**:
+- source: ARB-or-ACE use (yes/no) and target: ACE-inhibitor use (yes/no)  [union  maps to  component].
+- source: Sum of ACE-inhibitor and ARB dose and target: ARB dose  [aggregate  maps to  component].
+- source: "Other ARB" dose and target: total ARB dose  [residual; membership unknown].
+- source: captopril dose (mg) and target: trandolapril dose (mg)  [sibling drugs; raw mg not comparable across agents].
+- source: history of prostate disorder (yes/no) and target: history of chronic kidney disease (yes/no)  [sibling conditions; their common ancestor is neither variable — synthesized union].
+- source: disease severity and target: disease etiology  [different axes].
+- source: sitting systolic BP (mmHg) and target: standing systolic BP (mmHg)  [conflicting specified settings].
+- source: ALT (alanine aminotransferase) and AST (aspartate aminotransferase) [different lab test]
 
-### FINAL VERIFICATION
-1. Is the harmonized variable one single clinical concept?
-2. Are information axis and observation frame preserved, or explicitly reduced with the loss named?
-3. Is every explicit value mapped, or safely retained as unknown?
-4. Did any missing or unsupported value become "No"?
-5. Did a composite, residual field, sibling relationship, anatomical restriction, setting conflict, or history/current distinction invalidate the match?
+# FINAL VERIFICATION
+For a PARTIAL match, is the proposed harmonized variable a single, clinically coherent concept meaningful across both study contexts and can both sides actually produce it??
+Is every explicit value mapped or safely retained as unknown?
+Did any missing or unsupported value become No?
+Does any composite, residual field, sibling relationship, anatomical restriction, temporal difference, or setting conflict invalidate the match?
+Is the transformation complete, deterministic, and explicit about information loss?
 
 # CONFIDENCE
 Certainty in the chosen status, whatever it is:
@@ -283,32 +283,157 @@ Certainty in the chosen status, whatever it is:
 - 0.60-0.79: meaningful ambiguity; manual review advised
 - below 0.60: low certainty; reconsider the verdict
 
-# TRANSFORM
-The data operation that builds the harmonized variable; limitations go in reason.
-- COMPLETE: ""
-- COMPATIBLE: deterministic conversion ("kg = lb x 0.4536", "recode {{0 maps to no,1 maps to yes}}")
-- PARTIAL: lossy reduction ("collapse to yes/no", "derive presence from date", "mg to % via target-dose external conversion", "specific subtype yes -> broader class yes; specific subtype no -> broader class unknown/missing")
-- IMPOSSIBLE: ""
+# TRANSFORMATION RULE
+For every COMPATIBLE or PARTIAL result, provide a complete, machine-readable transformation that:
+* defines the operation applied to the source and target variables;
+* maps every explicit categorical value;
+* maps unsupported or missing values to `unknown`, never `no`;
+* assigns exactly one harmonized output to each input value;
+* states the information loss for PARTIAL;
+* provides any required formula or external reference;
+* never include a "missing", "unknown" or empty key in value_mapping — missing values are covered by missing_mapping alone
+* uses `none` when a field is not applicable.
+**Examples**
+
+## Example 1 — COMPLETE
+
+Source: body weight (kg)
+Target: body weight (kg)
+"harmonized_variable": "body_weight_kg",
+"alignment_direction": "bidirectional",
+"transform": ""
+
+## Example 2 — COMPATIBLE: unit conversion
+
+Source: serum creatinine (µmol/L)
+Target: serum creatinine (mg/dL)
+
+"harmonized_variable": "creatinine_umol_per_l",
+"alignment_direction": "bidirectional",
+"transform": {{
+    "source_operation": "retain source values in µmol/L",
+    "target_operation": "convert target values from mg/dL to µmol/L",
+    "value_mapping": {{
+    "source": {{}},
+    "target": {{}}
+    }},
+    "numeric_rule": {{
+    "target": "target_µmol_per_L = target_value × 88.4"
+    }},
+    "missing_mapping": "unknown",
+    "information_loss": "none",
+    "reference": "1 mg/dL creatinine = 88.4 µmol/L"
+    }}
+
+
+## Example 3 — COMPATIBLE: categorical recoding
+
+Source: myocardial infarction (0=no|1=yes)
+Target: myocardial infarction (f=no|t=yes)
+"harmonized_variable": "myocardial_infarction_yes_no",
+"alignment_direction": "bidirectional",
+"transform": {{
+    "source_operation": "recode source categories",
+    "target_operation": "recode target categories",
+    "value_mapping": {{
+    "source": {{"0": "no","1": "yes"}},
+    "target": {{"f": "no","t": "yes"}}
+    }},
+    "numeric_rule": {{}},
+    "missing_mapping": "unknown",
+    "information_loss": "none",
+    "reference": "none"
+  }}
+
+
+## Example 4 — PARTIAL: category collapse
+
+Source: basal rales (0=no|1=yes)
+Target: rales extent (0=absent|1=basal zone|2=middle zone|3=upper zone)
+"harmonized_variable": "basal_rales_yes_no",
+"alignment_direction": "target to source",
+"transform": {{
+    "source_operation": "retain binary basal-rales categories",
+    "target_operation": "collapse rales extent to basal-rales presence",
+    "value_mapping": {{
+    "source": {{"0": "no","1": "yes"}},
+    "target": {{"0": "no","1": "yes", "2": "no", "3": "no"}}
+    }},
+    "numeric_rule": {{}},
+    "missing_mapping": "unknown",
+    "information_loss": "rales extent beyond the basal zone is discarded",
+    "reference": "none"
+ }}
+
+
+## Example 5 — PARTIAL: positive-only derivation
+
+Source: date of diabetes diagnosis
+Target: history of diabetes (0=no|1=yes)
+"harmonized_variable": "diabetes_yes_no",
+"alignment_direction": "source to target",
+"transform": {{
+    "source_operation": "derive diabetes presence from a recorded diagnosis date",
+    "target_operation": "retain target binary categories",
+    "value_mapping": {{
+        "source": {{ "present": "yes", "missing": "unknown"}},
+        "target": {{ "0": "no", "1": "yes"}}
+        }},
+    "numeric_rule": {{}},
+    "missing_mapping": "unknown",
+    "information_loss": "diabetes absence cannot be inferred from a missing diagnosis date",
+    "reference": "none"
+}}
+
+## Example 6 — PARTIAL: externally referenced conversion
+
+Source: captopril daily dose (mg/day)
+Target: ACE-inhibitor dose (% target dose)
+"harmonized_variable": "ace_inhibitor_dose_pct",
+"alignment_direction": "source to target",
+"transform": {{
+    "source_operation": "convert captopril mg/day to percentage of its target daily dose",
+    "target_operation": "retain target-dose percentage",
+    "value_mapping": {{
+    "source": {{}},
+    "target": {{}}
+    }},
+    "numeric_rule": {{
+    "source": "dose_percentage = source_value / guideline_target_daily_dose × 100"
+    }},
+    "missing_mapping": "unknown",
+    "information_loss": "drug-specific dose is generalized to ACE-inhibitor target-dose percentage",
+    "reference": "validated captopril target daily dose"
+    }}
+
+## Example 7 — IMPOSSIBLE
+Source: ALT measurement (U/L)
+Target: AST measurement (U/L)
+"harmonized_variable": "",
+"alignment_direction": "",
+"transform": ""
 
 # HARMONIZED VARIABLE
-- COMPLETE/COMPATIBLE/PARTIAL: short snake_case name ("smoker_yes_no", "weight_kg")
+- COMPLETE/COMPATIBLE/PARTIAL: snake_case, built from the primary concept plus the information axis — presence takes _yes_no, a quantity takes its unit ("heart_failure_yes_no", "body_weight_kg", "alanine aminotransferase enzymatic activity volume in blood" in U/L -> "alanine_aminotransferase_u_per_l"). Keep the concept's own wording and digits; shorten only by dropping trailing words, never by abbreviating or substituting a synonym.
 - IMPOSSIBLE: ""
 
+
 # ALIGNMENT DIRECTION
+Whether the transformation is invertible, and where it is not, how information flows. This is not a statement about which side's representation the pooled variable adopts.
 - COMPLETE: "bidirectional"
-- COMPATIBLE: "bidirectional" if reversible, else the valid one-way direction
+- COMPATIBLE: "bidirectional" (COMPATIBLE requires a reversible transformation; if it is not reversible the status is PARTIAL, not COMPATIBLE)
 - PARTIAL: "source to target" (source finer) | "target to source" (target finer) | "both for derivation" (both contribute positive evidence to a broader variable)
 - IMPOSSIBLE: ""
 
 """
  
 _PREAMBLE = """You are a clinical data harmonization expert assessing whether two variables from separate studies can be aligned into a common harmonized variable for pooled patient-level analysis. Determine whether the merge is clinically meaningful and whether any required transformation is supported by clinical guidelines or accepted domain knowledge.
-The source and target variables come from different cohorts. Harmonization pools different patients into one dataset, with one row per patient; therefore, the two sides are never repeated measurements of the same individual. "Source" and "Target" are simply positional labels for a directionless pair, you must assess the alignment by identifying which directional path preserves the most information and minimizes clinical inference. """
+The source and target variables come from different cohorts. Harmonization pools different patients into a single patient-level analysis variable, one row per patient; therefore, the two sides are never repeated measurements of the same individual. "Source" and "Target" are simply positional labels for a directional path. You must determine the direction that preserves the most information, minimizes clinical inference, and produces a harmonized variable with distinct clinical meaning and actionable utility within the specific context of the pooled studies."""
 
-_BATCH_PREAMBLE = """You are a clinical data harmonization expert assessing whether a single Source variable can be aligned to each of several candidate Target variables and merged into a common harmonized analysis variable for pooled statistical analysis. The source and target variables originate from separate studies. Harmonization pools these patients into a single patient-level analysis variable, one row per patient; the two sides are therefore never repeated measurements of the same individual.
-You will receive ONE Source and multiple Targets in a single request. Evaluate each (Source, Target i) pair independently and in isolation, using the same rules and definitions as a single-pair assessment. A target's verdict must depend only on that target and the Source — never on the presence, similarity, or verdict of any other target in the batch. Do not normalize, balance, or rank verdicts across targets. Two targets that would each receive COMPLETE in isolation must each receive COMPLETE here.
+# _BATCH_PREAMBLE = """You are a clinical data harmonization expert assessing whether a single Source variable can be aligned to each of several candidate Target variables and merged into a common harmonized analysis variable for pooled statistical analysis. The source and target variables originate from separate studies. Harmonization pools these patients into a single patient-level analysis variable, one row per patient; the two sides are therefore never repeated measurements of the same individual.
+# You will receive ONE Source and multiple Targets in a single request. Evaluate each (Source, Target i) pair independently and in isolation, using the same rules and definitions as a single-pair assessment. A target's verdict must depend only on that target and the Source — never on the presence, similarity, or verdict of any other target in the batch. Do not normalize, balance, or rank verdicts across targets. Two targets that would each receive COMPLETE in isolation must each receive COMPLETE here.
 
-"""
+# """
 
 
 VERDICT_JSON_SCHEMA = {
@@ -332,7 +457,55 @@ VERDICT_JSON_SCHEMA = {
         },
         "confidence": {"type": "number", "minimum": 0.0, "maximum": 1.0},
         "reason": {"type": "string"},
-        "transform": {"type": "string"},
+        "transform": {
+                "oneOf": [
+                    {
+                        "type": "string",
+                        "enum": [""]
+                    },
+                    {
+                        "type": "object",
+                        "additionalProperties": False,
+                        "required": [
+                            "source_operation",
+                            "target_operation",
+                            "value_mapping",
+                            "missing_mapping",
+                            "information_loss",
+                            "reference"
+                        ],
+                        "properties": {
+                            "source_operation": {"type": "string"},
+                            "target_operation": {"type": "string"},
+                            "value_mapping": {
+                                "type": "object",
+                                "additionalProperties": False,
+                                "properties": {
+                                    "source": {"type": "object",
+                                               "additionalProperties": {"type": "string"}},
+                                    "target": {"type": "object",
+                                               "additionalProperties": {"type": "string"}},
+                                },
+                            },
+
+                            "numeric_rule": {
+                                "type": "object",
+                                "additionalProperties": False,
+                                "properties": {
+                                    "source": {"type": "string"},
+                                    "target": {"type": "string"},
+                                },
+                            },
+                            "missing_mapping": {
+                                "type": "string",
+                                "enum": ["unknown"]
+                            },
+                            "information_loss": {"type": "string"},
+                            "reference": {"type": "string"}
+                        }
+                    }
+                ]
+            },
         "harmonized_variable": {"type": "string"},
         "alignment_direction": {
             "type": "string",
@@ -546,53 +719,53 @@ def _build_pair_prompt(src_concepts:str = "", src_cats:str = "", tgt_concepts:st
     src_line += f", categories: [{src_cats}]"
     tgt_line += f", categories: [{tgt_cats}]"
     prompt = f"## INPUT\n{src_line}\n{tgt_line}"
-    # if evidence:
-    #     prompt += f"\ngraph_evidence: [{evidence}]"
+    if evidence:
+        prompt += f"\ngraph_evidence: [{evidence}]"
 
     return prompt
 
-def _build_batch_prompt(
-    src_desc: str = "",
-    src_concepts: str = "",
-    src_cats: str = "",
-    src_unit: str = "",
-    targets: List[Dict[str, str]] = None,
-    mode: str = MappingType.OEH.value,
-) -> str:
-    """Build a prompt with 1 Source + N Targets. Schema and independence rule
-    live in the batch system prompt — this function only formats the data.
-    """
-    targets = targets or []
+# def _build_batch_prompt(
+#     src_desc: str = "",
+#     src_concepts: str = "",
+#     src_cats: str = "",
+#     src_unit: str = "",
+#     targets: List[Dict[str, str]] = None,
+#     mode: str = MappingType.OEH.value,
+# ) -> str:
+#     """Build a prompt with 1 Source + N Targets. Schema and independence rule
+#     live in the batch system prompt — this function only formats the data.
+#     """
+#     targets = targets or []
 
-    if mode == MappingType.NE.value:
-        src_line = f"Source: description: {src_desc}"
-    else:
-        # src_line = f"Source: description: {src_desc}"
-        src_line = f"Source: description: {src_desc}, concepts: {src_concepts}"
-    if src_unit:
-        src_line += f", unit: {src_unit}"
-    src_line += f", categories: [{src_cats}]"
+#     if mode == MappingType.NE.value:
+#         src_line = f"Source: description: {src_desc}"
+#     else:
+#         # src_line = f"Source: description: {src_desc}"
+#         src_line = f"Source: description: {src_desc}, concepts: {src_concepts}"
+#     if src_unit:
+#         src_line += f", unit: {src_unit}"
+#     src_line += f", categories: [{src_cats}]"
 
-    target_lines = []
-    for i, t in enumerate(targets, start=1):
-        if mode == MappingType.NE.value:
-            line = f"Target {i}: description: {t.get('desc', '')}"
-        else:
-            # line = (
-            #     f"Target {i}: description: {t.get('desc', '')}"
-            # )
-            line = (
-                f"Target {i}: description: {t.get('desc', '')}, "
-                f"concepts: {t.get('tgt_concepts', '')}"
-            )
-        if t.get("tgt_unit"):
-            line += f", unit: {t['tgt_unit']}"
-        line += f", categories: [{t.get('tgt_cats', '')}]"
-        # if t.get("evidence"):
-        #     line += f"\n  graph_evidence: [{t['evidence']}]"
-        target_lines.append(line)
+#     target_lines = []
+#     for i, t in enumerate(targets, start=1):
+#         if mode == MappingType.NE.value:
+#             line = f"Target {i}: description: {t.get('desc', '')}"
+#         else:
+#             # line = (
+#             #     f"Target {i}: description: {t.get('desc', '')}"
+#             # )
+#             line = (
+#                 f"Target {i}: description: {t.get('desc', '')}, "
+#                 f"concepts: {t.get('tgt_concepts', '')}"
+#             )
+#         if t.get("tgt_unit"):
+#             line += f", unit: {t['tgt_unit']}"
+#         line += f", categories: [{t.get('tgt_cats', '')}]"
+#         # if t.get("evidence"):
+#         #     line += f"\n  graph_evidence: [{t['evidence']}]"
+#         target_lines.append(line)
 
-    return "## INPUT\n" + src_line + "\n" + "\n".join(target_lines)
+#     return "## INPUT\n" + src_line + "\n" + "\n".join(target_lines)
 
 
 
@@ -615,62 +788,62 @@ def _build_batch_prompt(
 #             return dist if dist else None
 #     return None
 
-def _parse_batch(text: str, expected_n: int) -> List[Tuple[Optional[bool], str, float, str]]:
-    """Parse a JSON array of verdicts. Returns exactly expected_n results,
-    padding with PENDING entries if the model under-delivered.
-    """
-    _pending = (
-        None,
-        ContextMatchType.PENDING.value,
-        0.0,
-        json.dumps({"status": "PARSE_ERROR", "reason": "batch_missing_item"}),
-    )
+# def _parse_batch(text: str, expected_n: int) -> List[Tuple[Optional[bool], str, float, str]]:
+#     """Parse a JSON array of verdicts. Returns exactly expected_n results,
+#     padding with PENDING entries if the model under-delivered.
+#     """
+#     _pending = (
+#         None,
+#         ContextMatchType.PENDING.value,
+#         0.0,
+#         json.dumps({"status": "PARSE_ERROR", "reason": "batch_missing_item"}),
+#     )
 
-    if not text:
-        return [_pending] * expected_n
+#     if not text:
+#         return [_pending] * expected_n
 
-    text = text.strip()
-    text = re.sub(r"<think>.*?</think>", "", text, flags=re.DOTALL).strip()
+#     text = text.strip()
+#     text = re.sub(r"<think>.*?</think>", "", text, flags=re.DOTALL).strip()
 
-    if text.startswith("```"):
-        text = re.sub(r"^```(?:json)?\s*", "", text)
-        text = re.sub(r"\s*```$", "", text).strip()
+#     if text.startswith("```"):
+#         text = re.sub(r"^```(?:json)?\s*", "", text)
+#         text = re.sub(r"\s*```$", "", text).strip()
 
-    # Try full JSON array parse
-    try:
-        arr = json.loads(text)
-        if isinstance(arr, dict):
-            # Some models wrap in {"results": [...]}
-            arr = arr.get("results") or arr.get("verdicts") or [arr]
-        if not isinstance(arr, list):
-            arr = [arr]
-        results = [_parse_single(json.dumps(item)) for item in arr[:expected_n]]
-        while len(results) < expected_n:
-            results.append(_pending)
-        return results
-    except json.JSONDecodeError:
-        pass
+#     # Try full JSON array parse
+#     try:
+#         arr = json.loads(text)
+#         if isinstance(arr, dict):
+#             # Some models wrap in {"results": [...]}
+#             arr = arr.get("results") or arr.get("verdicts") or [arr]
+#         if not isinstance(arr, list):
+#             arr = [arr]
+#         results = [_parse_single(json.dumps(item)) for item in arr[:expected_n]]
+#         while len(results) < expected_n:
+#             results.append(_pending)
+#         return results
+#     except json.JSONDecodeError:
+#         pass
 
-    # Fallback: extract balanced JSON objects from the text
-    objects, depth, start = [], 0, None
-    for i, ch in enumerate(text):
-        if ch == "{":
-            if depth == 0:
-                start = i
-            depth += 1
-        elif ch == "}":
-            depth -= 1
-            if depth == 0 and start is not None:
-                objects.append(text[start : i + 1])
-                start = None
+#     # Fallback: extract balanced JSON objects from the text
+#     objects, depth, start = [], 0, None
+#     for i, ch in enumerate(text):
+#         if ch == "{":
+#             if depth == 0:
+#                 start = i
+#             depth += 1
+#         elif ch == "}":
+#             depth -= 1
+#             if depth == 0 and start is not None:
+#                 objects.append(text[start : i + 1])
+#                 start = None
 
-    if objects:
-        results = [_parse_single(obj) for obj in objects[:expected_n]]
-        while len(results) < expected_n:
-            results.append(_pending)
-        return results
+#     if objects:
+#         results = [_parse_single(obj) for obj in objects[:expected_n]]
+#         while len(results) < expected_n:
+#             results.append(_pending)
+#         return results
 
-    return [_pending] * expected_n
+#     return [_pending] * expected_n
 
 def _normalize_logprobs(label_logprobs: dict[str, float]) -> dict[str, float]:
     import math
@@ -764,39 +937,39 @@ def _build_system_prompt(
     batching: bool,
     study_context: str = "",
 ) -> str:
-    preamble = _BATCH_PREAMBLE if batching else _PREAMBLE
+    preamble =  _PREAMBLE 
 
-    if batching:
-        input_block = (
-            _BATCH_INPUT_NE
-            if mode == MappingType.NE.value
-            else _BATCH_INPUT_EV
-        )
-        output_block = _OUTPUT_BATCH
-    else:
-        input_block = (
-            _INPUT_NE
-            if mode == MappingType.NE.value
-            else _INPUT_EV
-        )
-        output_block = _OUTPUT_PAIR
+    # if batching:
+    #     input_block = (
+    #         _BATCH_INPUT_NE
+    #         if mode == MappingType.NE.value
+    #         else _BATCH_INPUT_EV
+    #     )
+    #     output_block = _OUTPUT_BATCH
+    # else:
+    input_block = (
+        _INPUT_NE
+        if mode == MappingType.NE.value
+        else _INPUT_EV
+    )
+    output_block = _OUTPUT_PAIR
 
     context_parts = [_STUDY_CONTEXT_RULES]
 
-    if study_context:
-        dynamic_context = study_context.strip()
+    # if study_context:
+    #     dynamic_context = study_context.strip()
 
-        # format_study_context_block() already starts with "# STUDY CONTEXT";
-        # remove it to avoid duplicate headers.
-        dynamic_context = re.sub(
-            r"^\s*#\s*STUDY CONTEXT\s*",
-            "",
-            dynamic_context,
-            flags=re.IGNORECASE,
-        ).strip()
+    #     # format_study_context_block() already starts with "# STUDY CONTEXT";
+    #     # remove it to avoid duplicate headers.
+    #     dynamic_context = re.sub(
+    #         r"^\s*#\s*STUDY CONTEXT\s*",
+    #         "",
+    #         dynamic_context,
+    #         flags=re.IGNORECASE,
+    #     ).strip()
 
-        if dynamic_context:
-            context_parts.append(dynamic_context)
+    #     if dynamic_context:
+    #         context_parts.append(dynamic_context)
 
     study_context_block = "\n".join(context_parts)
 
@@ -963,10 +1136,10 @@ class LLMConceptMatcher:
             self._cache.set_system_prompt(self._system_prompt)
 
 
-    # def set_study_context(self, context_block: str) -> None:
-    #         """Set cohort-pair study metadata for all LLM calls in this run."""
-    #         self._study_context = (context_block or "").strip()
-    #         self._refresh_system_prompt()
+    def set_study_context(self, context_block: str) -> None:
+            """Set cohort-pair study metadata for all LLM calls in this run."""
+            self._study_context = (context_block or "").strip()
+            self._refresh_system_prompt()
 
     def _apply_model_generation_defaults(self, model: str) -> None:
         """Apply model-specific decoding defaults for LLM-as-classifier runs.
@@ -994,7 +1167,10 @@ class LLMConceptMatcher:
      
        
         if is_gpt_oss_120b:
-                self.max_tokens = 16384 
+            self.max_tokens = 16384
+            self.temperature = 1.0
+            self.top_p = 1.0
+            self.top_k = 0
        
            
         logger.info (f"for LLM {m}, temperature = { self.temperature}, top_p = {self.top_p},top_k = {self.top_k} ")
@@ -1171,7 +1347,7 @@ class LLMConceptMatcher:
                     options={"temperature": self.temperature, "num_predict": output_token_limit},
                 )
                 result = resp["message"]["content"] or ""
-                print(f"[ollama] got {len(result)} chars")
+                # print(f"[ollama] got {len(result)} chars")
 
           
 
@@ -1219,7 +1395,7 @@ class LLMConceptMatcher:
                 text = choice.message.content or ""
                 logprob_evidence = _extract_status_code_logprob_evidence( getattr(choice, "logprobs", None))
 
-                print("DEBUG status text:", text[:500])
+                # print("DEBUG status text:", text[:500])
                 # logprobs_obj = getattr(choice, "logprobs", None)
                 # print("DEBUG logprob_dist:", _extract_status_logprob_dist(logprobs_obj))
                 return text, logprob_evidence
@@ -1246,11 +1422,14 @@ class LLMConceptMatcher:
                 if not resp.choices:
                     return "", {}
                 choice = resp.choices[0]
-                text = choice.message.content or ""
+                # Assign rather than return: the shared logger.info at the end of
+                # this method records prompt and response, and returning here
+                # skipped it. On the litellm backend that meant no LLM call was
+                # ever logged.
+                result = choice.message.content or ""
                 logprob_evidence = _extract_status_code_logprob_evidence(
                     getattr(choice, "logprobs", None)
                 )
-                return text, logprob_evidence
             elif self.backend == "fireworks":
                 kwargs = {
                     "model": api_model,
@@ -1290,7 +1469,7 @@ class LLMConceptMatcher:
             else:
                 result = ""
         except Exception as e:
-            print(f"[{mname}] call failed: {e}")
+            # print(f"[{mname}] call failed: {e}")
             return "", {}
         logger.info (f"LLM={model}, prompt={prompt}, result ={result}, logprob_dist ={logprob_evidence}")
         return result, logprob_evidence
@@ -1413,9 +1592,8 @@ class LLMConceptMatcher:
                             mode=self.mode,
                         )
                     
-                    if self._study_context and self._study_context != "":
-                        self._refresh_system_prompt()
-                        # pair_prompt = f"{self._study_context}\n\n{pair_prompt}"
+                    if self._study_context:
+                        pair_prompt = f"{self._study_context}\n\n{pair_prompt}"
                     prompts.append(pair_prompt)
 
 

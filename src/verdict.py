@@ -7,15 +7,10 @@ These dataclasses define the data flow between pipeline stages:
   LLMEvidence         ← produced by llm_call.py (when LLM is consulted)
   Verdict             ← produced once, by policy.decide(), never mutated
 
-The frozen=True is load-bearing: it prevents the class of bug where one
-stage rewrites another stage's output. The Compatible→Partial collapse
-in NE mode existed because `current_level` was mutable and the cap
-(constraints.py:989) overwrote the handler's verdict. With frozen
-verdicts that overwrite is a TypeError, not a silent regression.
 """
 from __future__ import annotations
 from dataclasses import dataclass, field
-from typing import Dict, Any
+from typing import Dict, Any, Optional, Tuple
 from .data_model import MatchLevel, TransformationType
 
 
@@ -80,6 +75,36 @@ class TimepointInfo:
     aligned: bool
     source_visit: str = ""
     target_visit: str = ""
+    status: str = ""
+    """'aligned' | 'mismatch' | 'undetermined'. Splits what `aligned=False`
+    used to conflate: a genuine repeated-measures mismatch (baseline vs
+    month 6) versus a side that names no protocol timepoint at all (Aachen-HF
+    records everything against a generic 'visit date'). `aligned` stays False
+    for both so existing log consumers keep working."""
+    undetermined_side: Optional[str] = None
+    candidate_timepoints: Tuple[str, ...] = ()
+    """When one side is undetermined, the exhaustive set of counterpart
+    timepoints this pair could resolve to — this row is one of them."""
+    resolved_timepoint: str = ""
+    """The determinate side's canonical period: which candidate this row
+    stands for. Empty unless exactly one side is undetermined."""
+    note: str = ""
+
+    @property
+    def is_undetermined(self) -> bool:
+        return self.status == "undetermined"
+
+
+_REDUNDANT_DETAIL_KEYS = frozenset({
+    "mapping_relation",                     # own column
+    "source_type", "target_type",           # own columns
+    "source_unit", "target_unit",           # own columns
+})
+# transform_direction is deliberately NOT stripped. It used to be, on the
+# grounds that it already travels in LLMEvidence — but a verdict decided
+# without the LLM has no LLMEvidence, and policy now derives a direction for
+# those from the mapping relation. Keeping the key here makes the direction
+# readable in one place for every row, LLM-judged or not.
 
 
 @dataclass(frozen=True)
@@ -103,7 +128,8 @@ class Verdict:
         no downstream consumer needs to know about Verdict at all.
         
         """
-        details = dict(self.extra)
+        details = {k: v for k, v in self.extra.items()
+                   if k not in _REDUNDANT_DETAIL_KEYS}
         details["description"] = self._compose_description()
         details["transformation"] = (
             self.transformation.value
@@ -116,16 +142,26 @@ class Verdict:
                 else TransformationType.NONE.value
             )
         details["timepoint_aligned"] = "yes" if self.timepoint.aligned else "no"
+        if self.timepoint.status:
+            details["timepoint_status"] = self.timepoint.status
         if not self.timepoint.aligned and self.level != MatchLevel.NOT_APPLICABLE:
             details["source_timepoint"] = self.timepoint.source_visit
             details["target_timepoint"] = self.timepoint.target_visit
+            if self.timepoint.is_undetermined:
+                details["undetermined_timepoint_side"] = self.timepoint.undetermined_side or ""
+                # Exhaustive: the caller can enumerate every resolution this
+                # row stands for instead of assuming baseline.
+                details["candidate_timepoints"] = list(self.timepoint.candidate_timepoints)
+                if self.timepoint.resolved_timepoint:
+                    details["resolved_timepoint"] = self.timepoint.resolved_timepoint
         return details, self.level.to_str()
 
     def _compose_description(self) -> str:
         desc = self.description.strip()
         if (not self.timepoint.aligned
                 and self.level != MatchLevel.NOT_APPLICABLE):
-            note = (f"Timepoints differ "
-                    f"({self.timepoint.source_visit} vs {self.timepoint.target_visit}).")
+            note = self.timepoint.note.strip() or (
+                f"Timepoints differ "
+                f"({self.timepoint.source_visit} vs {self.timepoint.target_visit}).")
             desc = f"{desc} {note}".strip() if desc else note
         return desc

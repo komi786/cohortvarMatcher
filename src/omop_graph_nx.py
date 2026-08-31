@@ -11,6 +11,7 @@ LOINC_REQUIRED_AXES = ["component", "time_aspect"]
 LOINC_DECISIVE_AXES = ["property"]
 LOINC_CONTEXT_AXES = ["system", "specimen"]
 LOINC_IGNORABLE_AXES = ["method", "scale_type"]
+CASE_SENSITIVE_CODE_VOCABS = frozenset({'ucum'})
 
 VOCAB_ALIASES = {
     "snomed": "snomed", "snomedct": "snomed",
@@ -24,8 +25,10 @@ VOCAB_ALIASES = {
     "ukbiobank": "uk biobank", "cdisc": "cdisc",
     "cancer modifier": "cancer modifier", "cancer_modifier": "cancer modifier",
     "icd9proc": "icd9proc", "visit": "visit",
-    "visit type": "visit type", "visit_type": "visit type",
-    "icare4cvd": "icare4cvd", "condition status": "condition status",
+    "visit type": "visit type", 
+    "visit_type": "visit type",
+    "icare4cvd": "icare4cvd", 
+    "condition status": "condition status",
 }
 EQ_RELS = {
     "rxnorm - atc pr lat": "atc - rxnorm pr lat", "atc - rxnorm pr lat": "rxnorm - atc pr lat",
@@ -35,6 +38,8 @@ EQ_RELS = {
     "mapped from": "maps to", "maps to": "mapped from",
     "cpt4 - snomed eq": "snomed - cpt4 eq", "snomed - cpt4 eq": "cpt4 - snomed eq",
     "cpt4 - loinc eq": "loinc - cpt4 eq", "loinc - cpt4 eq": "cpt4 - loinc eq",
+    "concept same_as to": "concept same_as from",
+    "concept same_as from": "concept same_as to",
 }
 DIR_RELS = {"is a": "subsumes", "subsumes": "is a", "has answer": "answer of", "answer of": "has answer"}
 LOINC_AXIS_RELS = {
@@ -42,37 +47,17 @@ LOINC_AXIS_RELS = {
     'has system': 'system', 'has scale type': 'scale_type', 'has method': 'method', 'has specimen': 'specimen',
 }
 EQUIV_REL_NAMES = frozenset({
-    "maps to", "mapped from", "rxnorm - atc pr lat", "atc - rxnorm pr lat",
+    "rxnorm - atc pr lat", "atc - rxnorm pr lat",
     "atc - rxnorm", "rxnorm - atc", "snomed - rxnorm eq", "rxnorm - snomed eq",
     "atc - snomed eq", "snomed - atc eq", "cpt4 - snomed eq", "snomed - cpt4 eq",
     "cpt4 - loinc eq", "loinc - cpt4 eq",
+    "concept same_as to", "concept same_as from",
 })
 
-
-# class BlockingFilter:
-#     __slots__ = ('_check_fn', 'blocked', 'passed', 'equiv_class', 'source')
-
-#     def __init__(self, check_fn, source=None, equiv_class=None):
-#         self._check_fn, self.source = check_fn, source
-#         self.blocked, self.passed, self.equiv_class = {}, set(), equiv_class or set()
-
-#     def __call__(self, tid: int) -> bool:
-#         result = self._check_fn(tid)
-#         if result:
-#             self.blocked[tid] = "hierarchically related"
-#         else:
-#             self.passed.add(tid)
-#         return result
-
-#     def summary(self, graph=None):
-#         lines = [
-#             f"Source:{self.source}" + (f" ({graph.get_node_attr(self.source, 'name')})" if graph else ""),
-#             f"Blocked:{len(self.blocked)}, Passed:{len(self.passed)}",
-#         ]
-#         for tid, reason in self.blocked.items():
-#             name = graph.get_node_attr(tid, 'name') if graph else str(tid)
-#             lines.append(f"  ✗ {tid} ({name}) — {reason}")
-#         return "\n".join(lines)
+def _code_key(vocab, code) -> tuple:
+    v = str(vocab).strip().lower()
+    c = str(code).strip()
+    return (v, c if v in CASE_SENSITIVE_CODE_VOCABS else c.lower())
 
 def _compatible_loinc_property(src_prop: str, tgt_prop: str) -> bool:
     s, t = src_prop.lower().strip(), tgt_prop.lower().strip()
@@ -139,35 +124,11 @@ class OmopGraphNX:
         g = self.graph
 
         # Resolve the "maps to" int for multi-target detection
-        rm_fwd = {r: i for i, r in g.graph.get('rel_map_rev', {}).items()}
-        print(f"forward rel = {rm_fwd}")
-        MAPTO_INT = rm_fwd.get("maps to", -1)
-        print(f"mapto edges: {MAPTO_INT}")
-        # MAPTO_INTS = frozenset(x for x in (
-        #         rm_fwd.get("maps to"), rm_fwd.get("mapped from")
-        #     ) if x)
-        # isa_succ, subs_succ, equiv_bidir = {}, {}, {}
-        # maps_to_count = {}  # node → count of outgoing maps_to edges
-
-        # t0 = time.time()
-        # for u, v, data in g.edges(data=True):
- 
-        #     rels = data.get('all_r') or frozenset({data.get('r', 0)})
-        #     if IS_A in rels:
-        #         isa_succ.setdefault(u, set()).add(v)
-        #     if SUBS in rels:
-        #         subs_succ.setdefault(u, set()).add(v)
-        #     if rels & EQUIV:
-        #         equiv_bidir.setdefault(u, set()).add(v)
-        #         equiv_bidir.setdefault(v, set()).add(u)
-        #     if MAPTO_INT in rels:
-        #         maps_to_count[u] = maps_to_count.get(u, 0) + 1
-
-        # self._isa_succ = {k: frozenset(v) for k, v in isa_succ.items()}
-        # self._subs_succ = {k: frozenset(v) for k, v in subs_succ.items()}
-        # self._equiv_bidir = {k: frozenset(v) for k, v in equiv_bidir.items()}
-        # self._multi_target_mappers = frozenset(
-        #     u for u, c in maps_to_count.items() if c > 1)
+        # rm_fwd = {r: i for i, r in g.graph.get('rel_map_rev', {}).items()}
+        # print(f"forward rel = {rm_fwd}")
+        # MAPTO_INT = rm_fwd.get("maps to", -1)
+        # print(f"mapto edges: {MAPTO_INT}")
+     
 
         isa_succ, subs_succ, equiv_bidir = {}, {}, {}
         equiv_targets = {}  # Track fan-out for ALL equivalence types
@@ -195,12 +156,12 @@ class OmopGraphNX:
             u for u, targets in equiv_targets.items() if len(targets) > 1
         )
 
-        elapsed = time.time() - t0
-        print(f"[INFO] Built typed adjacency index in {elapsed:.2f}s "
-              f"(is_a:{sum(len(v) for v in self._isa_succ.values()):,}, "
-              f"subsumes:{sum(len(v) for v in self._subs_succ.values()):,}, "
-              f"equiv:{sum(len(v) for v in self._equiv_bidir.values()):,}, "
-              f"multi_target_mappers:{len(self._multi_target_mappers):,})")
+        # elapsed = time.time() - t0
+        # print(f"[INFO] Built typed adjacency index in {elapsed:.2f}s "
+        #       f"(is_a:{sum(len(v) for v in self._isa_succ.values()):,}, "
+        #       f"subsumes:{sum(len(v) for v in self._subs_succ.values()):,}, "
+        #       f"equiv:{sum(len(v) for v in self._equiv_bidir.values()):,}, "
+        #       f"multi_target_mappers:{len(self._multi_target_mappers):,})")
 
     # ══════════════════════════════════════════════════════════════════
     # Shared helpers
@@ -330,14 +291,14 @@ class OmopGraphNX:
             return c if c in self.graph else None
         if ':' in s:
             v, c = s.split(':', 1)
-            return self.graph.graph.get('code_index', {}).get(
-                (v.strip().lower(), c.strip().lower()))
+            return self.graph.graph.get('code_index', {}).get(_code_key(v, c))
         return None
 
     def get_node_attr(self, nid, attr):
         try:
-            if attr in ('vocabulary', 'concept_name', 'name', 'concept_class'):
-                col = {'name': 'concept_name', 'vocabulary': 'concept_vocabulary'}.get(
+            if attr in ('vocabulary', 'concept_name', 'name', 'concept_class', 'domain', 'concept_domain'):
+                col = {'name': 'concept_name', 'vocabulary': 'concept_vocabulary',
+                       'domain': 'concept_domain'}.get(
                     attr, f'concept_{attr}' if 'concept' not in attr else attr)
                 meta = self.graph.graph.get('meta')
                 if meta is None or col not in meta.columns:
@@ -426,29 +387,6 @@ class OmopGraphNX:
             return self.graph.graph.get('loinc_axes', {}).get(int(cid), {})
         except (ValueError, TypeError):
             return {}
-
-    # def compare_loinc_axes(self, sid: int, tid: int) -> dict:
-    #     try:
-    #         sid, tid = int(sid), int(tid)
-    #     except (ValueError, TypeError):
-    #         return {'is_match': False, 'reason': 'invalid IDs'}
-    #     sa, ta = self.get_loinc_axes(sid), self.get_loinc_axes(tid)
-    #     if 'component' not in sa or 'component' not in ta:
-    #         return {'is_match': False, 'reason': 'component missing',
-    #                 'source_axes': sa, 'target_axes': ta}
-    #     matched, mismatched = [], []
-    #     for ax in LOINC_REQUIRED_AXES:
-    #         s, t = sa.get(ax), ta.get(ax)
-    #         if s and t:
-    #             (matched if s[0] == t[0] else mismatched).append(
-    #                 (ax, s[1]) if s[0] == t[0] else (ax, s[1], t[1]))
-    #         elif ax == 'component':
-    #             mismatched.append((ax, s, t))
-    #     ignored = [(a, sa[a][1], ta[a][1]) for a in LOINC_IGNORABLE_AXES
-    #                if a in sa and a in ta and sa[a][0] != ta[a][0]]
-    #     return {'is_match': not mismatched,
-    #             'matched': matched, 'mismatched': mismatched or ignored}
-
     
     def compare_loinc_axes(self, sid: int, tid: int) -> dict:
         try:
@@ -618,6 +556,21 @@ class OmopGraphNX:
         "body structure": "anatomy",
     }
 
+    # OMOP domain_id -> coarse kind. Authoritative when present: the CDM
+    # assigns it per concept, so it needs no vocabulary-specific guessing.
+    _DOMAIN_KIND = {
+        # Observation stays its own kind. A lab test is a Measurement in both
+        # LOINC and SNOMED -- in SNOMED it often carries concept_class
+        # "Procedure" while domain_id says Measurement, which is the case this
+        # table exists to resolve. An Observation is a different clinical fact
+        # and folding it into measurement would let every recorded observation
+        # gate through to every lab test.
+        "measurement": "measurement", "observation": "observation",
+        "condition": "condition", "procedure": "procedure",
+        "drug": "drug", "device": "device", "specimen": "anatomy",
+        "spec anatomic site": "anatomy", "meas value": "qualifier",
+    }
+
     def _concept_kind(self, cid: int) -> str:
         """Return a coarse OMOP-domain category for *cid*.
 
@@ -629,6 +582,19 @@ class OmopGraphNX:
           2. SNOMED/multi-domain vocab → look up concept_class.
           3. Fallback to 'unknown' (permissive at the compatibility gate).
         """
+        # OMOP's own domain_id first: it is assigned precisely to say which
+        # kind of clinical fact a concept represents, and it is the only field
+        # that separates a measurement procedure from a surgical one -- SNOMED
+        # labels both concept_class "Procedure", while domain_id calls
+        # "Nitrogen measurement" a Measurement and "Coronary artery bypass
+        # graft" a Procedure. Resolving by concept_class alone made every LOINC
+        # lab test incompatible with its SNOMED parent and silently discarded
+        # the 21,077-edge OHDSI LOINC-SNOMED crosswalk (Talapova et al. 2020),
+        # which is expressed as exactly those Is a / Subsumes edges.
+        dom = self.get_node_attr(cid, "domain").lower().strip()
+        if dom in self._DOMAIN_KIND:
+            return self._DOMAIN_KIND[dom]
+
         v = self.get_node_attr(cid, "vocabulary").lower().strip()
         v = VOCAB_ALIASES.get(v, v)
         kind = self._VOCAB_KIND.get(v)
@@ -843,6 +809,13 @@ class OmopGraphNX:
             return False, "invalid IDs"
         sv = self.get_node_attr(sid, 'vocabulary').lower()
         tv = self.get_node_attr(tid, 'vocabulary').lower()
+        # An explicit equivalence assertion outranks the LOINC axis heuristic:
+        # sitting vs supine heart rate differ on the component and time-aspect
+        # axes, so the axis comparison rejects a pair that a curated same_as row
+        # declares interchangeable. source_to_targets_paths already resolves
+        # equivalence before its own LOINC branch; this keeps the two agreeing.
+        if tid in self._equiv_closure(sid):
+            return True, MappingRelation.SymbolicExactMatch.value
         if sv == 'loinc' and tv == 'loinc':
             r = self.compare_loinc_axes(sid, tid)
             if r['is_match']:
@@ -887,7 +860,7 @@ class OmopGraphNX:
         return safe
 
     def concept_exists(self, cid: int, code: str, vocabulary: List[str]) -> Tuple[bool, str]:
-        vocabulary, code = [v.lower() for v in vocabulary], code.lower()
+        vocabulary = [str(v).strip().lower() for v in vocabulary]
         if cid not in self.graph:
             return False, "not found"
         meta = self.graph.graph.get('meta')
@@ -895,16 +868,19 @@ class OmopGraphNX:
             return False, "not found"
         row = meta.loc[cid]
         nv = str(row.get('concept_vocabulary', '')).strip().lower()
-        nc = str(row.get('concept_code', '')).strip().lower()
+        nc = str(row.get('concept_code', '')).strip()
         if not nv and not nc:
             return False, "not found"
-        return (True, "correct") if nv in vocabulary and nc == code else (False, "incorrect")
+        # Compare through the same normalisation the code index uses: a lowercased
+        # ATC code still matches, while UCUM keeps A (ampere) != a (year).
+        ok = nv in vocabulary and _code_key(nv, nc) == _code_key(nv, code)
+        return (True, "correct") if ok else (False, "incorrect")
 
     def get_vocabulary_stats(self):
         meta = self.graph.graph.get('meta')
         if meta is not None and 'concept_vocabulary' in meta.columns:
             c = meta['concept_vocabulary'].value_counts()
-            print(f"Total unique vocabularies:{len(c)}\n\nVocabulary distribution:\n{c}")
+            # print(f"Total unique vocabularies:{len(c)}\n\nVocabulary distribution:\n{c}")
             return c
         return None
 
@@ -917,7 +893,7 @@ class OmopGraphNX:
         if not csv_file_path:
             raise ValueError("No CSV file path provided.")
 
-        print("Reading CSV...")
+        # print("Reading CSV...")
         use_cols = [
             "concept_id_1", "concept_id_2", "relationship_id",
             "concept_vocabulary_1", "concept_vocabulary_2",
@@ -925,28 +901,34 @@ class OmopGraphNX:
             "concept_code_1", "concept_code_2",
             "concept_synonym_1", "concept_synonym_2",
             "concept_class_1", "concept_class_2",
+            # domain_id is what separates a lab procedure from a surgical one.
+            # SNOMED gives both concept_class "Procedure"; only the domain says
+            # "Nitrogen measurement" is a Measurement while "Coronary artery
+            # bypass graft" is a Procedure. Without it the compatibility gate
+            # discards all 21,077 edges of the OHDSI LOINC-SNOMED crosswalk.
+            "concept_domain_1", "concept_domain_2",
         ]
         header = pd.read_csv(csv_file_path, nrows=0)
         actual = [c for c in use_cols if c in header.columns]
         df = pd.read_csv(csv_file_path, usecols=actual, dtype=str)
-        df['relationship_id'] = df['relationship_id'].str.lower()
+        df['relationship_id'] = df['relationship_id'].str.lower().str.strip()
 
-        for col in ['concept_vocabulary_1', 'concept_vocabulary_2']:
-            if col in df.columns:
-                print(f"Unique vocabs:{sorted(df[col].dropna().unique())}")
+        # for col in ['concept_vocabulary_1', 'concept_vocabulary_2']:
+        #     if col in df.columns:
+        #         print(f"Unique vocabs:{sorted(df[col].dropna().unique())}")
 
         # ── Separate LOINC axis rows from edge rows ──
         loinc_df = df[df['relationship_id'].isin(LOINC_AXIS_RELS)].copy()
         df_e = df[~df['relationship_id'].isin(LOINC_AXIS_RELS)].copy()
         df_e = df_e[df_e['relationship_id'].isin(set(EQ_RELS) | set[str](DIR_RELS))].copy()
-        print(f"df_e head\n{df_e.head()}")
-        print(f"LOINC axis:{len(loinc_df):,}, Edge rows:{len(df_e):,}")
+        # print(f"df_e head\n{df_e.head()}")
+        # print(f"LOINC axis:{len(loinc_df):,}, Edge rows:{len(df_e):,}")
 
         # ── Build node metadata ──
         c1 = {c: c[:-2] for c in actual if c.endswith('_1')}
-        print(f"c1= {c1}")
+        # print(f"c1= {c1}")
         c2 = {c: c[:-2] for c in actual if c.endswith('_2')}
-        print(f"c2= {c2}")
+        # print(f"c2= {c2}")
         all_df = pd.concat([df_e, loinc_df], ignore_index=True)
         fm = pd.concat([
             all_df[list[str](c1)].rename(columns=c1),
@@ -958,6 +940,8 @@ class OmopGraphNX:
         mcols = ['concept_id', 'concept_vocabulary', 'concept_name', 'concept_synonym', 'concept_code']
         if 'concept_class' in fm.columns:
             mcols.append('concept_class')
+        if 'concept_domain' in fm.columns:
+            mcols.append('concept_domain')
         meta = fm.drop_duplicates(subset=['concept_id'])[
             [c for c in mcols if c in fm.columns]].copy()
         meta.set_index('concept_id', inplace=True)
@@ -967,9 +951,9 @@ class OmopGraphNX:
         # ── Code index ──
         ci = {}
         for cid, row in meta.iterrows():
-            code = str(row.get('concept_code', '')).strip().lower()
+            code = str(row.get('concept_code', '')).strip()
             if code and code != 'nan':
-                ci[(str(row.get('concept_vocabulary', '')).strip().lower(), code)] = int(cid)
+                 ci[_code_key(row.get('concept_vocabulary', ''), code)] = int(cid)
         self.graph.graph['code_index'] = ci
 
         # ── LOINC axis map ──
@@ -1027,7 +1011,7 @@ class OmopGraphNX:
         self._build_typed_adjacency()
 
         self.save_graph(self.output_file)
-        print(f"[INFO] Done. Nodes:{self.graph.number_of_nodes():,}, Edges:{self.graph.number_of_edges():,}")
+        # print(f"[INFO] Done. Nodes:{self.graph.number_of_nodes():,}, Edges:{self.graph.number_of_edges():,}")
 
     def save_graph(self, path):
         out = path if path.endswith(".gz") else path + ".gz"
@@ -1040,7 +1024,7 @@ class OmopGraphNX:
         }
         with gzip.open(out, "wb", compresslevel=6) as f:
             pickle.dump(bundle, f, protocol=pickle.HIGHEST_PROTOCOL)
-        print(f"[INFO] Saved to {out}")
+        # print(f"[INFO] Saved to {out}")
 
     def load_graph(self, path):
         if not path.endswith(".gz") and os.path.exists(path + ".gz"):
@@ -1057,7 +1041,7 @@ class OmopGraphNX:
             self.graph = data  # backward compat with old pickles
             self._build_typed_adjacency()
         self._IS_A = self._SUBSUMES = self._EQUIV_INTS = None
-        print(f"[INFO] Loaded {path}. Nodes:{self.graph.number_of_nodes()} Edges:{self.graph.number_of_edges()}")
+        # print(f"[INFO] Loaded {path}. Nodes:{self.graph.number_of_nodes()} Edges:{self.graph.number_of_edges()}")
 
     def clear_caches(self):
         """Clear all caches."""
@@ -1312,6 +1296,8 @@ def run_pair_tests(omop_nx):
         # ── LOINC hierarchy: parent-child should NOT match ──
         (4248525, 4060832, True,
          "lying systolic BP vs systolic BP (parent-child)"),
+         (4248525, 4232915, True,
+         "lying systolic BP vs sitting systolic BP (parent-child)"),
         (4248525, 4326744, False,
          "lying systolic BP vs blood pressure (too broad"),
 
@@ -1373,8 +1359,37 @@ def run_pair_tests(omop_nx):
          (3001308,3007070, False, "ldl vs hdl"),
          (21601665,1318853,False,
          "beta blocking agents,nifedipine"),
-         (970250,21601517, 
-         False, "spironolactone vs diuretics")
+         (970250,21601517,False, "spironolactone vs diuretics"),
+
+        # ── Hub-mediated siblings: two concepts that both `maps to` the same
+        # generic parent are NOT equivalent. `maps to` is OMOP's
+        # standardisation mapping (non-standard -> standard replacement) and is
+        # frequently lossy: "h/o: multiple allergies" and "history of neoplasm"
+        # both map to "history of event" (1340204), so treating the mapping as
+        # equivalence made them members of one equivalence class -- reported as
+        # exactMatch. Same shape put aspirin under beta blockers via the
+        # combination products that map to it. These fail if "maps to" /
+        # "mapped from" are ever re-added to EQUIV_REL_NAMES.
+        (4060077, 4078300, False,
+         "h/o multiple allergies vs history of neoplasm (both maps_to 'history of event')"),
+        (4078300, 4060077, False,
+         "history of neoplasm vs h/o multiple allergies (reverse direction)"),
+        (4060077, 1340204, False,
+         "h/o multiple allergies vs history of event (its own broader concept)"),
+        (1112807, 21601664, False,
+         "aspirin vs BETA BLOCKING AGENTS (via bisoprolol+aspirin combination)"),
+        (1112807, 21601665, False,
+         "aspirin vs beta blocking agents, plain (same route, sibling class)"),
+        (1112807, 21600961, True,
+         "aspirin vs ANTITHROMBOTIC AGENTS (genuine ATC ancestor, B01AC06 < B01)"),
+        (1112807, 4306886, True,
+         "aspirin RxNorm vs aspirin SNOMED (real cross-vocab equivalence)"),
+        (1112807, 21600991, True,
+         "aspirin vs acetylsalicylic acid; oral (rxnorm - atc pr lat)"),
+        # Two unrelated 'history of' findings must not collapse through the hub
+        # either -- the pattern generalises to every h/o concept in the corpus.
+        (4214956, 4078300, False,
+         "history of clinical finding vs history of neoplasm (hub siblings)"),
     ]
 
     passed = failed = 0
@@ -1406,7 +1421,6 @@ def run_pair_tests(omop_nx):
             print(f"equv({src}): {sorted(eq_src)[:8]}{'...' if len(eq_src) > 8 else ''}")
         else:
             passed += 1
-
     print(f"\n  Pair tests: {passed} passed, {failed} failed, {passed + failed} total")
     return failed == 0
     

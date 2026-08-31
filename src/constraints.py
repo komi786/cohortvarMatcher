@@ -334,9 +334,21 @@ class ContinuousHandler:
         tgt_unit = str(ctx.tgt.unit).lower() if ctx.tgt.unit else None
         unit_info = {"source_unit": src_unit, "target_unit": tgt_unit}
         dosage_unit = is_absolute_vs_percent_dose(src_unit, tgt_unit)
-    
-        units_same   = (src_unit == tgt_unit) if (src_unit and tgt_unit) else False
-        units_differ = (src_unit != tgt_unit) if (src_unit and tgt_unit) else False
+
+        # Sameness is decided on the unit's OMOP concept when both sides have
+        # one, because the dictionaries spell a single unit several ways --
+        # MG-DL, mg/dL and mg/dl are all concept 8840, and hh/mm is a typo for
+        # mmHg (8876). Comparing the strings reports those as different units
+        # and manufactures a conversion that does not exist. The string is the
+        # fallback for the ~7% of unit-bearing variables with no concept.
+        src_uid = getattr(ctx.src, "unit_concept_id", None)
+        tgt_uid = getattr(ctx.tgt, "unit_concept_id", None)
+        if src_uid is not None and tgt_uid is not None:
+            units_same   = (src_uid == tgt_uid)
+            units_differ = not units_same
+        else:
+            units_same   = (src_unit == tgt_unit) if (src_unit and tgt_unit) else False
+            units_differ = (src_unit != tgt_unit) if (src_unit and tgt_unit) else False
         no_unit      = (not src_unit and not tgt_unit)
         
 
@@ -1125,19 +1137,41 @@ def compute_structural(src: VariableNode,
     )
 
 
-def make_timepoint_info(src: VariableNode, tgt: VariableNode):
+def make_timepoint_info(
+    src: VariableNode,
+    tgt: VariableNode,
+    source_visit_universe=None,
+    target_visit_universe=None,
+):
     """Build TimepointInfo from a candidate pair.
 
     Pulled out so run.py doesn't need to know about VariableNode internals.
+
+    The universes are each study's visit vocabulary. They let an undetermined
+    side (a study that records everything against a generic 'visit date') be
+    expanded onto the exhaustive list of protocol timepoints the counterpart
+    study exposes, instead of being reported as a mismatch against whichever
+    timepoint happens to be on the other side of this row.
     """
     from .verdict import TimepointInfo
+    from .utils import resolve_visit_pair
+
     s_visit = src.visit or ""
     t_visit = tgt.visit or ""
-    aligned = s_visit.lower().strip() == t_visit.lower().strip()
+    res = resolve_visit_pair(
+        s_visit, t_visit,
+        source_visit_universe=source_visit_universe,
+        target_visit_universe=target_visit_universe,
+    )
     return TimepointInfo(
-        aligned=aligned,
+        aligned=(res["status"] == "aligned"),
         source_visit=s_visit,
         target_visit=t_visit,
+        status=res["status"],
+        undetermined_side=res["undetermined_side"],
+        candidate_timepoints=tuple(res["candidate_timepoints"]),
+        resolved_timepoint=res["resolved_timepoint"],
+        note=res["note"],
     )
         
 

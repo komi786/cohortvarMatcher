@@ -17,3 +17,9 @@ CohortVarLinker is a semantic matching framework designed to align variables (ba
 - Harmonizing variable definitions across cardiovascular cohort studies
 - Preparing study data for federated analysis or joint modeling
 - Enabling semantic interoperability in cohort exploration tools
+
+## Experimental Results
+
+The experimental cross-cohort variable mapping results supporting this study are available on Zenodo.
+
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.22212439.svg)](https://doi.org/10.5281/zenodo.22212439)

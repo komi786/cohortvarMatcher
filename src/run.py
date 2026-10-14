@@ -12,7 +12,7 @@ from .constraints import compute_structural, make_timepoint_info
 from .policy import decide, should_consult_llm, llm_priority_key, CLAIMING_VERDICTS
 from .verdict import LLMEvidence
 from .data_model import (
-    MappingType, VariableNode, VariableCollection,
+    MappingType, MatchLevel, VariableNode, VariableCollection,
     Statistics, StatisticalType, ContextMatchType, _safe_float
 )
 from dataclasses import asdict
@@ -21,10 +21,15 @@ from .utils import setup_logger
 from .neuro_matcher import NeuroSymbolicMatcher
 from .variable_profile import VariableProfile
 from .graph_similarity import compute_context_scores
-from .utils import execute_query,canonical_var_key
+from .utils import execute_query,canonical_var_key,build_visit_universe
 
-from .harmonized_variable import suggest_harmonized_variable_without_llm
+from .harmonized_variable import (
+    slugify_name,
+    suggest_harmonized_variable_for_subsumption,
+    suggest_harmonized_variable_without_llm,
+)
 logger = setup_logger('storelog.log')
+
 _CTX_TYPE_TO_VERDICT = {
     ContextMatchType.EXACT.value:           "COMPLETE",
     ContextMatchType.COMPATIBLE.value:      "COMPATIBLE",
@@ -35,7 +40,27 @@ _CTX_TYPE_TO_VERDICT = {
 
 
 
+_LOGPROB_KEYS = (
+    "logprob_usable", "logprob_distribution_type", "logprob_observability",
+    "logprob_dist", "logprob_confidence", "logprob_top_label",
+    "logprob_top_prob", "logprob_runner_up", "logprob_margin",
+    "logprob_raw_margin",
+)
+_EMPTY = (None, "", 0, 0.0, False, {}, [])
 
+
+def _evidence_for_output(evidence: LLMEvidence) -> dict:
+    """LLMEvidence as a dict, minus logprob fields that carry no value.
+
+    Only the logprob keys are eligible for dropping, and only when empty: a
+    blank `reason` or `transform` is a fact about the verdict and stays. If a
+    backend does return logprobs, the populated keys reappear on their own.
+    """
+    out = asdict(evidence)
+    for key in _LOGPROB_KEYS:
+        if key in out and out[key] in _EMPTY:
+            del out[key]
+    return out
 
 
 def _llm_tuple_to_evidence(parsed_tuple) -> LLMEvidence:
@@ -66,8 +91,6 @@ def _llm_tuple_to_evidence(parsed_tuple) -> LLMEvidence:
 
     self_reported_conf = float(d.get("llm_self_reported_confidence") or conf or 0.0)
 
-    lp_conf_raw = d.get("logprob_confidence")
-    logprob_conf = float(lp_conf_raw) if lp_conf_raw is not None else 0.0
 
     return LLMEvidence(
         verdict=verdict,
@@ -76,19 +99,6 @@ def _llm_tuple_to_evidence(parsed_tuple) -> LLMEvidence:
         transform=transform,
         transform_direction=transform_dir,
         harmonized_variable=harmonized,
-
-        logprob_usable=bool(d.get("logprob_usable", False)),
-        logprob_distribution_type=d.get("logprob_distribution_type") or "",
-        logprob_observability=float(d.get("logprob_observability") or 0.0),
-
-        logprob_dist=d.get("logprob_dist") or {},
-        logprob_confidence=logprob_conf,
-        logprob_top_label=d.get("logprob_top_label") or "",
-        logprob_top_prob=float(d.get("logprob_top_prob") or 0.0),
-        logprob_runner_up=d.get("logprob_runner_up") or "",
-        logprob_margin=float(d.get("logprob_margin") or 0.0),
-        logprob_raw_margin=float(d.get("logprob_raw_margin") or 0.0),
-
         confidence_source=d.get("confidence_source") or "",
     )
     
@@ -104,13 +114,15 @@ class StudyMapper:
         self.collection_name = vector_collection
         self.llm_model = llm_model
         self.embed_model = embedding_model
+
+        # The typed nodes from the most recent run_pipeline, kept so timepoint
+        # expansion can key families off the same records the matching used
+        # instead of re-reading the dictionaries and re-deriving them.
+        
+        self.last_source_variables: List[VariableNode] = []
+        self.last_target_variables: List[VariableNode] = []
         self.similarity_threshold =  self._select_mode_specific_threshold(mapping_mode)
 
-        # When True, once a source variable is matched COMPLETE or COMPATIBLE
-        # against any target, the remaining ambiguous candidates for that
-        # source are skipped (no LLM call). This is an ablation knob —
-        # default False so paper numbers stay reproducible against the
-        # no-claim baseline.
         self.enable_source_claim_early_exit = enable_source_claim_early_exit
         default_workers = int(os.getenv("PHASE_A_WORKERS", "6"))
         self.phase_a_workers = max(1, min(8, phase_a_workers or default_workers))
@@ -126,40 +138,40 @@ class StudyMapper:
 
         )
         self.graph = omop_graph
-        self.var_list = list_of_var
+        # self.var_list = list_of_var
 
    
-    def _restrict_source_variables(self, src_col: VariableCollection) -> None:
-        """Restrict the SOURCE collection to the benchmark's source variables.
+    # def _restrict_source_variables(self, src_col: VariableCollection) -> None:
+    #     """Restrict the SOURCE collection to the benchmark's source variables.
 
-        Compute-scoping only. Metric-neutral under the evaluator's left-join
-        scoring: source variables absent from GT never enter the scored set,
-        so removing them cannot alter F1. Target collection is left untouched
-        — each retained source still competes against the full target space,
-        so retrieval-recall misses are still penalised.
-        """
-        if not self.var_list:
-            return
-        wanted = {canonical_var_key(v) for v in self.var_list}
-        before = len(src_col.variables)
-        src_col.variables = [
-            v for v in src_col.variables if canonical_var_key(v.name) in wanted
-        ]
-        src_col._by_omop_id = None
-        src_col._by_name = None
-        src_col._build_indexes()
+    #     Compute-scoping only. Metric-neutral under the evaluator's left-join
+    #     scoring: source variables absent from GT never enter the scored set,
+    #     so removing them cannot alter F1. Target collection is left untouched
+    #     — each retained source still competes against the full target space,
+    #     so retrieval-recall misses are still penalised.
+    #     """
+    #     if not self.var_list:
+    #         return
+    #     wanted = {canonical_var_key(v) for v in self.var_list}
+    #     before = len(src_col.variables)
+    #     src_col.variables = [
+    #         v for v in src_col.variables if canonical_var_key(v.name) in wanted
+    #     ]
+    #     src_col._by_omop_id = None
+    #     src_col._by_name = None
+    #     src_col._build_indexes()
 
-        matched = {canonical_var_key(v.name) for v in src_col.variables}
-        missing = wanted - matched
-        logger.info(
-            f"Source scope [{src_col.study}]: kept {len(src_col.variables)}/{before} "
-            f"variables ({len(wanted)} requested, {len(missing)} not found)"
-        )
-        if missing:
-            logger.warning(
-                f"{len(missing)} requested source variables absent from"
-                f"{src_col.study}: {sorted(missing)[:10]}"
-            )
+    #     matched = {canonical_var_key(v.name) for v in src_col.variables}
+    #     missing = wanted - matched
+    #     logger.info(
+    #         f"Source scope [{src_col.study}]: kept {len(src_col.variables)}/{before} "
+    #         f"variables ({len(wanted)} requested, {len(missing)} not found)"
+    #     )
+    #     if missing:
+    #         logger.warning(
+    #             f"{len(missing)} requested source variables absent from"
+    #             f"{src_col.study}: {sorted(missing)[:10]}"
+    #         )
         
         
 
@@ -168,15 +180,7 @@ class StudyMapper:
             return 0.45  # lower a bit due to low label quality
         return settings.ADAPTIVE_THRESHOLD 
     
-    # def fetch_studies_context(src_study_id:str, tgt_study_id:str):
-        
-     
-    #     src_query = SPARQLQueryBuilder.build_study_context_query(src_study_id )
-    #     tgt_query = SPARQLQueryBuilder.build_study_context_query(tgt_study_id)
-
-    #     bindings = execute_query(src_query).get("results", {}).get("bindings", [])
-    #     bindings = execute_query(tgt_query).get("results", {}).get("bindings", [])
-
+   
     # Step 1a: SPARQL → typed VariableCollections
     def _fetch_unmapped_variables(self, study: str, role: str = None,use_filter:bool=False) -> List[VariableNode]:
         """Raw unmapped variables — self-sufficient (no enrichment needed)."""
@@ -294,6 +298,15 @@ class StudyMapper:
                     continue
             return result
 
+        def _as_int(val):
+            """Single concept id, or None. SPARQL returns these as strings."""
+            if val in (None, ""):
+                return None
+            try:
+                return int(float(str(val).strip()))
+            except (ValueError, TypeError):
+                return None
+
        
         prof_map = (
                 profiles_df.drop_duplicates(subset="identifier", keep="last")
@@ -307,6 +320,8 @@ class StudyMapper:
             # Parse into typed values BEFORE assignment (validators don't fire post-init)
             node.statistical_type = StatisticalType.from_string(p.get("stat_label")) if mapping_mode != MappingType.NE.value else node.statistical_type
             node.unit = p.get("unit_label", "") if mapping_mode != MappingType.NE.value else node.unit
+    
+            node.unit_concept_id = _as_int(p.get("unit_omop_id")) if mapping_mode != MappingType.NE.value else node.unit_concept_id
             node.context_labels = _split_labels(p.get("composite_code_labels")) if mapping_mode != MappingType.NE.value else []
             node.context_ids = _split_ids(p.get("composite_code_omop_ids"))   if mapping_mode != MappingType.NE.value else []
             node.category_labels = _split_labels(p.get("categories_labels"))
@@ -407,18 +422,7 @@ class StudyMapper:
         matcher = self.matcher
         structurals: Dict[int, Tuple[VariableNode, VariableNode, Any]] = {}
 
-        # def _one(item: Tuple[int, Dict[str, Any]]) -> Tuple[int, Tuple[VariableNode, VariableNode, Any]]:
-        #     idx, row = item
-        #     s = VariableNode.for_match_pair(
-        #         src_col, row, side="source", study=src_study,
-        #     )
-        #     t = VariableNode.for_match_pair(
-        #         tgt_col, row, side="target", study=tgt_study,
-        #     )
-        #     ev = compute_structural(
-        #         s, t, mapping_mode=mapping_mode, matcher=matcher,
-        #     )
-        #     return idx, (s, t, ev)
+      
         def _one(item):
             idx, row = item
             try:
@@ -458,15 +462,22 @@ class StudyMapper:
 
         src_col = VariableCollection(study=src_study, variables=[])
         tgt_col = VariableCollection(study=tgt_study, variables=[])
+        # Set now as well as on the way out, so a caller reading them after an
+        # early return sees an empty list rather than the previous pair's.
+        self.last_source_variables: list = []
+        self.last_target_variables: list = []
 
         # get studies design protocols
         if self.llm_model:
             from .study_context import format_study_context_block
             study_context = format_study_context_block(src_study, tgt_study)
+            self.matcher.llm_matcher.set_study_context(study_context)
             if study_context:
                 logger.info(f"📋 Study context fetched ({len(study_context)} chars):\n{study_context}")
+            else:
+                 logger.info("📋 Study context is empty")
                 # Store on the LLM matcher so assess() can prepend it to prompts.
-                self.matcher.llm_matcher._study_context = study_context
+                # self.matcher.llm_matcher._study_context = study_context
         # ── Step 1a: Parse SPARQL → typed VariableCollections ─────
         if mapping_mode == MappingType.NE.value:
             src_col = VariableCollection(study=src_study,
@@ -488,7 +499,7 @@ class StudyMapper:
                     col._by_name = None
                     col._build_indexes()
                     logger.info(f"  📎 Added {len(unmapped)} unmapped variables from {study}")
-        self._restrict_source_variables(src_col)
+        # self._restrict_source_variables(src_col)
         self._enrich_with_profiles(src_col,  mapping_mode)
         self._enrich_with_profiles(tgt_col,  mapping_mode)
         logger.info(f"📊 Parsed {len(src_col)} source, {len(tgt_col)} target variables")
@@ -562,42 +573,109 @@ class StudyMapper:
                         )
 
             # Phase C: one policy.decide() per row, immutable verdict, single write
-            logger.info(f"⚖️  Phase C: policy decision for {len(structurals)} candidates...")
+            # logger.info(f"⚖️  Phase C: policy decision for {len(structurals)} candidates...")
+            src_visit_universe = build_visit_universe(src_col.variables)
+            tgt_visit_universe = build_visit_universe(tgt_col.variables)
+            logger.info(
+                f"🗓️  visit universes — {src_study}: {len(src_visit_universe)} label(s), "
+                f"{tgt_study}: {len(tgt_visit_universe)} label(s)"
+            )
             descriptions, transformations, statuses = [], [], []
+            # Collected alongside the blob so the name can also stand as its own
+            # column. See the df assignment below for why it is written twice.
+            harmonized_names = []
+            # The concrete "how" of a transformation (a conversion formula, a
+            # derivation). Kept out of transformation_type so that column holds
+            # only the TransformationType category and stays filterable.
+            transformation_rules = []
             # llm_use = True if self.llm_model else False
-            llm_evidences = []  
+            llm_evidences = []
             for idx in range(len(recs)):
                 s, t, struct_ev = structurals[idx]
-                tp = make_timepoint_info(s, t)
+                tp = make_timepoint_info(
+                    s, t,
+                    source_visit_universe=src_visit_universe,
+                    target_visit_universe=tgt_visit_universe,
+                )
 
                 verdict = decide(mapping_mode, struct_ev, llm_evidence.get(idx), llm_use, tp)
                 
                 details, status = verdict.to_legacy_tuple()
-                if not (details.get("harmonized_variable") or "").strip():
-                    hv = suggest_harmonized_variable_without_llm(
+                llm_hv = (details.get("harmonized_variable") or "").strip()
+                same_concept = (
+                    s.main_id is not None
+                    and t.main_id is not None
+                    and int(s.main_id) == int(t.main_id)
+                )
+                trust_derived = (
+                    same_concept
+                    and verdict.level in (MatchLevel.IDENTICAL, MatchLevel.COMPATIBLE)
+                ) or not llm_hv
+                if trust_derived:
+                    derived_hv = suggest_harmonized_variable_without_llm(
                         s,
                         t,
                         struct_ev,
                         graph=self.graph,
                         verdict_level=verdict.level,
                     )
-                    if hv:
-                        details["harmonized_variable"] = hv
+                    if derived_hv:
+                        if llm_hv and llm_hv != derived_hv:
+                            details["llm_harmonized_variable"] = llm_hv
+                        details["harmonized_variable"] = derived_hv
+                else:
+                    # `trust_derived` is false for every pair of DIFFERENT concept
+                    # ids, which is right when the two are merely related — the
+                    # model saw both variables and the deterministic namer would
+                    # be guessing. The one exception is a name that claims the
+                    # subtype of a parent that cannot record it, which asserts of
+                    # the pooled column something only one cohort measured. That
+                    # single case is repaired here; everything else, including a
+                    # subtype name the parent's categories DO support, is left as
+                    # the model wrote it. The model's name is kept alongside.
+                    broader_hv = suggest_harmonized_variable_for_subsumption(
+                        s, t, llm_hv, graph=self.graph, verdict_level=verdict.level,
+                    )
+                    if broader_hv:
+                        details["llm_harmonized_variable"] = llm_hv
+                        details["harmonized_variable"] = broader_hv
+                harmonized_names.append((details.get("harmonized_variable") or "").strip())
                 transformations.append(details.pop("transformation", "") or "")
+                transformation_rules.append(details.pop("transformation_rule", "") or "")
                 descriptions.append(json.dumps(details, default=str, ensure_ascii=False))
                 statuses.append(status)
 
                 ev = llm_evidence.get(idx)                        # NEW
                 llm_evidences.append(                             # NEW
-                    json.dumps(asdict(ev), default=str, ensure_ascii=False)
+                    json.dumps(_evidence_for_output(ev), default=str, ensure_ascii=False)
                     if ev is not None else ""
                 )
             df["transformation_type"]   = transformations
+            # Derived-variable rules are already set upstream by
+            # compute_derived_variables; only fill where that left a blank, so
+            # the more specific rule always wins.
+            if "transformation_rule" in df.columns:
+                existing = df["transformation_rule"].tolist()
+                df["transformation_rule"] = [
+                    str(old) if str(old).strip() and str(old).strip().lower() != "nan" else new
+                    for old, new in zip(existing, transformation_rules)
+                ]
+            else:
+                df["transformation_rule"] = transformation_rules
             df["Mapping Description"]   = descriptions
+            df["harmonized_variable"] = [
+                name or slugify_name(rec.get("derived_variable_name"))
+                for name, rec in zip(harmonized_names, recs)
+            ]
             df["harmonization_status"]  = statuses
-            df["LLMEvidence"]          = llm_evidences            
+            df["LLMEvidence"]          = llm_evidences
         
         df.dropna(subset=["source", "target"], inplace=True)
-        df.drop(columns="context_match_type", inplace=True, errors="ignore")
+        df.drop(columns=["context_match_type", "derived_variable_name"],
+                inplace=True, errors="ignore")
+
+  
+        self.last_source_variables = list(src_col.variables)
+        self.last_target_variables = list(tgt_col.variables)
         return df
        

@@ -2,35 +2,22 @@
 from typing import List, Set, Tuple, Optional
 import re
 from .config import settings    
-from .utils import extract_visit_period, is_interval_period, is_determinate_period
+from .utils import (
+    canonical_visit_period,
+    is_interval_period,
+    is_determinate_canonical_period,
+)
 
 _nlp = None
 class FuzzyMatcher:
 
-    @staticmethod
-    # def check_visit_string(visit_str_1: str, visit_str_2: str) -> bool:
-    #     """Normalize temporal context strings."""
-    #     s_low = extract_visit_period(visit_str_1.lower())
-    #     t_low = extract_visit_period(visit_str_2.lower())
-    #     # print(f"s_low: {s_low}, t_low: {t_low}")
-    #     for hint in settings.DATE_HINTS and "interval" not in {s_low,t_low}:
-    #         if hint in s_low and hint in t_low:
-    #             if s_low == t_low: # e.g. visit date not same as event date
-    #                 return True
-    #             else:
-    #                 return False
-    #         elif hint in s_low:
-    #             return True
-    #         elif hint in t_low:
-    #             return True
-        
-    #     return s_low == t_low
+    
 
     @staticmethod   
     def check_visit_string(visit_str_1: str, visit_str_2: str) -> bool:
         """Return True only when temporal contexts are comparable."""
-        s_low = extract_visit_period(visit_str_1)
-        t_low = extract_visit_period(visit_str_2)
+        s_low = canonical_visit_period(visit_str_1)
+        t_low = canonical_visit_period(visit_str_2)
 
         # Reject interval-vs-point comparisons.
         # Example: "between baseline and visit 1" vs "baseline"
@@ -67,10 +54,11 @@ class FuzzyMatcher:
         genuine repeated-measures mismatches (e.g. baseline vs month 6) are
         still rejected.
         """
-        s = extract_visit_period(visit_str_1)
-        t = extract_visit_period(visit_str_2)
+        s = canonical_visit_period(visit_str_1)
+        t = canonical_visit_period(visit_str_2)
 
-        if is_determinate_period(visit_str_1) and is_determinate_period(visit_str_2):
+        if (is_determinate_canonical_period(visit_str_1)
+                and is_determinate_canonical_period(visit_str_2)):
             # Both sides denote a discrete or interval timepoint: apply the
             # strict comparison.
             if is_interval_period(s) != is_interval_period(t):

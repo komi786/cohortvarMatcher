@@ -7,7 +7,6 @@ from typing import Optional
 
 from .verdict import StructuralEvidence, LLMEvidence, Verdict, TimepointInfo
 from .data_model import MatchLevel, TransformationType, MappingType, MappingRelation, ContextMatchType
-import json
 
 def decide(mode: str,
            structural: StructuralEvidence,
@@ -25,23 +24,6 @@ def decide(mode: str,
 
 # Penalise broader vs specific pair matching
 
-# def _extra_info_from_llm(extra: dict, llm: Optional[LLMEvidence]) -> dict:
-#     out = dict(extra)
-
-#     if llm is not None:
-#         if llm.transform_direction:
-#             out["transform_direction"] = llm.transform_direction
-#         if llm.transform:
-#             out["llm_transform"] = llm.transform
-#         out["llm_verdict"] = llm.verdict
-#         out["llm_confidence"] = llm.confidence
-#         out["logprob_confidence"] = llm.logprob_confidence
-#         hv = (getattr(llm, "harmonized_variable", None) or "").strip()
-#         if hv:
-#             out["harmonized_variable"] = hv
-#         # print(out)
-#     return out
-
 
 
 def _extra_info_from_llm(extra: dict, llm: Optional[LLMEvidence]) -> dict:
@@ -52,26 +34,10 @@ def _extra_info_from_llm(extra: dict, llm: Optional[LLMEvidence]) -> dict:
             out["transform_direction"] = llm.transform_direction
 
         if llm.transform:
-            out["llm_transform"] = llm.transform
-
-        out["llm_verdict"] = llm.verdict
-        out["llm_confidence"] = llm.confidence
-
-        uncertainty = {
-            "logprob_usable": getattr(llm, "logprob_usable", False),
-            "distribution_type": getattr(llm, "logprob_distribution_type", ""),
-            "observability": getattr(llm, "logprob_observability", 0.0),
-            "logprob_confidence": getattr(llm, "logprob_confidence", 0.0),
-            "top_label": getattr(llm, "logprob_top_label", ""),
-            "top_prob": getattr(llm, "logprob_top_prob", 0.0),
-            "runner_up": getattr(llm, "logprob_runner_up", ""),
-            "margin": getattr(llm, "logprob_margin", 0.0),
-            "raw_margin": getattr(llm, "logprob_raw_margin", 0.0),
-            "confidence_source": getattr(llm, "confidence_source", ""),
-            "dist": getattr(llm, "logprob_dist", {}),
-        }
-
-        out["llm_uncertainty"] = json.dumps(uncertainty, ensure_ascii=False)
+            # The concrete "how" of the transformation. run.py lifts this into
+            # the transformation_rule column, leaving transformation_type to
+            # hold the category alone.
+            out["transformation_rule"] = llm.transform
 
         hv = (getattr(llm, "harmonized_variable", None) or "").strip()
         if hv:
@@ -81,7 +47,7 @@ def _extra_info_from_llm(extra: dict, llm: Optional[LLMEvidence]) -> dict:
 
     
 def _demote_hierarchical(s: StructuralEvidence) -> tuple[MatchLevel, TransformationType, str]:
-    # print(s)
+
     relation = s.extra.get("mapping_relation", "")
     if MappingRelation.is_hierarchical(relation) and s.level in (
         MatchLevel.IDENTICAL, MatchLevel.COMPATIBLE
@@ -94,6 +60,42 @@ def _demote_hierarchical(s: StructuralEvidence) -> tuple[MatchLevel, Transformat
         return MatchLevel.PARTIAL, transformation, reason
     return s.level, s.transformation, s.reason
 
+
+# A PARTIAL that no LLM ever saw still has a knowable direction: the candidate
+# generator already stated which side is finer. A broadMatch means the target is
+# the broader concept (torsemide -> "sulfonamides, plain"); a narrowMatch means
+# the target is the narrower one (cerebrovascular disease -> cerebrovascular
+# accident). Those map onto the ALIGNMENT DIRECTION vocabulary the LLM uses, so
+# structural and LLM verdicts stay comparable downstream.
+_HIERARCHICAL_DIRECTION = {
+    MappingRelation.SymbolicBroadMatch.value:  "source to target",   # source finer
+    MappingRelation.SymbolicNarrowMatch.value: "target to source",   # target finer
+}
+
+
+def _structural_direction(s: StructuralEvidence,
+                          level: MatchLevel,
+                          transformation: TransformationType) -> str:
+    """transform_direction for a verdict decided without the LLM."""
+    if level != MatchLevel.PARTIAL:
+        return ""
+    if transformation == TransformationType.DERIVATION or _is_derivation(s):
+        # Both sides feed a third, derived variable.
+        return "both for derivation"
+    relation = (s.extra.get("mapping_relation") or "").strip().lower()
+    return _HIERARCHICAL_DIRECTION.get(relation, "")
+
+
+def _extra_with_direction(s: StructuralEvidence,
+                          level: MatchLevel,
+                          transformation: TransformationType) -> dict:
+    """s.extra plus a transform_direction, when one can be derived structurally."""
+    out = dict(s.extra)
+    direction = _structural_direction(s, level, transformation)
+    if direction and not out.get("transform_direction"):
+        out["transform_direction"] = direction
+    return out
+
 # NE: neural matching only. The LLM is the primary semantic judge;
 
 def _ne_decide(s: StructuralEvidence,
@@ -104,7 +106,8 @@ def _ne_decide(s: StructuralEvidence,
     # No LLM consulted → structural verdict is final.
     if llm is None:
         level = MatchLevel.NOT_APPLICABLE if llm_use and s.level == MatchLevel.PARTIAL  else s.level
-        return _build_verdict(level, s.transformation, s.reason, tp, s.extra)
+        return _build_verdict(level, s.transformation, s.reason, tp,
+                              _extra_with_direction(s, level, s.transformation))
 
     if llm.verdict == "IMPOSSIBLE":
         return _build_verdict(
@@ -121,7 +124,12 @@ def _ne_decide(s: StructuralEvidence,
         else:
             # Lower int = better match; min picks the better of IDENTICAL vs structural.
             capped = min(MatchLevel.IDENTICAL, s.level, key=int)
-        transformation = llm.transform or TransformationType.NONE   # COMPLETE ⇒ no transform
+        # llm.transform is free text ("mg/dL = ug/mL / 10"), i.e. a *rule*, not a
+        # type. Putting it here made transformation_type unfilterable — rows
+        # needing unit conversion never carried UNIT_CONVERSION. The structural
+        # category stands; the text travels as transformation_rule via
+        # _extra_info_from_llm.
+        transformation = s.transformation or TransformationType.NONE
         reason = s.reason or "Handler verdict"
         if llm.reason:
             reason = f"{reason} | LLM confirmed: {llm.reason}"
@@ -163,7 +171,8 @@ def _symbolic_neural_with_llm_decide(s: StructuralEvidence,
     if llm is None:
         level, transformation, reason = _demote_hierarchical(s)
         level = MatchLevel.NOT_APPLICABLE if (llm_use and s.level == MatchLevel.PARTIAL and transformation != TransformationType.DERIVATION)  else level
-        return _build_verdict(level, transformation, reason, tp, s.extra)
+        return _build_verdict(level, transformation, reason, tp,
+                              _extra_with_direction(s, level, transformation))
     
     if llm.verdict == "IMPOSSIBLE":
         return _build_verdict(
@@ -178,7 +187,12 @@ def _symbolic_neural_with_llm_decide(s: StructuralEvidence,
             capped = MatchLevel.COMPATIBLE
         else:
             capped = min(MatchLevel.IDENTICAL, s.level, key=int)
-        transformation = llm.transform or TransformationType.NONE   # COMPLETE ⇒ no transform
+        # llm.transform is free text ("mg/dL = ug/mL / 10"), i.e. a *rule*, not a
+        # type. Putting it here made transformation_type unfilterable — rows
+        # needing unit conversion never carried UNIT_CONVERSION. The structural
+        # category stands; the text travels as transformation_rule via
+        # _extra_info_from_llm.
+        transformation = s.transformation or TransformationType.NONE
         reason = s.reason or "Ontology match"
         if llm.reason:
             reason = f"{reason} | LLM confirmed: {llm.reason}"
@@ -190,7 +204,8 @@ def _symbolic_neural_with_llm_decide(s: StructuralEvidence,
             capped = min(MatchLevel.IDENTICAL, s.level, key=int)
         else:
             capped = MatchLevel.COMPATIBLE
-        transformation = llm.transform or _compatible_transformation(s)
+        # Same reason as above: category here, llm.transform carried as a rule.
+        transformation = _compatible_transformation(s)
         reason = s.reason or "Ontology match"
         if llm.reason:
             reason = f"{reason} | LLM confirmed: {llm.reason}"
@@ -229,7 +244,8 @@ def _ontology_only_decide(s: StructuralEvidence, tp: TimepointInfo) -> Verdict:
             "manual review required."
         ).strip()
 
-    return _build_verdict(level, transformation, reason, tp, s.extra)
+    return _build_verdict(level, transformation, reason, tp,
+                          _extra_with_direction(s, level, transformation))
 
 
 
@@ -241,8 +257,19 @@ def _compatible_transformation(s: StructuralEvidence) -> TransformationType:
 
     Prefer the handler's transformation when it already implies a concrete
     operation (unit conversion, value normalization, aggregation).
-    Otherwise default to value normalization, which is the most general
-    'compatible-after-transform' label.
+
+    When it does not, two differing units are themselves the concrete operation:
+    the handler returns a non-concrete transformation whenever it cannot verify
+    unit equivalence ("units: (ucum:g/l); cannot verify equivalence"), and the
+    LLM then confirms the pair is compatible precisely because the conversion is
+    deterministic. Falling through to value normalization in that case labelled
+    253 continuous conversions -- g/L to g/dL, mmol/L to mg/dL, L/L to %, umol/L
+    to mg/dL -- as categorical recoding, which is not merely a wrong name: a
+    consumer reading transformation_type to decide how to merge would look for
+    category mappings on a variable that has no categories.
+
+    Only differing units qualify. Equal units mean the compatibility came from
+    something else, and value normalization remains the honest general label.
     """
     concrete = (
         TransformationType.UNIT_CONVERSION,
@@ -254,6 +281,16 @@ def _compatible_transformation(s: StructuralEvidence) -> TransformationType:
     )
     if s.transformation in concrete:
         return s.transformation
+
+    def _unit(key: str) -> str:
+        value = s.extra.get(key)
+        text = "" if value is None else str(value).strip()
+        return "" if text.lower() in ("nan", "none", "null") else text
+
+    src_unit, tgt_unit = _unit("source_unit"), _unit("target_unit")
+    if src_unit and tgt_unit and src_unit.lower() != tgt_unit.lower():
+        return TransformationType.UNIT_CONVERSION
+
     return TransformationType.VALUE_NORMALIZATION
 
 

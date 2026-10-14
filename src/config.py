@@ -43,7 +43,7 @@ class Settings:
         "code": "loinc:39156-5",
         "label": "Body mass index (BMI) [Ratio]",
         "unit": "ucum:kg/m2",
-        "required_omops": [3036277, 3025315],  #  Height,Weight
+        "required_omops": [3036277, 3025315],  #  Body Height, Body Weight
         "category": "measurement",
         "data_type": "continuous_variable"
     },
@@ -102,7 +102,7 @@ class Settings:
         "formula": "PP = SBP - DBP"
     },
     {
-        "name": "BSA_DuBois",
+        "name": "Body_Surface_Area_m2",
         "omop_id": 4201235,
         "code": "snomed:301898006",
         "label": "Body surface area",
@@ -168,7 +168,7 @@ class Settings:
     "formula": "Eos[#/vol] = Eos_fraction × Leukocytes[#/vol] ; Eos_fraction = pct/100 when reported in %"
 },
 {
-    "name": "Age_at_baseline",
+    "name": "Age",
     "omop_id": 3022304,
     "code": "loinc:30525-0",
     "label": "Age",
@@ -177,7 +177,7 @@ class Settings:
         4083587,  # Date of birth
         4231970,  # Date of visit
     ],
-    "category": "person",
+    "category": "measurement",
     "data_type": "continuous_variable",
     "formula": "completed calendar years between date of birth and baseline date",
 }

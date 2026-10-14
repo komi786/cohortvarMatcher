@@ -182,4 +182,5 @@ cython_debug/
 .cursorignore
 .cursorindexingignore
 data/.DS_Store
+data/output/cross_mapping_article_output.zip
 /src/_older

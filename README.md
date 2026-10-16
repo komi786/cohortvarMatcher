@@ -72,7 +72,7 @@ flowchart LR
     K -->|decisive| M[Verdict]
     K -->|ambiguous| L[LLM<br/>adjudication]
     L --> M
-    M --> N[CSV / JSON<br/>mappings]
+    M --> N[CSV / JSON/SSSOM<br/>mappings]
 ```
 
 | Stage | Module |

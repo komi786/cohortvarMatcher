@@ -1,5 +1,5 @@
 from __future__ import annotations
-import json, re, time
+import json, math, re, threading, time
 from typing import Dict, List, Optional, Tuple, Any
 from dataclasses import dataclass, field
 
@@ -27,6 +27,155 @@ _LABEL_ALIASES = {
 }
 
 _CODE_TO_LABEL = {"1": "COMPLETE", "2": "COMPATIBLE", "3": "PARTIAL", "4": "IMPOSSIBLE"}
+
+
+# ── Call failures ───────────────────────────────────────────────────────────
+# A failed call is classified rather than swallowed: temporary problems are
+# retried, permanent ones stop the run, and either way the reason reaches the
+# output instead of turning into an "IMPOSSIBLE" verdict.
+
+class LLMCallError(Exception):
+    """One failed LLM call. `kind` names the cause; `retryable` says whether
+    trying again can help."""
+
+    def __init__(self, kind: str, detail: str = "", retryable: bool = True):
+        super().__init__(f"{kind}: {detail}" if detail else kind)
+        self.kind, self.detail, self.retryable = kind, detail, retryable
+
+
+class LLMUnavailableError(RuntimeError):
+    """The LLM cannot be used for this run (bad credentials, unknown model,
+    requests rejected). Raised instead of producing verdicts without it."""
+
+
+def _http_status(e: BaseException) -> Optional[int]:
+    for obj in (e, getattr(e, "response", None)):
+        if obj is None:
+            continue
+        for attr in ("status_code", "code", "status"):
+            value = getattr(obj, attr, None)
+            if isinstance(value, int) and 100 <= value <= 599:
+                return value
+    return None
+
+
+def classify_call_error(e: BaseException) -> LLMCallError:
+    """Map an exception from any backend SDK to an LLMCallError."""
+    if isinstance(e, LLMCallError):
+        return e
+    status = _http_status(e)
+    name = type(e).__name__.lower()
+    detail = f"{type(e).__name__}: {str(e)[:200]}"
+    if status in (401, 403) or "authentication" in name or "permissiondenied" in name:
+        return LLMCallError("authentication", detail, retryable=False)
+    if status == 404 or "notfound" in name:
+        return LLMCallError("model_not_found", detail, retryable=False)
+    if status in (400, 422) or "badrequest" in name or "unprocessable" in name:
+        return LLMCallError("bad_request", detail, retryable=False)
+    if status == 429 or "ratelimit" in name or "resourceexhausted" in name:
+        return LLMCallError("rate_limit", detail)
+    if status == 408 or "timeout" in name:
+        return LLMCallError("timeout", detail)
+    if (status is not None and status >= 500) or "internalserver" in name or "unavailable" in name:
+        return LLMCallError("server_error", detail)
+    if "connection" in name:
+        return LLMCallError("connection", detail)
+    return LLMCallError("unknown_error", detail)
+
+
+class CircuitBreaker:
+    """Pauses LLM calls after repeated API failures instead of retrying pair by pair.
+
+    After `threshold` consecutive API failures the breaker opens: every caller
+    waits `cooldown_s` seconds, then calls resume. A failure right after a
+    cooldown opens it again. After `max_cooldowns` cooldowns without a single
+    success the breaker gives up, and further calls fail at once with kind
+    "circuit_open". Any success resets it. Shared by the worker threads.
+    """
+
+    def __init__(self, threshold: int = 5, cooldown_s: float = 30.0, max_cooldowns: int = 3,
+                 clock=time.monotonic, sleep=time.sleep):
+        self.threshold, self.cooldown_s, self.max_cooldowns = threshold, cooldown_s, max_cooldowns
+        self._clock, self._sleep = clock, sleep
+        self._lock = threading.Lock()
+        self.reset()
+
+    def reset(self) -> None:
+        with self._lock:
+            self._failures = 0
+            self._cooldowns = 0
+            self._open_until: Optional[float] = None
+            self._after_cooldown = False
+            self._gave_up = False
+
+    @property
+    def gave_up(self) -> bool:
+        with self._lock:
+            return self._gave_up
+
+    def give_up(self) -> None:
+        with self._lock:
+            self._gave_up = True
+
+    def before_call(self) -> None:
+        with self._lock:
+            if self._gave_up:
+                raise LLMCallError("circuit_open", "calls stopped after repeated API failures",
+                                   retryable=False)
+            wait = 0.0 if self._open_until is None else self._open_until - self._clock()
+        if wait > 0:
+            self._sleep(wait)
+
+    def record_success(self) -> None:
+        with self._lock:
+            self._failures = self._cooldowns = 0
+            self._open_until = None
+            self._after_cooldown = False
+
+    def record_failure(self) -> None:
+        with self._lock:
+            now = self._clock()
+            if self._open_until is not None:
+                if now < self._open_until:
+                    return              # in flight before the breaker opened; already counted
+                self._open_until = None
+                self._after_cooldown = True
+            self._failures += 1
+            if self._after_cooldown or self._failures >= self.threshold:
+                self._failures = 0
+                self._after_cooldown = False
+                if self._cooldowns >= self.max_cooldowns:
+                    self._gave_up = True
+                else:
+                    self._cooldowns += 1
+                    self._open_until = now + self.cooldown_s
+
+
+def _failure_result(status: str, attempts: int, cause: str) -> Tuple[None, int, float, str]:
+    """The (matched, ctx_type, conf, reason_json) tuple for a pair without a verdict."""
+    what = "LLM not reached" if status == "NOT_REACHED" else "LLM answer unreadable"
+    plural = "attempt" if attempts == 1 else "attempts"
+    tried = f" after {attempts} {plural}" if attempts else ""
+    return (None, ContextMatchType.PENDING.value, 0.0, json.dumps({
+        "status": status,
+        "reason": f"{what}{tried} ({cause})",
+        "attempts": attempts,
+        "cause": cause,
+    }))
+
+
+def _failure_status(result) -> str:
+    """'NOT_REACHED', 'UNREADABLE' or '' for a verdict tuple."""
+    if result is None:
+        return "NOT_REACHED"
+    matched, ctx_type, _, reason_json = result
+    if matched is not None and ctx_type != ContextMatchType.PENDING.value:
+        return ""
+    try:
+        status = str(json.loads(reason_json).get("status", "")).upper()
+    except (json.JSONDecodeError, TypeError, AttributeError):
+        status = ""
+    return status if status in ("NOT_REACHED", "UNREADABLE") else "UNREADABLE"
 
 
 
@@ -1001,38 +1150,51 @@ def _parse_single(text: str) -> Tuple[Optional[bool], str, float, str]:
         d = json.loads(text)
     except json.JSONDecodeError:
         return (None, ContextMatchType.PENDING.value, 0.0, "json_parse_fail")
+    if not isinstance(d, dict):
+        return (None, ContextMatchType.PENDING.value, 0.0, "json_not_an_object")
 
-    required = {
-        "status_code",
-        "status",
-        "confidence",
-        "reason",
-        "transform",
-        "harmonized_variable",
-        "alignment_direction",
-    }
+    # Only the verdict is required (status_code and/or status). The other
+    # fields are optional: a clear verdict with a missing direction or a
+    # non-numeric confidence is still a verdict.
+    raw_code = d.get("status_code")
+    code = ""
+    if raw_code not in (None, ""):
+        try:
+            code = str(int(float(raw_code)))
+        except (TypeError, ValueError):
+            code = str(raw_code).strip()
+    from_code = _CODE_TO_LABEL.get(code)
+    raw_status = str(d.get("status") or "").strip()
+    from_status = _LABEL_ALIASES.get(raw_status.lower())
 
-    missing = required - set(d.keys())
-    if missing:
-        return (
-            None,
-            ContextMatchType.PENDING.value,
-            0.0,
-            f"missing_required_fields:{sorted(missing)}",
-        )
+    if code and from_code is None:
+        return (None, ContextMatchType.PENDING.value, 0.0, f"invalid_status_code:{code}")
+    if raw_status and from_status is None:
+        return (None, ContextMatchType.PENDING.value, 0.0, f"invalid_status:{raw_status}")
+    if from_code and from_status and from_code != from_status:
+        return (None, ContextMatchType.PENDING.value, 0.0,
+                f"status_conflict:status_code {code} vs status {raw_status}")
+    status = from_code or from_status
+    if not status:
+        return (None, ContextMatchType.PENDING.value, 0.0, "missing_status")
 
-    code = str(d.get("status_code", "")).strip()
-    status = _CODE_TO_LABEL.get(code, str(d.get("status", "")).upper().strip())    
-    conf = float(d.get("confidence") or 0.0)
+    try:
+        conf = float(d.get("confidence"))
+        conf_reported = math.isfinite(conf) and 0.0 <= conf <= 1.0
+    except (TypeError, ValueError):
+        conf_reported = False
+    if not conf_reported:
+        conf = 0.0
 
     reason_json = json.dumps({
         "status": status,
-        "status_code": code, 
-        "reason": d.get("reason", ""),
-        "transform": d.get("transform", ""),
-        "transform_direction": d.get("alignment_direction", ""),
-        "alignment_direction": d.get("alignment_direction", ""),
-        "harmonized_variable": d.get("harmonized_variable", ""),
+        "status_code": code,
+        "reason": d.get("reason") or "",
+        "transform": d.get("transform") or "",
+        "transform_direction": d.get("alignment_direction") or "",
+        "alignment_direction": d.get("alignment_direction") or "",
+        "harmonized_variable": d.get("harmonized_variable") or "",
+        "confidence_reported": conf_reported,
     })
 
     if status == "IMPOSSIBLE":
@@ -1058,7 +1220,12 @@ def _parse_single(text: str) -> Tuple[Optional[bool], str, float, str]:
 @dataclass
 class LLMConceptMatcher:
     models: List[str] = field(default_factory=list)
-    max_retries: int = 5
+    max_retries: int = 5                 # failed API calls per pair before "not reached"
+    max_unreadable_attempts: int = 3     # unusable answers per pair before "unreadable"
+    breaker_threshold: int = 5           # consecutive API failures that pause all calls
+    breaker_cooldown_s: float = 30.0
+    breaker_max_cooldowns: int = 3
+    _breaker: Any = field(default=None, repr=False)
 
     _study_context: str = field(default="", repr=False)
 
@@ -1081,6 +1248,7 @@ class LLMConceptMatcher:
    
     def __post_init__(self):
         self._cache = LLMDiskCache()
+        self._get_breaker()
         self._refresh_system_prompt()
      
         # self._cache.set_system_prompt(sys_prompt)
@@ -1126,6 +1294,12 @@ class LLMConceptMatcher:
             )
 
   
+
+    def _get_breaker(self) -> CircuitBreaker:
+        if self._breaker is None:
+            self._breaker = CircuitBreaker(self.breaker_threshold, self.breaker_cooldown_s,
+                                           self.breaker_max_cooldowns)
+        return self._breaker
 
     def _refresh_system_prompt(self) -> None:
             self._system_prompt = _build_system_prompt(
@@ -1469,8 +1643,9 @@ class LLMConceptMatcher:
             else:
                 result = ""
         except Exception as e:
-            # print(f"[{mname}] call failed: {e}")
-            return "", {}
+            # Classified, not swallowed: _eval_pair decides whether to retry,
+            # pause, or stop, and the cause reaches the output.
+            raise classify_call_error(e) from e
         logger.info (f"LLM={model}, prompt={prompt}, result ={result}, logprob_dist ={logprob_evidence}")
         return result, logprob_evidence
 
@@ -1488,79 +1663,56 @@ class LLMConceptMatcher:
                     cached.get("logprob_dist") or {},
                 )
 
-        for attempt in range(self.max_retries):
-            text, logprob_dist = self._call_one(
-                model,
-                prompt,
-                force_freeform=(attempt > 3),
-            )
+        breaker = self._get_breaker()
+        attempts = api_failures = unreadable = 0
+        force_freeform = False
+        last_error: Optional[LLMCallError] = None
+        last_unreadable = ""
 
+        while api_failures < self.max_retries and unreadable < self.max_unreadable_attempts:
+            attempts += 1
+            try:
+                breaker.before_call()
+                text, logprob_dist = self._call_one(model, prompt, force_freeform=force_freeform)
+            except LLMCallError as e:
+                last_error = e
+                if e.kind == "circuit_open":
+                    attempts -= 1         # blocked, no call was made
+                    break
+                breaker.record_failure()
+                api_failures += 1
+                logger.warning(f"LLM call failed ({e.kind}), attempt {attempts}: {e.detail}")
+                if e.kind == "bad_request" and not force_freeform:
+                    # Some routed providers reject JSON-schema mode; try free-form once.
+                    force_freeform = True
+                    continue
+                if not e.retryable:
+                    raise LLMUnavailableError(f"LLM unavailable ({e.kind}): {e.detail}") from e
+                time.sleep(1 + api_failures)
+                continue
+
+            breaker.record_success()
             v = _parse_single(text)
-
             if v[0] is not None:
                 v = _apply_logprob_confidence(v, logprob_dist)
-
-                self._cache.put_record(
-                    model, 
-                    prompt,
-                    text,
-                    mode=cache_mode,
-                    logprob_dist=logprob_dist,
-                )
-
+                self._cache.put_record(model, prompt, text, mode=cache_mode, logprob_dist=logprob_dist)
                 return v
 
-            time.sleep(1 + attempt)
+            unreadable += 1
+            last_unreadable = str(v[3])
+            if unreadable == self.max_unreadable_attempts - 1:
+                force_freeform = True     # last try without JSON-schema mode
 
-        return (
-            None,
-            ContextMatchType.PENDING.value,
-            0.0,
-            json.dumps({
-                "status": "IMPOSSIBLE",
-                "reason": "parse_failed_after_retries",
-                "logprob_dist": {},
-                "logprob_confidence": 0.0,
-                "confidence_source": "unavailable_logprob",
-            }),
-        )
+        if unreadable >= self.max_unreadable_attempts:
+            return _failure_result("UNREADABLE", attempts, last_unreadable)
+        if last_error is not None and last_error.kind == "circuit_open":
+            return _failure_result("NOT_REACHED", attempts,
+                                   "calls stopped after repeated API failures")
+        cause = f"{last_error.kind}: {last_error.detail}" if last_error else "no response"
+        return _failure_result("NOT_REACHED", attempts, cause)
         
  
 
-    def _is_pending_llm_result(self, result) -> bool:
-        """
-        result format:
-            (matched, ctx_type, conf, reason_json)
-
-        Pending means: technical failure / parse failure / unresolved LLM output.
-        """
-        if result is None:
-            return True
-
-        matched, ctx_type, conf, reason_json = result
-
-        if matched is None:
-            return True
-
-        if ctx_type == ContextMatchType.PENDING.value:
-            return True
-
-        try:
-            d = json.loads(reason_json) if isinstance(reason_json, str) else {}
-            status = str(d.get("status", "")).upper()
-            reason = str(d.get("reason", "")).lower()
-
-            if status in {"PENDING", "PARSE_ERROR"}:
-                return True
-
-            if "parse_failed" in reason or "json_parse_fail" in reason:
-                return True
-
-        except Exception:
-            pass
-
-        return False
-  
     def assess(
             self,
             groups: List[Dict],
@@ -1599,6 +1751,20 @@ class LLMConceptMatcher:
 
 
             results = [None] * len(prompts)
+            attempts_used = [0] * len(prompts)
+            breaker = self._get_breaker()
+            breaker.reset()          # each run starts with a closed breaker
+
+            def _internal_failure(e: Exception):
+                return _failure_result("NOT_REACHED", 0, f"internal error: {type(e).__name__}: {e}")
+
+            def _record(i: int, result) -> None:
+                results[i] = result
+                if _failure_status(result):
+                    try:
+                        attempts_used[i] += int(json.loads(result[3]).get("attempts", 0))
+                    except (json.JSONDecodeError, TypeError, ValueError, AttributeError):
+                        pass
 
             # Initially all prompts are active.
             active_indices = list(range(len(prompts)))
@@ -1606,31 +1772,24 @@ class LLMConceptMatcher:
             total_calls = 0
             pending_rounds_used = 0
 
-           
             for round_idx in range(max_pending_rounds + 1):
-                if not active_indices:
+                if not active_indices or (round_idx > 0 and breaker.gave_up):
                     break
 
                 pending_rounds_used = round_idx
 
                 if len(active_indices) == 1:
-                    # Single prompt — call directly, no pool overhead
+                    # Single prompt — call directly, no pool overhead.
+                    # LLMUnavailableError is not caught: the run stops.
                     i = active_indices[0]
                     try:
-                        results[i] = self._eval_pair(model, prompts[i])
+                        _record(i, self._eval_pair(model, prompts[i]))
+                    except LLMUnavailableError:
+                        raise
                     except Exception as e:
-                        results[i] = (
-                            None,
-                            ContextMatchType.PENDING.value,
-                            0.0,
-                            json.dumps({
-                                "status": "PARSE_ERROR",
-                                "reason": f"eval_pair_exception: {type(e).__name__}: {e}",
-                                "transform": "",
-                                "transform_direction": "",
-                            }),
-                        )
+                        _record(i, _internal_failure(e))
                 else:
+                    unavailable: Optional[LLMUnavailableError] = None
                     with ThreadPoolExecutor(max_workers=3) as pool:
                         futures = {
                             pool.submit(self._eval_pair, model, prompts[i]): i
@@ -1639,44 +1798,35 @@ class LLMConceptMatcher:
                         for fut in as_completed(futures):
                             i = futures[fut]
                             try:
-                                results[i] = fut.result()
+                                _record(i, fut.result())
+                            except LLMUnavailableError as e:
+                                if unavailable is None:
+                                    unavailable = e
+                                    breaker.give_up()   # the other threads stop calling
                             except Exception as e:
-                                results[i] = (
-                                    None,
-                                    ContextMatchType.PENDING.value,
-                                    0.0,
-                                    json.dumps({
-                                        "status": "PARSE_ERROR",
-                                        "reason": f"eval_pair_exception: {type(e).__name__}: {e}",
-                                        "transform": "",
-                                        "transform_direction": "",
-                                    }),
-                                )
+                                _record(i, _internal_failure(e))
+                    if unavailable is not None:
+                        raise unavailable
 
                 total_calls += len(active_indices)
-                active_indices = [
-                    i for i in active_indices
-                    if self._is_pending_llm_result(results[i])
-                ]
+                # Another round only for pairs the LLM could not be reached
+                # for; an unreadable answer has already had its own retries.
+                active_indices = [i for i in active_indices
+                                  if _failure_status(results[i]) == "NOT_REACHED"]
 
-            # After all retry rounds, unresolved items remain as technical failures.
-            unresolved_indices = [
-                i for i, r in enumerate(results)
-                if self._is_pending_llm_result(r)
-            ]
-
-            for i in unresolved_indices:
-                results[i] = (
-                    None,
-                    ContextMatchType.PENDING.value,
-                    0.0,
-                    json.dumps({
-                        "status": "PARSE_ERROR",
-                        "reason": "pending_after_assess_retries",
-                        "transform": "",
-                        "transform_direction": "",
-                    }),
-                )
+            # Pairs still without a verdict keep their real cause, with the
+            # attempts summed over all rounds.
+            counts = {"NOT_REACHED": 0, "UNREADABLE": 0}
+            for i, r in enumerate(results):
+                status = _failure_status(r)
+                if not status:
+                    continue
+                counts[status] += 1
+                try:
+                    cause = json.loads(r[3]).get("cause") or json.loads(r[3]).get("reason", "")
+                except (json.JSONDecodeError, TypeError, AttributeError):
+                    cause = str(r[3]) if r is not None else "no result"
+                results[i] = _failure_result(status, attempts_used[i], cause)
 
             grouped = [[] for _ in range(len(groups))]
 
@@ -1686,8 +1836,11 @@ class LLMConceptMatcher:
             return grouped, {
                 "total_targets": len(prompts),
                 "total_llm_calls": total_calls,
-                "pending_after_retries": len(unresolved_indices),
+                "not_reached": counts["NOT_REACHED"],
+                "unreadable": counts["UNREADABLE"],
+                "pending_after_retries": counts["NOT_REACHED"] + counts["UNREADABLE"],
                 "pending_rounds_used": pending_rounds_used,
+                "breaker_gave_up": breaker.gave_up,
                 "model": model,
             }
 

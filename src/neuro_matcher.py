@@ -1,6 +1,7 @@
 """Neuro-symbolic matching with typed VariableNode inputs.
 """
 
+import json
 import os
 from collections import defaultdict
 import pandas as pd
@@ -649,7 +650,13 @@ class NeuroSymbolicMatcher:
             logger.info(f"  🤖 LLM Validating : {len(flat_keys)} concept pairs")
         else:
             logger.debug(f"  🤖 LLM Validating : {len(flat_keys)} concept pair")
-        grouped_results, _stats = self.llm_matcher.assess(groups, case_ids=case_ids)
+        grouped_results, stats = self.llm_matcher.assess(groups, case_ids=case_ids)
+        if stats.get("not_reached") or stats.get("unreadable"):
+            logger.warning(
+                f"  🤖 LLM {stats.get('model')}: {stats.get('total_targets')} pairs, "
+                f"{stats.get('not_reached', 0)} not reached, {stats.get('unreadable', 0)} unreadable "
+                f"({stats.get('total_llm_calls')} calls); their structural verdicts are kept and flagged"
+            )
 
         # ── Step 4: convert verdicts to LLMEvidence
 
@@ -658,10 +665,11 @@ class NeuroSymbolicMatcher:
         for grp_verdicts in grouped_results:
             for verdict_tuple in grp_verdicts:
                 ckey = flat_keys[flat_pos]
-                # tuple_to_evidence handles missing/empty tuples → IMPOSSIBLE.
+                # A missing result is a failure to get a verdict, not a rejection.
                 ckey_to_evidence[ckey] = tuple_to_evidence(
                     verdict_tuple if verdict_tuple else
-                    (None, ContextMatchType.NOT_APPLICABLE.value, 0.0, "")
+                    (None, ContextMatchType.PENDING.value, 0.0,
+                     json.dumps({"status": "NOT_REACHED", "reason": "no result returned for this pair"}))
                 )
                 flat_pos += 1
 

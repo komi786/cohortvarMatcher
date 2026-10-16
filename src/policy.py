@@ -5,7 +5,7 @@ Each policy is a pure function which takes mapping mode, structural evidence, ll
 from __future__ import annotations
 from typing import Optional
 
-from .verdict import StructuralEvidence, LLMEvidence, Verdict, TimepointInfo
+from .verdict import StructuralEvidence, LLMEvidence, Verdict, TimepointInfo, LLM_OK, LLM_SKIPPED
 from .data_model import MatchLevel, TransformationType, MappingType, MappingRelation, ContextMatchType
 
 def decide(mode: str,
@@ -104,11 +104,8 @@ def _ne_decide(s: StructuralEvidence,
                tp: TimepointInfo,
                llm_use:bool) -> Verdict:
 
-    # No LLM consulted → structural verdict is final.
-    if llm is None:
-        level = MatchLevel.NOT_APPLICABLE if llm_use and s.level == MatchLevel.PARTIAL  else s.level
-        return _build_verdict(level, s.transformation, s.reason, tp,
-                              _extra_with_direction(s, level, s.transformation))
+    if llm is None or llm.status != LLM_OK:
+        return _decide_without_llm_verdict(s.level, s.transformation, s.reason, s, llm, tp, llm_use)
 
     return _decide_with_llm(s, llm, tp)
 
@@ -123,13 +120,54 @@ def _symbolic_neural_with_llm_decide(s: StructuralEvidence,
                                llm: Optional[LLMEvidence],
                                tp: TimepointInfo,
                llm_use:bool) -> Verdict:
-    if llm is None:
+    if llm is None or llm.status != LLM_OK:
         level, transformation, reason = _demote_hierarchical(s)
-        level = MatchLevel.NOT_APPLICABLE if (llm_use and s.level == MatchLevel.PARTIAL and transformation != TransformationType.DERIVATION)  else level
-        return _build_verdict(level, transformation, reason, tp,
-                              _extra_with_direction(s, level, transformation))
+        return _decide_without_llm_verdict(level, transformation, reason, s, llm, tp, llm_use)
 
     return _decide_with_llm(s, llm, tp)
+
+
+def _decide_without_llm_verdict(level: MatchLevel,
+                                transformation: TransformationType,
+                                reason: str,
+                                s: StructuralEvidence,
+                                llm: Optional[LLMEvidence],
+                                tp: TimepointInfo,
+                                llm_use: bool) -> Verdict:
+    """Verdict when no usable LLM verdict exists; records why in llm_status.
+
+    Only a candidate the pipeline deliberately did not ask about (source-claim
+    early exit) is dropped. When the LLM failed, or a verdict is missing that
+    should exist, the structural verdict stands, flagged: losing the semantic
+    check is not evidence that the pair does not match.
+    """
+    extra = _extra_with_direction(s, level, transformation)
+
+    if not llm_use:
+        extra["llm_status"] = "not_configured"
+        return _build_verdict(level, transformation, reason, tp, extra)
+
+    if llm is None and not should_consult_llm(s):
+        extra["llm_status"] = "not_needed"           # structural answer was decisive
+        return _build_verdict(level, transformation, reason, tp, extra)
+
+    if llm is not None and llm.status == LLM_SKIPPED:
+        extra["llm_status"] = LLM_SKIPPED
+        if s.level == MatchLevel.PARTIAL and transformation != TransformationType.DERIVATION:
+            level = MatchLevel.NOT_APPLICABLE
+            reason = f"{reason} | {llm.reason}".strip(" |")
+        return _build_verdict(level, transformation, reason, tp,
+                              {**_extra_with_direction(s, level, transformation), "llm_status": LLM_SKIPPED})
+
+    # The LLM was needed and gave no usable verdict.
+    status = llm.status if llm is not None else "missing"
+    why = (llm.reason if llm is not None and llm.reason else "no LLM verdict recorded for this pair")
+    extra["llm_status"] = status
+    return _build_verdict(
+        level, transformation,
+        f"{reason} | Semantic check not performed ({why}); structural verdict kept, review recommended.".strip(" |"),
+        tp, extra,
+    )
 
 
 # The LLM decides meaning; the structural layer bounds what the representation
@@ -172,6 +210,7 @@ def _transformation_for(level: MatchLevel, s: StructuralEvidence) -> Transformat
 
 def _decide_with_llm(s: StructuralEvidence, llm: LLMEvidence, tp: TimepointInfo) -> Verdict:
     extra = _extra_info_from_llm(s.extra, llm)
+    extra["llm_status"] = LLM_OK
 
     if llm.verdict == "IMPOSSIBLE":
         return _build_verdict(MatchLevel.NOT_APPLICABLE, TransformationType.MANUAL_REVIEW,

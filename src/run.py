@@ -10,7 +10,7 @@ from .config import settings
 from .query_builder import SPARQLQueryBuilder
 from .constraints import compute_structural, make_timepoint_info
 from .policy import decide, should_consult_llm, llm_priority_key, CLAIMING_VERDICTS
-from .verdict import LLMEvidence
+from .verdict import LLMEvidence, LLM_OK, LLM_SKIPPED, llm_evidence_from_tuple
 from .data_model import (
     MappingType, MatchLevel, VariableNode, VariableCollection,
     Statistics, StatisticalType, ContextMatchType, _safe_float
@@ -29,16 +29,6 @@ from .harmonized_variable import (
     suggest_harmonized_variable_without_llm,
 )
 logger = setup_logger('storelog.log')
-
-_CTX_TYPE_TO_VERDICT = {
-    ContextMatchType.EXACT.value:           "COMPLETE",
-    ContextMatchType.COMPATIBLE.value:      "COMPATIBLE",
-    ContextMatchType.SUBSUMED.value:        "COMPATIBLE",
-    ContextMatchType.PARTIAL.value:         "PARTIAL",
-    ContextMatchType.NOT_APPLICABLE.value:  "IMPOSSIBLE",
-}
-
-
 
 _LOGPROB_KEYS = (
     "logprob_usable", "logprob_distribution_type", "logprob_observability",
@@ -63,46 +53,11 @@ def _evidence_for_output(evidence: LLMEvidence) -> dict:
     return out
 
 
-def _llm_tuple_to_evidence(parsed_tuple) -> LLMEvidence:
-    """Adapter: llm_call.py returns (matched_or_none, ctx_type, conf, reason_json).
-
-    Here `conf` is already logprob-based confidence if llm_call.py applied
-    _apply_logprob_confidence().
-    """
-    matched, ctx_type, conf, reason_json = parsed_tuple
-
-    if matched is False or ctx_type == ContextMatchType.NOT_APPLICABLE.value:
-        verdict = "IMPOSSIBLE"
-    else:
-        verdict = _CTX_TYPE_TO_VERDICT.get(ctx_type, "IMPOSSIBLE")
-
-    reason = transform = transform_dir = ""
-    harmonized = ""
-    d = {}
-
-    try:
-        d = json.loads(reason_json) if isinstance(reason_json, str) else {}
-        reason = d.get("reason", "") or ""
-        transform = d.get("transform", "") or ""
-        transform_dir = d.get("alignment_direction", "") or ""
-        harmonized = (d.get("harmonized_variable") or "").strip()
-    except (json.JSONDecodeError, TypeError):
-        pass
-
-    self_reported_conf = float(d.get("llm_self_reported_confidence") or conf or 0.0)
+# Failures to get a verdict become LLMEvidence with status not_reached /
+# unreadable (verdict.llm_evidence_from_tuple), never an IMPOSSIBLE verdict.
+_llm_tuple_to_evidence = llm_evidence_from_tuple
 
 
-    return LLMEvidence(
-        verdict=verdict,
-        confidence=self_reported_conf,
-        reason=reason,
-        transform=transform,
-        transform_direction=transform_dir,
-        harmonized_variable=harmonized,
-        confidence_source=d.get("confidence_source") or "",
-    )
-    
-    
 class StudyMapper:
 
     def __init__(self, vector_db: Any, embedding_model: Any, omop_graph: Any = None,
@@ -393,6 +348,11 @@ class StudyMapper:
             for idx, _prio in ordered:
                 if claimed:
                     total_skipped += 1
+                    llm_evidence[idx] = LLMEvidence(
+                        verdict="", confidence=0.0, status=LLM_SKIPPED,
+                        reason=("Not sent to the LLM: the source already has a complete or "
+                                "compatible match (source-claim early exit)."),
+                    )
                     continue
                 # Reuse the existing concept-key-aware path. Single-element
                 # lists preserve caching and concept dedup semantics.
@@ -556,7 +516,7 @@ class StudyMapper:
                         ambiguous, structurals, src_study, tgt_study,
                     )
                     logger.info(
-                        f"🤖 Phase B: LLM consulted on {len(llm_evidence)}/{len(recs)} "
+                        f"🤖 Phase B: LLM consulted on {len(llm_evidence) - n_skipped_claim}/{len(recs)} "
                         f"candidates "
                         f"({n_skipped_structural} skipped by structural confidence, "
                         f"{n_skipped_claim} skipped by source-claim early-exit)"
@@ -571,6 +531,15 @@ class StudyMapper:
                             ambiguous, structurals, src_study, tgt_study,
                             tuple_to_evidence=_llm_tuple_to_evidence,
                         )
+
+                outcomes = Counter(ev.status for ev in llm_evidence.values())
+                failed = sum(n for st, n in outcomes.items() if st not in (LLM_OK, LLM_SKIPPED))
+                if failed:
+                    logger.warning(
+                        f"🤖 Phase B: {failed} of {sum(outcomes.values())} LLM verdicts missing "
+                        f"({dict(outcomes)}); those pairs keep their structural verdict, "
+                        f"flagged in llm_status. Re-running retries only them (failures are not cached)."
+                    )
 
             # Phase C: one policy.decide() per row, immutable verdict, single write
             # logger.info(f"⚖️  Phase C: policy decision for {len(structurals)} candidates...")
@@ -590,6 +559,7 @@ class StudyMapper:
             transformation_rules = []
             # llm_use = True if self.llm_model else False
             llm_evidences = []
+            llm_statuses = []
             for idx in range(len(recs)):
                 s, t, struct_ev = structurals[idx]
                 tp = make_timepoint_info(
@@ -644,6 +614,7 @@ class StudyMapper:
                 transformation_rules.append(details.pop("transformation_rule", "") or "")
                 descriptions.append(json.dumps(details, default=str, ensure_ascii=False))
                 statuses.append(status)
+                llm_statuses.append(details.get("llm_status", ""))
 
                 ev = llm_evidence.get(idx)                        # NEW
                 llm_evidences.append(                             # NEW
@@ -669,6 +640,8 @@ class StudyMapper:
             ]
             df["harmonization_status"]  = statuses
             df["LLMEvidence"]          = llm_evidences
+            # ok / not_reached / unreadable / skipped / not_needed / not_configured
+            df["llm_status"]           = llm_statuses
         
         df.dropna(subset=["source", "target"], inplace=True)
         df.drop(columns=["context_match_type", "derived_variable_name"],

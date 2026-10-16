@@ -190,8 +190,15 @@ class NotSure(unittest.TestCase):
         self.assertIsNone(parse_unit("109/L"))              # 10^9/L, not 109 per litre
         self.assertIsNone(parse_unit("1012/L"))
 
-    def test_typo_is_not_a_prefixed_unit(self):
-        self.assertIsNone(parse_unit("hh/mm"))              # mmHg typo, not hecto-hour/mm
+    def test_time_format_is_not_a_unit(self):
+        # TIM-HF *_ZEIT "next visit time" (DATETIME) uses "hh/mm" as its format;
+        # pint would otherwise read hecto-hours per millimetre.
+        self.assertIsNone(parse_unit("hh/mm"))
+        self.assertIsNone(parse_unit("hh"))                 # rare-prefix guard on its own
+
+    def test_date_pattern_does_not_swallow_units(self):
+        self.assertIsNotNone(parse_unit("mm/d"))            # millimetres per day
+        self.assertIsNotNone(parse_unit("m/d"))
 
     def test_not_units(self):
         for raw in ["pack years", "servings/week", "dpw (drinks per week)",

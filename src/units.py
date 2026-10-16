@@ -67,7 +67,9 @@ _FACTOR_REL_TOL = 1e-9
 _MAX_UNIT_LEN = 64
 # Anything outside this set never reaches pint.
 _ALLOWED_CHARS = re.compile(r"^[A-Za-z0-9/*.^()\[\]{}_%+\-]*$")
-_DATE_FORMAT = re.compile(r"^[dmy]{1,4}([-/.][dmy]{1,4})+$", re.IGNORECASE)
+# Date/time formats written in the units column (DD-MM-YYYY, hh/mm). Whole
+# tokens only, so a real unit such as mm/d (millimetres per day) is not caught.
+_DATE_FORMAT = re.compile(r"^(dd|mm|yy|yyyy|hh|ss)([-/.:](dd|mm|yy|yyyy|hh|ss))+$", re.IGNORECASE)
 
 # Bracketed UCUM codes pint reads differently.
 _BRACKET_ALIASES = {
@@ -92,9 +94,9 @@ _SYMBOL_ALIASES = {
 #   t -> tonne (a lower-cased T/L, i.e. 10*12/L), unit -> micro-nit (luminance),
 #   point/pt -> typographic point / pint, grade -> angle.
 _NOT_UNITS = frozenset({"t", "unit", "units", "point", "points", "pt", "grade", "grades"})
-# pint joins any prefix to any unit, so typos read as real units ("hh/mm",
-# a mistyped mmHg, is hecto-hours per millimetre). Clinical units use neither
-# these prefixes nor prefixed calendar units, so such a reading is rejected.
+# pint joins any prefix to any unit, so non-units read as real ones ("hh",
+# an hours placeholder, is a hecto-hour). Clinical units use neither these
+# prefixes nor prefixed calendar units, so such a reading is rejected.
 _UNUSED_PREFIXES = frozenset({"hecto", "deca", "deka", "exa", "peta", "zetta", "yotta",
                               "atto", "zepto", "yocto", "quecto", "ronto", "ronna", "quetta"})
 _UNPREFIXABLE = frozenset({"minute", "hour", "day", "week", "month", "year"})

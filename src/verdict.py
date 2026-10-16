@@ -34,6 +34,10 @@ class StructuralEvidence:
     extra: Dict[str, Any] = field(default_factory=dict)
     """Handler-specific context: source_unit, target_unit, source_range,
     target_range, categories, etc. Survives into the final Verdict.extra."""
+    ceiling: Optional[MatchLevel] = None
+    """Best level the representation allows, set when a handler found a fact
+    the LLM cannot override (units that need a factor, units of different
+    dimensions). None means the handler deferred: the LLM verdict stands."""
 
 @dataclass(frozen=True)
 class LLMEvidence:

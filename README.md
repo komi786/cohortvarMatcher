@@ -282,8 +282,8 @@ CohortVarMatcher/
 
 ## 📝 Citation
 
-Manuscript in preparation. Citation details will be added on publication.
+Manuscript in under Review. Citation details will be added on publication.
 
 ## 📄 License
 
-No license has been selected yet.
+MIT

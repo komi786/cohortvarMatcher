@@ -81,6 +81,18 @@ def _build_match_dict(
     }
 
 
+# When one (source, target) pair is reached by several routes, the strongest
+# relation is kept: symbolic evidence first, embedding similarity last.
+_RELATION_RANK = {r.value: i for i, r in enumerate((
+    MappingRelation.SymbolicExactMatch, MappingRelation.SymbolicCloseMatch,
+    MappingRelation.SymbolicNarrowMatch, MappingRelation.SymbolicBroadMatch,
+    MappingRelation.NeuralMatch))}
+
+
+def _relation_rank(relation: str) -> int:
+    return _RELATION_RANK.get((relation or "").strip().lower(), len(_RELATION_RANK))
+
+
 # =====================================================================
 # NeuroSymbolicMatcher
 # =====================================================================
@@ -422,14 +434,7 @@ class NeuroSymbolicMatcher:
 
         # Trace one source concept end-to-end through candidate generation.
         # Set TRACE_SOURCE_CONCEPT to an omop id (e.g. 4060077) to print which
-        # route proposed each target and what relation it carried. Written
-        # because 1,027 rows came out `symbolic:exactmatch` between DIFFERENT
-        # concept ids -- allergien (4060077, h/o allergies) against
-        # maligneerkrankung (4078300, history of neoplasm) among them -- and the
-        # three candidate routes (self-id, graph, vector) cannot account for it
-        # from the output alone. The relation is stored per concept_key and set
-        # by whichever pair reaches the bucket first, so first-arrival order is
-        # the prime suspect and is exactly what this makes visible.
+        # route proposed each target and what relation it carried.
         _trace_cid = os.getenv("TRACE_SOURCE_CONCEPT")
         _trace_cid = int(_trace_cid) if _trace_cid and _trace_cid.strip().isdigit() else None
 
@@ -457,9 +462,11 @@ class NeuroSymbolicMatcher:
                       and self.mapping_mode != MappingType.OO.value)
 
         if use_vector:
+            # One query per distinct variable text (description + own concepts),
+            # not one per main OMOP id.
             all_query_texts = list({
-                self._vector_query(nodes[0])
-                for nodes in src_grouped.values() if nodes
+                self._vector_query(node)
+                for nodes in src_grouped.values() for node in nodes
             })
             uncached = [t for t in all_query_texts
                         if _cache_key(self.embed_model.model_name, t) not in _embed_cache]
@@ -469,23 +476,50 @@ class NeuroSymbolicMatcher:
                     _embed_cache[_cache_key(self.embed_model.model_name, text)] = vec.tolist()
                 # print(f" ✅ Pre-embedded {len(uncached)} query texts (1 batch)")
 
-        concept_matches = {}
-        # total_groups = len(src_grouped)
+        # One entry per (source variable, target variable). Each pair keeps its
+        # own relation; a pair reached by several routes keeps the strongest.
+        pairs = {}
 
-        for idx, (sid, s_group) in enumerate(src_grouped.items()):
-            # if (idx + 1) % 50 == 0 or idx == 0:
-            #     print(f"resolve_matches: {idx + 1}/{total_groups} source groups...")
+        def add_pair(src_node, tgt_node, relation, score, trace):
+            if not FuzzyMatcher.visits_compatible(src_node.visit, tgt_node.visit):
+                return
+            key = (id(src_node), id(tgt_node))
+            held = pairs.get(key)
+            if trace:
+                logger.info(f"[TRACE {trace}]     {src_node.name} -> {tgt_node.name} "
+                            f"(tgt.main_id={tgt_node.main_id}) rel={relation}"
+                            + ("" if held is None else f" :: pair already held '{held[2]}'"))
+            if held is None:
+                pairs[key] = [src_node, tgt_node, relation, score]
+            elif _relation_rank(relation) < _relation_rank(held[2]):
+                held[2], held[3] = relation, score
 
-            rep = s_group[0]
-            matched_candidates = set()
+        def targets_of(tid, names=None):
+            if is_ne:
+                tk = (tid or "").lower()
+                tdesc = tgt_name_to_desc.get(tk)
+                return tgt_by_desc.get(tdesc, []) if tdesc else tgt_map.get(tk, [])
+            nodes = tgt_map.get(tid, [])
+            if names:
+                # Only the target variables of the retrieved point. An index
+                # built from an older dictionary may name none of the current
+                # variables; the hit then falls back to the whole main id.
+                wanted = {n.strip().lower() for n in names}
+                own = [n for n in nodes if (n.name or "").strip().lower() in wanted]
+                if own:
+                    return own
+            return nodes
 
-            _trace = _trace_cid is not None and sid == _trace_cid
+        for sid, s_group in src_grouped.items():
+            graph_candidates = set()
+
+            _trace = sid if (_trace_cid is not None and sid == _trace_cid) else None
             if _trace:
                 logger.info(f"[TRACE {sid}] source group: {[n.name for n in s_group]}")
 
             if use_graph:
                 if sid in unique_tgt_ids:
-                    matched_candidates.add((sid, MappingRelation.SymbolicExactMatch.value, None))
+                    graph_candidates.add((sid, MappingRelation.SymbolicExactMatch.value))
                     if _trace:
                         logger.info(f"[TRACE {sid}]   self-id route -> tid={sid} exactmatch"
                                     f" | tgt_map[{sid}] = {[n.name for n in tgt_map.get(sid, [])]}")
@@ -494,81 +528,60 @@ class NeuroSymbolicMatcher:
                     reachable = self.graph.source_to_targets_paths(
                         sid, others, max_depth=settings.DEFAULT_GRAPH_DEPTH)
                     if reachable:
-                        matched_candidates.update((tid, rel, None) for tid, rel in reachable)
+                        graph_candidates.update((tid, rel) for tid, rel in reachable)
                     if _trace:
                         logger.info(f"[TRACE {sid}]   graph route  -> {len(reachable or [])} target(s): "
                                     f"{sorted(reachable or [])[:12]}")
 
+            # Self-id and graph routes work on concept ids, so they pair every
+            # variable of the group.
+            for tid, relation in sorted(graph_candidates, key=lambda c: (str(c[0]), str(c[1]))):
+                for tgt_node in targets_of(tid):
+                    for src_node in s_group:
+                        add_pair(src_node, tgt_node, relation, None, _trace)
+
             if use_vector:
-                graph_tids = {tid for tid, _, score in matched_candidates}
-                query = self._vector_query(rep)
-                # print(f"query ={query}")
-                raw_matches = search_in_db(
-                    vectordb=self.vector_db,
-                    embedding_model=self.embed_model,
-                    query_text=query,
-                    target_study=[target_study],
-                    limit=settings.LIMIT,
-                    min_threshold=self.similarity_threshold,
-                    collection_name=self.collection_name,
-                    mapping_mode=self.mapping_mode,
-                )
-                if is_ne:
+                # Each variable searches with its own description and concepts;
+                # variables with identical query text share one search.
+                graph_tids = {tid for tid, _ in graph_candidates}
+                by_query = {}
+                for node in s_group:
+                    by_query.setdefault(self._vector_query(node), []).append(node)
+                for query, members in by_query.items():
+                    raw_matches = search_in_db(
+                        vectordb=self.vector_db,
+                        embedding_model=self.embed_model,
+                        query_text=query,
+                        target_study=[target_study],
+                        limit=settings.LIMIT,
+                        min_threshold=self.similarity_threshold,
+                        collection_name=self.collection_name,
+                        mapping_mode=self.mapping_mode,
+                        with_names=not is_ne,
+                    )
+                    if _trace:
+                        logger.info(f"[TRACE {sid}]   vector route {[n.name for n in members]} -> "
+                                    f"{len(raw_matches)} hit(s): {raw_matches[:12]}")
                     seen_descs = set()
                     for item in raw_matches:
-                        tid, score = item if isinstance(item, tuple) else (item, 0.0)
-                        tk = (tid or "").lower()
-                        tdesc = tgt_name_to_desc.get(tk)
-                        if tdesc and tdesc not in seen_descs and tid not in graph_tids:
-                            seen_descs.add(tdesc)
-                            matched_candidates.add((tid, MappingRelation.NeuralMatch.value, score))
-                else:
-                    for item in raw_matches:
-                        tid, score = item if isinstance(item, tuple) else (item, 0.0)
-                        if tid not in graph_tids:
-                            matched_candidates.add((tid, MappingRelation.NeuralMatch.value, score))  # score preserved
-                if _trace:
-                    vec = [(t, s) for t, s in (
-                        (i if isinstance(i, tuple) else (i, 0.0)) for i in raw_matches)]
-                    logger.info(f"[TRACE {sid}]   vector route -> {len(vec)} hit(s): {vec[:12]}")
-
-            for tid, relation, score in matched_candidates:
-                if is_ne:
-                    tdesc = tgt_name_to_desc.get(tid)
-                    tgt_nodes = tgt_by_desc.get(tdesc, []) if tdesc else tgt_map.get(tid, [])
-                else:
-                    tgt_nodes = tgt_map.get(tid, [])
-                
-                # seen_pairs = set()
-                for tgt_node in tgt_nodes:
-                    for src_node in s_group:
-                        if not FuzzyMatcher.visits_compatible(src_node.visit, tgt_node.visit):
+                        item = item if isinstance(item, tuple) else (item, 0.0)
+                        tid, score = item[0], item[1]
+                        names = item[2] if len(item) > 2 else None
+                        if tid in graph_tids:
                             continue
-                        ckey = self._concept_key(src_node, tgt_node)
-                        if _trace:
-                            held = concept_matches.get(ckey, {}).get("relation")
-                            note = ("NEW bucket" if held is None
-                                    else f"joins bucket holding '{held}'"
-                                         + ("  <-- RELATION OVERRIDDEN" if held != relation else ""))
-                            logger.info(f"[TRACE {sid}]     {src_node.name} -> {tgt_node.name} "
-                                        f"(tid={tid}, tgt.main_id={tgt_node.main_id}) rel={relation} :: {note}")
-                            logger.info(f"[TRACE {sid}]        ckey={ckey}")
-                        if ckey not in concept_matches:
-                            concept_matches[ckey] = {
-                                "relation": relation,
-                                "src_rep": src_node,
-                                "tgt_rep": tgt_node,
-                                "group_pairs": [],
-                                # "visit":(src_node.visit, tgt_node.visit)
-                            }
-                        concept_matches[ckey]["group_pairs"].append((src_node, tgt_node, score))
-        
-        # print(f"total concept_matches unique pairs: {len(concept_matches)}")
-        for ckey, entry in concept_matches.items():
-            rel_str = entry["relation"].strip().lower() if entry["relation"] else "unknown"
-            for src_node, tgt_node, score in entry["group_pairs"]:
-                final_matches.append(_build_match_dict(
-                    src_node, tgt_node, rel_str, ContextMatchType.PENDING.value, score))
+                        if is_ne:
+                            tdesc = tgt_name_to_desc.get((tid or "").lower())
+                            if not tdesc or tdesc in seen_descs:
+                                continue
+                            seen_descs.add(tdesc)
+                        for tgt_node in targets_of(tid, names):
+                            for src_node in members:
+                                add_pair(src_node, tgt_node, MappingRelation.NeuralMatch.value, score, _trace)
+
+        for src_node, tgt_node, relation, score in pairs.values():
+            rel_str = relation.strip().lower() if relation else "unknown"
+            final_matches.append(_build_match_dict(
+                src_node, tgt_node, rel_str, ContextMatchType.PENDING.value, score))
         return final_matches
 
     def resolve_pending_with_llm(self,

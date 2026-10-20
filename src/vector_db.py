@@ -386,7 +386,14 @@ def search_in_db(vectordb, embedding_model, query_text,
                  limit=settings.LIMIT, target_study=["gissi-hf"],
                  collection_name="studies_metadata",
                  mapping_mode=MappingType.OEH.value,
-                 min_threshold=settings.ADAPTIVE_THRESHOLD) -> List[Any]:
+                 min_threshold=settings.ADAPTIVE_THRESHOLD,
+                 with_names: bool = False) -> List[Any]:
+    """Return (key, score) per hit: the variable name in NE mode, else the main OMOP id.
+
+    with_names=True returns (key, score, variable_names) for every retrieved
+    point instead, so a caller can pair a hit with the target variables of
+    that point rather than with every target variable sharing its main id.
+    """
     query_text = clean_label_remove_temporal_context(query_text).lower()
  
     # print(query_text)
@@ -419,6 +426,13 @@ def search_in_db(vectordb, embedding_model, query_text,
         # if r.score < cutoff:
         #     break  # sorted descending, everything below is worse
         key = r.payload.get('variable_name', '') if is_ne else int(r.payload['variable_omop_id'])
+        if with_names:
+            names = tuple(n for n in str(r.payload.get('variable_names') or
+                                         r.payload.get('variable_name') or '').split('|') if n)
+            if key and (key, names) not in seen:
+                seen.add((key, names))
+                out.append((key, round(float(r.score), 4), names))
+            continue
         if key and key not in seen:
             seen.add(key)
             # out.append((key, round(float(r.score), 4)) if is_ne else key)

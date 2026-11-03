@@ -40,6 +40,8 @@ def create_study_metadata_graph(file_path, recreate=False):
 
     if recreate:
         base_path = os.path.dirname(os.path.abspath(__file__))
+        if not os.path.exists(f"{base_path}/data/graphs"):
+            os.makedirs(f"{base_path}/data/graphs")
         graph_file_path = f"{base_path}/data/graphs/studies_metadata.trig"
         g=generate_studies_kg(file_path)
         if len(g) > 0:
@@ -85,6 +87,8 @@ def create_cohort_specific_metadata_graph(dir_path, recreate=False):
 
                     g, cohort_id = process_variables_metadata_file(cohort_metadata_file, cohort_name=cohort_folder, eda_file_path=eda_file, study_metadata_graph_file_path=f"{base_path}/data/graphs/studies_metadata.trig")
                     if g and len(g) > 0:
+                        if not os.path.exists(f"{base_path}/data/graphs"):
+                            os.makedirs(f"{base_path}/data/graphs")
                         g.serialize(f"{base_path}/data/graphs/{cohort_id}_metadata.trig", format="trig")
                         # print(f"Publishing graph for cohort: {cohort_id}")
                         delete_existing_triples(
@@ -262,12 +266,12 @@ def get_requested_variables(gt_excel, source_study="time-chf"):
 if __name__ == '__main__':
     start_time = time.time()
 
-    PROJECT_ROOT = Path(__file__).resolve().parent.parent
+    PROJECT_ROOT = Path(__file__).resolve().parent
     
     data_dir = PROJECT_ROOT / "data"
 
-    cohort_file_path = f"{data_dir}/cohorts"
-    cohorts_metadata_file = f"{data_dir}/studies_metadata-2_all.xlsx"
+    cohort_file_path = f"{data_dir}/Updated_Dictionaries_23_10_2026"
+    cohorts_metadata_file = f"{data_dir}/studies_metadata.xlsx"
     output_dir = f"{data_dir}/output/cross_mapping"
 
     model_name = "biolord"
@@ -283,8 +287,8 @@ if __name__ == '__main__':
     # source_study = "time-chf"
     # target_studies = ["aachen-hf","biostat-chf", "viennahf-register", "gissi-hf", "tim-hf","check-hf"]
 
-    source_study = "gissi-hf"
-    target_studies = ["time-chf","biostat-chf", "viennahf-register", "aachen-hf"]
+    source_study = "time-chf"
+    target_studies = ["aachen-hf","gissi-hf","biostat-chf", "viennahf-register"]
     clear_all_caches()
     new_studies = []
     parent_to_members = defaultdict[Any, list](list)
@@ -298,7 +302,9 @@ if __name__ == '__main__':
 
     omop_id_tracker = {} 
     # llm_models_used = ["litellm/gpt-oss:120b","gemini-3.1-flash-lite","openrouter/deepseek/deepseek-v4-flash:exacto"]
-    llm_model = "litellm/gpt-oss:120b" # running in openai with temp 0.5, top_p = 0.95 and thinking low
+    # llm_model = "litellm/gpt-oss:120b" # running in openai with temp 0.5, top_p = 0.95 and thinking low
+    llm_model = "litellm/qwen3.8-g2"
+    # llm_model = None
     mapping_dict = {}  
     omop_graph = None if mapping_mode == MappingType.NE.value else OmopGraphNX(csv_file_path=settings.concepts_file_path)
     mapper = StudyMapper(
@@ -310,15 +316,18 @@ if __name__ == '__main__':
          llm_model=llm_model,
          )
     llm_tag = llm_model.split("/")[-1] if llm_model and mapping_mode != MappingType.OO.value else "no_llm" 
-    llm_tag = llm_tag.replace(":120b","-120b")
+    # llm_tag = llm_tag.replace(":120b","-120b")
     print(f"llm_tag: {llm_tag}")
+    run_output_dir = f"{output_dir}/{model_name}/{mapping_mode}"
+    if not os.path.exists(run_output_dir):
+        os.makedirs(run_output_dir)
     for tstudy in target_studies:
         print(f"Running experiment for {source_study} -> {tstudy} with model: {model_name} and mapping mode: {mapping_mode}")
         mapping_transformed = mapper.run_pipeline(
             src_study=source_study,
             tgt_study=tstudy,
             mapping_mode=mapping_mode)        
-        csv_path = f'{output_dir}/{model_name}/{mapping_mode}/{source_study}_{tstudy}_{model_name}+{llm_tag}_{mapping_mode}_full.csv'
+        csv_path = f'{run_output_dir}/{source_study}_{tstudy}_{model_name}+{llm_tag}_{mapping_mode}_full.csv'
         if not mapping_transformed.empty:
             mapping_transformed = mapping_transformed[mapping_transformed["harmonization_status"].str.strip().str.lower() != "not applicable"]
         mapping_transformed.to_csv(csv_path, index=False)
@@ -330,7 +339,7 @@ if __name__ == '__main__':
                 source_study=source_study,
                 parent_study=parent_study,
                 member_studies=members,
-                output_dir=f"{output_dir}/{model_name}/{mapping_mode}",
+                output_dir=run_output_dir,
                 model_name=model_name,
                 mapping_mode=mapping_mode,
                 llm=llm_tag
@@ -338,8 +347,8 @@ if __name__ == '__main__':
     combine_all_mappings_to_json(
         source_study=source_study,
         target_studies=target_studies,
-        output_dir=f"{output_dir}/{model_name}/{mapping_mode}",
-        json_path=os.path.join(f"{output_dir}/{model_name}/{mapping_mode}", f"{source_study}_{tstudy_str}_{model_name}+{llm_tag}_{mapping_mode}.json"),
+        output_dir=run_output_dir,
+        json_path=os.path.join(run_output_dir, f"{source_study}_{tstudy_str}_{model_name}+{llm_tag}_{mapping_mode}.json"),
         model_name=model_name,
         mapping_mode=mapping_mode,
         llm_tag=llm_tag

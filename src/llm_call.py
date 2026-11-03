@@ -669,6 +669,67 @@ VERDICT_JSON_SCHEMA = {
     }
 }
 
+_ALIGNMENT_DIRECTIONS = {"bidirectional", "source to target",
+                         "target to source", "both for derivation"}
+
+_TRANSFORM_TEXT_KEYS = ("source_operation", "target_operation",
+                        "information_loss", "reference")
+
+
+def _clean_text(value: Any) -> str:
+    return value.strip() if isinstance(value, str) else ""
+
+
+def _clean_direction(value: Any) -> str:
+    # Tolerate "Source_to_Target", "source->target" and extra spaces; anything
+    # outside the schema enum is unknown ("") rather than passed through.
+    s = re.sub(r"[\s_-]+", " ", _clean_text(value).lower().replace("->", " to "))
+    s = " ".join(s.split())
+    return s if s in _ALIGNMENT_DIRECTIONS else ""
+
+
+def _clean_side_map(value: Any) -> dict:
+    """{"source": {...}, "target": {...}} with string keys and values only."""
+    if not isinstance(value, dict):
+        return {}
+    out = {}
+    for side in ("source", "target"):
+        m = value.get(side)
+        if isinstance(m, dict):
+            out[side] = {str(k): str(v) for k, v in m.items()}
+    return out
+
+
+def _clean_transform(value: Any) -> str:
+    """Normalise the LLM transform to the schema shape, as a JSON string.
+
+    "" or missing -> ""; an object keeps the known keys and fills the rest;
+    plain text is kept as source_operation; any other type -> "". A JSON
+    string (not a dict) keeps the transformation_rule column readable with
+    json.loads.
+    """
+    if isinstance(value, str):
+        text = value.strip()
+        if not text:
+            return ""
+        value = {"source_operation": text}
+    if not isinstance(value, dict):
+        return ""
+    out = {k: _clean_text(value.get(k)) for k in _TRANSFORM_TEXT_KEYS}
+    out["value_mapping"] = _clean_side_map(value.get("value_mapping"))
+    out["missing_mapping"] = "unknown"
+    raw_rule = value.get("numeric_rule")
+    if isinstance(raw_rule, dict):
+        numeric_rule = {s: _clean_text(raw_rule.get(s)) for s in ("source", "target")}
+        numeric_rule = {s: r for s, r in numeric_rule.items() if r}
+        if numeric_rule:
+            out["numeric_rule"] = numeric_rule
+    if not any(out[k] for k in _TRANSFORM_TEXT_KEYS) and not out["value_mapping"] \
+            and "numeric_rule" not in out:
+        return ""
+    return json.dumps(out, ensure_ascii=False)
+
+
 def _get_field(obj: Any, key: str, default: Any = None) -> Any:
     if isinstance(obj, dict):
         return obj.get(key, default)
@@ -1186,14 +1247,17 @@ def _parse_single(text: str) -> Tuple[Optional[bool], str, float, str]:
     if not conf_reported:
         conf = 0.0
 
+    # Optional fields are cleaned, never fatal: a malformed one becomes ""
+    # so the verdict itself is kept.
+    direction = _clean_direction(d.get("alignment_direction"))
     reason_json = json.dumps({
         "status": status,
         "status_code": code,
         "reason": d.get("reason") or "",
-        "transform": d.get("transform") or "",
-        "transform_direction": d.get("alignment_direction") or "",
-        "alignment_direction": d.get("alignment_direction") or "",
-        "harmonized_variable": d.get("harmonized_variable") or "",
+        "transform": _clean_transform(d.get("transform")),
+        "transform_direction": direction,
+        "alignment_direction": direction,
+        "harmonized_variable": _clean_text(d.get("harmonized_variable")),
         "confidence_reported": conf_reported,
     })
 
@@ -1582,7 +1646,7 @@ class LLMConceptMatcher:
                         {"role": "user", "content": prompt},
                     ],
                      "extra_body": {
-                        "reasoning_effort": "high",
+                        "reasoning_effort": "xhigh",
                         "allowed_openai_params": ["reasoning_effort"],
                         "drop_params": True,
                     },

@@ -17,7 +17,7 @@ class Settings:
     OPENROUTER_API_KEY: str = field(default_factory=lambda: os.getenv("OPENROUTER_API_KEY"))
     FIREWORKS_API_KEY: str = field(default_factory=lambda: os.getenv("FIREWORKS_API_KEY"))
     FIREWORKS_BASE_URL: str = "https://api.fireworks.ai/inference/v1"
-    LITELLM_BASE_URL: str = field(default_factory=lambda: os.getenv("LITELLM_BASE_URL", "https://litellm.137.120.31.164.nip.io/v1"))
+    LITELLM_BASE_URL: str = field(default_factory=lambda: os.getenv("LITELLM_BASE_URL", "https://litellm.k8s.semanticscience.org/v1"))
     LITELLM_API_KEY: str = field(default_factory=lambda: os.getenv("LITELLM_API_KEY", "sk-noauth"))
     OLLAMA_URL = "localhost:11434"
     CROSS_CATS: Set[str] = field(default_factory=lambda: {

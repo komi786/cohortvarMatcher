@@ -186,3 +186,9 @@ data/.DS_Store
 /src/_older
 docs/change_tracker.xlsx
 /data/cohorts
+/.llm_cache
+/data/graphs
+/data/output/cross_mapping
+data/studies_metadata.xlsx
+/data/Updated_Dictionaries_23_10_2026
+/docs

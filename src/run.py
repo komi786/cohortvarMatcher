@@ -174,12 +174,22 @@ class StudyMapper:
         src_nodes: List[VariableNode] = []
         tgt_nodes: List[VariableNode] = []
 
+        def domain(result, key):
+            # A variable without a domain annotation contributes "" to the
+            # GROUP_CONCAT; drop those so the joined string has no blank parts.
+            raw = result.get(key, {}).get("value", "")
+            return "||".join(p for p in raw.split("||") if p.strip()).strip().lower()
+
+        empty_concepts = []
         for result in bindings:
             omop = int(result["omop_id"]["value"])
             code_label = result.get("code_label", {}).get("value", "")
             code_value = result.get("code_value", {}).get("value", "")
-            src_cat = result["source_domain"]["value"].strip().lower()
-            tgt_cat = result["target_domain"]["value"].strip().lower()
+            src_cat = domain(result, "source_domain")
+            tgt_cat = domain(result, "target_domain")
+            if not (result.get("source_definition", {}).get("value")
+                    or result.get("target_definition", {}).get("value")):
+                empty_concepts.append(omop)
 
             def parse_raw(raw: str) -> List[Tuple[str, str, str]]:
                 out = []
@@ -210,6 +220,15 @@ class StudyMapper:
                 )
                 # node.var_label = label
                 tgt_nodes.append(node)
+
+        if empty_concepts:
+            # Every concept comes from a coded variable, so a concept with no
+            # variable on either side means the triple store dropped them.
+            logger.warning(
+                f"⚠️ {len(empty_concepts)} of {len(bindings)} concepts came back with no "
+                f"variables on either side ({src_study} -> {tgt_study}); their variables "
+                f"are excluded from matching. Check the SPARQL engine version. "
+                f"First ids: {empty_concepts[:10]}")
 
         src_col = VariableCollection(study=src_study, variables=src_nodes)
         tgt_col = VariableCollection(study=tgt_study, variables=tgt_nodes)
@@ -463,6 +482,11 @@ class StudyMapper:
         self._enrich_with_profiles(src_col,  mapping_mode)
         self._enrich_with_profiles(tgt_col,  mapping_mode)
         logger.info(f"📊 Parsed {len(src_col)} source, {len(tgt_col)} target variables")
+        empty = [s for s, col in ((src_study, src_col), (tgt_study, tgt_col)) if len(col) == 0]
+        if empty:
+            raise ValueError(
+                f"No variables found for {', '.join(empty)} ({src_study} -> {tgt_study}). "
+                f"Check that the study graph is loaded and the study name matches it.")
 
         # ── Step 2: Discover Candidates ────────────
         ns_matches = self.matcher.generate_candidates(src_collection=src_col, tgt_collection=tgt_col, target_study=tgt_study)

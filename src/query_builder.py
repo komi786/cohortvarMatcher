@@ -22,67 +22,68 @@ class SPARQLQueryBuilder:
     GRAPHS_URI = settings.GRAPH_REPO
 
 
-    @classmethod
-    def build_alignment_query(cls, source: str, target: str) -> str:
-        # Optimized query structure
-        query= f""" 
-            {cls.PREFIXES}
-            SELECT ?omop_id
-            (SAMPLE(?lbl) AS ?code_label)
-            (SAMPLE(?val) AS ?code_value)
-            (GROUP_CONCAT(DISTINCT ?src_de_str; SEPARATOR="||") AS ?source_de_uris)
-            (GROUP_CONCAT(DISTINCT ?tgt_de_str; SEPARATOR="||") AS ?target_de_uris)
-            (GROUP_CONCAT(DISTINCT ?src_combined; SEPARATOR="||") AS ?source_definition)
-            (GROUP_CONCAT(DISTINCT ?tgt_combined; SEPARATOR="||") AS ?target_definition)
-            (GROUP_CONCAT(DISTINCT ?src_val; SEPARATOR="||") AS ?source_domain)
-            (GROUP_CONCAT(DISTINCT ?tgt_val; SEPARATOR="||") AS ?target_domain)
-            WHERE {{
-                {{
-                    SELECT ?omop_id  ?lbl ?val ?src_de_str  ?src_combined ?src_val 
-                    WHERE {{
-                        GRAPH <{cls.GRAPHS_URI}/{source}> {{
-                             ?deA a cmeo:data_element ; 
-                                rdfs:label ?src_var_label ;
-                                dc:identifier ?src_var ;
-                                  skos:closeMatch ?codeSetA .
-                             ?codeSetA rdf:_1 ?codeNodeA .
-                             ?codeNodeA rdfs:label ?lbl ;
-                                        cmeo:has_value ?val ;
-                                        iao:denotes/cmeo:has_value ?omop_id .
-                             OPTIONAL {{ ?deA sio:has_attribute/skos:closeMatch/rdfs:label ?src_vis_label . }}
-                             OPTIONAL {{ ?deA sio:has_annotation/cmeo:has_value ?src_val . }}
-                            BIND(IF(BOUND(?src_vis_label), 
-                                CONCAT(?src_var, ";;", ?src_var_label, ";;", ?src_vis_label), 
-                                CONCAT(?src_var, ";;", ?src_var_label, ";;N/A")
-                            ) AS ?src_combined)
 
-                            BIND(STR(?deA) AS ?src_de_str)
-                        }}
+    @classmethod
+    def _alignment_side(cls, study: str, side: str) -> str:
+        """One study's coded variables, grouped by main OMOP concept.
+
+        Every value reaching an aggregate is bound: Oxigraph >= 0.4.7 treats an
+        unbound value inside GROUP_CONCAT as an error and blanks the whole
+        group, which is what emptied every concept shared by both studies.
+        """
+        return f"""
+                SELECT ?omop_id
+                    (SAMPLE(?lbl) AS ?{side}_lbl)
+                    (SAMPLE(?val) AS ?{side}_code)
+                    (GROUP_CONCAT(DISTINCT ?de_str; SEPARATOR="||") AS ?{side}_de_uris)
+                    (GROUP_CONCAT(DISTINCT ?combined; SEPARATOR="||") AS ?{side}_definition)
+                    (GROUP_CONCAT(DISTINCT ?domain; SEPARATOR="||") AS ?{side}_domain)
+                WHERE {{
+                    GRAPH <{cls.GRAPHS_URI}/{study}> {{
+                        ?de a cmeo:data_element ;
+                            rdfs:label ?var_label ;
+                            dc:identifier ?var ;
+                            skos:closeMatch ?codeSet .
+                        ?codeSet rdf:_1 ?codeNode .
+                        ?codeNode rdfs:label ?lbl ;
+                                  cmeo:has_value ?val ;
+                                  iao:denotes/cmeo:has_value ?omop_id .
+                        OPTIONAL {{ ?de sio:has_attribute/skos:closeMatch/rdfs:label ?vis_label . }}
+                        OPTIONAL {{ ?de sio:has_annotation/cmeo:has_value ?domain_val . }}
+                        BIND(CONCAT(?var, ";;", ?var_label, ";;", COALESCE(?vis_label, "N/A")) AS ?combined)
+                        BIND(COALESCE(?domain_val, "") AS ?domain)
+                        BIND(STR(?de) AS ?de_str)
                     }}
                 }}
-                UNION
-                {{
-                     SELECT ?omop_id ?lbl ?val ?tgt_de_str ?tgt_combined ?tgt_val 
-                    WHERE {{
-                        GRAPH <{cls.GRAPHS_URI}/{target}> {{
-                             ?deB a cmeo:data_element ; 
-                                rdfs:label ?tgt_var_label ;
-                                dc:identifier ?tgt_var ;
-                                  skos:closeMatch ?codeSetB .
-                             ?codeSetB rdf:_1 ?codeNodeB .
-                             ?codeNodeB rdfs:label ?lbl ;
-                                        cmeo:has_value ?val ;
-                                        iao:denotes/cmeo:has_value ?omop_id .
-                             OPTIONAL {{ ?deB sio:has_attribute/skos:closeMatch/rdfs:label ?tgt_vis_label . }}
-                             OPTIONAL {{ ?deB sio:has_annotation/cmeo:has_value ?tgt_val . }}
-                            BIND(IF(BOUND(?tgt_vis_label), 
-                            CONCAT(?tgt_var, ";;", ?tgt_var_label, ";;", ?tgt_vis_label), 
-                            CONCAT(?tgt_var, ";;", ?tgt_var_label, ";;N/A")
-                        ) AS ?tgt_combined)
+                GROUP BY ?omop_id"""
 
-                        BIND(STR(?deB) AS ?tgt_de_str)
-                        }}
-                    }}
+    @classmethod
+    def build_alignment_query(cls, source: str, target: str) -> str:
+        # Each study is grouped on its own, then the two are merged per concept.
+        # A concept yields at most one row per side, so the outer GROUP_CONCAT
+        # with an empty separator just picks that side's value (or ""). The
+        # concept label and code prefer the source study's, so they no longer
+        # depend on which row SAMPLE happens to pick.
+        query = f"""
+            {cls.PREFIXES}
+            SELECT ?omop_id
+            (IF(GROUP_CONCAT(COALESCE(?src_lbl, ""); SEPARATOR="") != "",
+                GROUP_CONCAT(COALESCE(?src_lbl, ""); SEPARATOR=""),
+                GROUP_CONCAT(COALESCE(?tgt_lbl, ""); SEPARATOR="")) AS ?code_label)
+            (IF(GROUP_CONCAT(COALESCE(?src_code, ""); SEPARATOR="") != "",
+                GROUP_CONCAT(COALESCE(?src_code, ""); SEPARATOR=""),
+                GROUP_CONCAT(COALESCE(?tgt_code, ""); SEPARATOR="")) AS ?code_value)
+            (GROUP_CONCAT(COALESCE(?src_de_uris, ""); SEPARATOR="") AS ?source_de_uris)
+            (GROUP_CONCAT(COALESCE(?tgt_de_uris, ""); SEPARATOR="") AS ?target_de_uris)
+            (GROUP_CONCAT(COALESCE(?src_definition, ""); SEPARATOR="") AS ?source_definition)
+            (GROUP_CONCAT(COALESCE(?tgt_definition, ""); SEPARATOR="") AS ?target_definition)
+            (GROUP_CONCAT(COALESCE(?src_domain, ""); SEPARATOR="") AS ?source_domain)
+            (GROUP_CONCAT(COALESCE(?tgt_domain, ""); SEPARATOR="") AS ?target_domain)
+            WHERE {{
+                {{ {cls._alignment_side(source, "src")}
+                }}
+                UNION
+                {{ {cls._alignment_side(target, "tgt")}
                 }}
             }}
             GROUP BY ?omop_id
@@ -92,6 +93,8 @@ class SPARQLQueryBuilder:
         # print(query)
         return query
 
+
+    
     # query_builder.py — add new method
 
     @classmethod

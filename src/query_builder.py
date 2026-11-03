@@ -21,6 +21,13 @@ class SPARQLQueryBuilder:
     METADATA_GRAPH = "https://w3id.org/CMEO/graph/studies_metadata"
     GRAPHS_URI = settings.GRAPH_REPO
 
+    @staticmethod
+    def literal(value: str) -> str:
+        """A SPARQL string literal for value. Escapes \\ first, then ", so a
+        name like height"cm or dose\\day still matches the stored identifier
+        instead of breaking the query; the server returns the original value."""
+        return '"' + str(value).replace("\\", "\\\\").replace('"', '\\"') + '"'
+
 
 
     @classmethod
@@ -153,10 +160,13 @@ class SPARQLQueryBuilder:
         (SAMPLE(?_data_type_val) AS ?data_type_val)
         (MAX(?_min_v)            AS ?min_val)
         (MAX(?_max_v)            AS ?max_val)
-        (GROUP_CONCAT(DISTINCT STR(?cat_omop_id); SEPARATOR="||") AS ?cat_omop_ids)
-        (GROUP_CONCAT(DISTINCT ?_catL; SEPARATOR="||") AS ?all_cat_labels)
-        (GROUP_CONCAT(DISTINCT ?_catV; SEPARATOR="||") AS ?all_original_cat_values)
-        (GROUP_CONCAT(DISTINCT ?_catPair; SEPARATOR="||") AS ?all_cat_pairs)
+        # COALESCE: on Oxigraph >= 0.4.7 one unbound value (e.g. a category with
+        # no OMOP code) blanks the whole GROUP_CONCAT for the variable. The ""
+        # parts it leaves are skipped by the parser (_split_labels / _split_ids).
+        (GROUP_CONCAT(DISTINCT COALESCE(STR(?cat_omop_id), ""); SEPARATOR="||") AS ?cat_omop_ids)
+        (GROUP_CONCAT(DISTINCT COALESCE(?_catL, ""); SEPARATOR="||") AS ?all_cat_labels)
+        (GROUP_CONCAT(DISTINCT COALESCE(?_catV, ""); SEPARATOR="||") AS ?all_original_cat_values)
+        (GROUP_CONCAT(DISTINCT COALESCE(?_catPair, ""); SEPARATOR="||") AS ?all_cat_pairs)
 
         (SAMPLE(?_ordered_code_labels) AS ?code_label)
         (SAMPLE(?_ordered_code_values) AS ?code_value)

@@ -1555,7 +1555,7 @@ class LLMConceptMatcher:
 
         output_token_limit = self.max_tokens
         api_model = self._fireworks_model_name(model) if self.backend == "fireworks" else (model.replace("openrouter/", "") if self.backend == "openrouter" else model)
-        mname = model.split('/')[-1]
+        # mname = model.split('/')[-1]
         client = self._clients[self.backend]
 
         # if self.batching:
@@ -1565,7 +1565,7 @@ class LLMConceptMatcher:
 
         sys_prompt = self._system_prompt
         api_model = self._fireworks_model_name(model) if self.backend == "fireworks" else (model.replace("openrouter/", "") if self.backend == "openrouter" else model)
-        mname = model.split('/')[-1]
+        # mname = model.split('/')[-1]
         client = self._clients[self.backend]
         logprob_evidence = None
 

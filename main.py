@@ -327,8 +327,8 @@ if __name__ == '__main__':
             tgt_study=tstudy,
             mapping_mode=mapping_mode)        
         csv_path = f'{run_output_dir}/{source_study}_{tstudy}_{model_name}+{llm_tag}_{mapping_mode}_full.csv'
-        if not mapping_transformed.empty:
-            mapping_transformed = mapping_transformed[mapping_transformed["harmonization_status"].str.strip().str.lower() != "not applicable"]
+        # if not mapping_transformed.empty:
+        #     mapping_transformed = mapping_transformed[mapping_transformed["harmonization_status"].str.strip().str.lower() != "not applicable"]
         mapping_transformed.insert(0, "member_study", tstudy)
         mapping_transformed.to_csv(csv_path, index=False)
     tstudy_str = "_".join(target_studies)

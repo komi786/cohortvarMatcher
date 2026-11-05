@@ -72,7 +72,7 @@ flowchart LR
     K -->|decisive| M[Verdict]
     K -->|ambiguous| L[LLM<br/>adjudication]
     L --> M
-    M --> N[CSV / JSON<br/>mappings]
+    M --> N[CSV / JSON/SSSOM<br/>mappings]
 ```
 
 | Stage | Module |
@@ -282,8 +282,8 @@ CohortVarMatcher/
 
 ## 📝 Citation
 
-Manuscript in preparation. Citation details will be added on publication.
+Manuscript in under Review. Citation details will be added on publication.
 
 ## 📄 License
 
-No license has been selected yet.
+MIT

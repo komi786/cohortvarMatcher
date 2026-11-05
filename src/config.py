@@ -8,8 +8,8 @@ load_dotenv()  # reads .env into os.environ
 @dataclass(frozen=True)
 class Settings:
     # Thresholds
-    ADAPTIVE_THRESHOLD: float = 0.5 # minimum score for adaptive retrival from vector db
-    ADAPTIVE_ALPHA = 0.8 # upper bound
+    ADAPTIVE_THRESHOLD: float = 0.5 # minimum score for adaptive retrival from vector db, use 0.45 for NE for article results
+    ADAPTIVE_ALPHA = 0.75 # upper bound, use 0.8 to reproduce article results
     LIMIT: int = 10 # limit for adaptive retrival from vector db
 
     DATE_HINTS: List[str] = field(default_factory=lambda: ["visit date", "date of visit", "date of event", "event date"])
@@ -17,7 +17,7 @@ class Settings:
     OPENROUTER_API_KEY: str = field(default_factory=lambda: os.getenv("OPENROUTER_API_KEY"))
     FIREWORKS_API_KEY: str = field(default_factory=lambda: os.getenv("FIREWORKS_API_KEY"))
     FIREWORKS_BASE_URL: str = "https://api.fireworks.ai/inference/v1"
-    LITELLM_BASE_URL: str = field(default_factory=lambda: os.getenv("LITELLM_BASE_URL", "https://litellm.137.120.31.164.nip.io/v1"))
+    LITELLM_BASE_URL: str = field(default_factory=lambda: os.getenv("LITELLM_BASE_URL", "https://litellm.k8s.semanticscience.org/v1"))
     LITELLM_API_KEY: str = field(default_factory=lambda: os.getenv("LITELLM_API_KEY", "sk-noauth"))
     OLLAMA_URL = "localhost:11434"
     CROSS_CATS: Set[str] = field(default_factory=lambda: {

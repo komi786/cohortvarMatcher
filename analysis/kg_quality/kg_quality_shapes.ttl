@@ -1,0 +1,391 @@
+# SHACL shapes for the quality of the cohort metadata knowledge graph
+# (data/graphs/<study>_metadata.trig, built by src/variables_kg.py).
+#
+# Every check is its own NodeShape over data element (CMEO_0000009), so each
+# result row carries the check id (sourceShape) and its severity. The shapes only
+# report; they never change the graph. Statistics (min/max/median/unique count)
+# in the graph come from the EDA where it has them, so checks on them test what
+# the matcher actually sees.
+#
+# Terms are the CMEO release 2026-11-04 IRIs (same table as src/utils.py):
+#   obo:CMEO_0000009 data element          obo:CMEO_0000059 data type
+#   obo:CMEO_0000028 missing value spec.   obo:STATO_0000129 has value
+#   obo:IAO_0000235  denoted by            obo:IAO_0000136  is about
+#   obo:IAO_0000039  has measurement unit label   obo:IAO_0020020 code set
+#   obo:OBI_0001938  has value specification      obo:OBI_0001930 categorical value specification
+#   obo:BFO_0000051  has part              obo:STATO_0000039 statistic
+#   obo:STATO_0000150 minimum observed value      obo:STATO_0000151 maximum observed value
+#   obo:STATO_0000047 count (several counts; the unique-value count is the one
+#                     labelled "number of unique values")
+#   sio:SIO_000008 has attribute   sio:SIO_000255 has annotation   sio:SIO_001110 median
+#   The domain annotation node is a skos:Concept.
+#
+# Not covered here (needs data the graph does not hold yet):
+#   - dictionary MIN/MAX vs EDA min/max (the graph keeps one value)
+#   - observed category values (EDA class balance is not stored)
+#   - concept-specific units and plausible ranges (needs a reference table)
+
+@prefix sh:    <http://www.w3.org/ns/shacl#> .
+@prefix owl:   <http://www.w3.org/2002/07/owl#> .
+@prefix xsd:   <http://www.w3.org/2001/XMLSchema#> .
+@prefix rdfs:  <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix skos:  <http://www.w3.org/2004/02/skos/core#> .
+@prefix dc:    <http://purl.org/dc/elements/1.1/> .
+@prefix obo:   <http://purl.obolibrary.org/obo/> .
+@prefix sio:   <http://semanticscience.org/resource/> .
+@prefix kgq:   <https://w3id.org/CMEO/shapes/kg-quality#> .
+
+kgq: a owl:Ontology ;
+    sh:declare
+        [ sh:prefix "xsd" ;   sh:namespace "http://www.w3.org/2001/XMLSchema#"^^xsd:anyURI ] ,
+        [ sh:prefix "rdfs" ;  sh:namespace "http://www.w3.org/2000/01/rdf-schema#"^^xsd:anyURI ] ,
+        [ sh:prefix "skos" ;  sh:namespace "http://www.w3.org/2004/02/skos/core#"^^xsd:anyURI ] ,
+        [ sh:prefix "dc" ;    sh:namespace "http://purl.org/dc/elements/1.1/"^^xsd:anyURI ] ,
+        [ sh:prefix "obo" ;   sh:namespace "http://purl.obolibrary.org/obo/"^^xsd:anyURI ] ,
+        [ sh:prefix "sio" ;   sh:namespace "http://semanticscience.org/resource/"^^xsd:anyURI ] .
+
+
+# ── Q00 Ontology terms ───────────────────────────────────────────────────────
+
+kgq:Q00_legacy_term a sh:NodeShape ;
+    rdfs:comment "The variable and the nodes it links to use CMEO release IRIs, not the made-up IRIs of graphs built before the 2026-11-04 migration (obo/<ontology>.owl/<name>, sio.owl/<name>, cmeo:has_value, cmeo:category)." ;
+    sh:targetClass obo:CMEO_0000009 ;
+    sh:severity sh:Violation ;
+    sh:sparql [
+        sh:prefixes kgq: ;
+        sh:message "Old-style term IRI {?value}: rebuild the graph with the current code." ;
+        sh:select """
+            SELECT DISTINCT $this ?value WHERE {
+                { $this ?value ?o . }
+                UNION { $this ?p ?n . ?n ?value ?o . }
+                UNION { $this ?p ?n . ?n a ?value . }
+                FILTER(isIRI(?value))
+                FILTER(REGEX(STR(?value), "^http://purl[.]obolibrary[.]org/obo/[a-z]+[.]owl/")
+                    || STRSTARTS(STR(?value), "http://semanticscience.org/ontology/sio.owl/")
+                    || STR(?value) IN ("https://w3id.org/CMEO/has_value", "https://w3id.org/CMEO/category",
+                                       "https://w3id.org/CMEO/data_element"))
+            }""" ] .
+
+
+# ── Q0x Completeness ─────────────────────────────────────────────────────────
+
+kgq:Q01_identifier a sh:NodeShape ;
+    rdfs:comment "Every variable has an identifier (variable name)." ;
+    sh:targetClass obo:CMEO_0000009 ;
+    sh:severity sh:Violation ;
+    sh:property [ sh:path dc:identifier ; sh:minCount 1 ;
+                  sh:message "Variable has no identifier." ] .
+
+kgq:Q02_label a sh:NodeShape ;
+    rdfs:comment "Every variable has a label (VARIABLELABEL)." ;
+    sh:targetClass obo:CMEO_0000009 ;
+    sh:severity sh:Warning ;
+    sh:property [ sh:path rdfs:label ; sh:minCount 1 ;
+                  sh:message "Variable has no label." ] .
+
+kgq:Q03_data_type a sh:NodeShape ;
+    rdfs:comment "Every variable has exactly one data type (VARTYPE)." ;
+    sh:targetClass obo:CMEO_0000009 ;
+    sh:severity sh:Violation ;
+    sh:property [ sh:path sio:SIO_000008 ;
+                  sh:qualifiedValueShape [ sh:class obo:CMEO_0000059 ] ;
+                  sh:qualifiedMinCount 1 ; sh:qualifiedMaxCount 1 ;
+                  sh:message "Variable needs exactly one data type." ] .
+
+kgq:Q04_statistical_type a sh:NodeShape ;
+    rdfs:comment "Every variable has exactly one statistical type." ;
+    sh:targetClass obo:CMEO_0000009 ;
+    sh:severity sh:Violation ;
+    sh:property [ sh:path obo:IAO_0000235 ; sh:minCount 1 ; sh:maxCount 1 ;
+                  sh:message "Variable needs exactly one statistical type." ] .
+
+kgq:Q05_concept a sh:NodeShape ;
+    rdfs:comment "Every variable is mapped to at least one standard concept." ;
+    sh:targetClass obo:CMEO_0000009 ;
+    sh:severity sh:Warning ;
+    sh:property [ sh:path skos:closeMatch ;
+                  sh:qualifiedValueShape [ sh:class obo:IAO_0020020 ] ;
+                  sh:qualifiedMinCount 1 ;
+                  sh:message "Variable has no concept mapping (VARIABLE CONCEPT CODE)." ] .
+
+kgq:Q06_domain a sh:NodeShape ;
+    rdfs:comment "Every variable has an OMOP domain." ;
+    sh:targetClass obo:CMEO_0000009 ;
+    sh:severity sh:Warning ;
+    sh:property [ sh:path sio:SIO_000255 ;
+                  sh:qualifiedValueShape [ sh:class skos:Concept ] ;
+                  sh:qualifiedMinCount 1 ;
+                  sh:message "Variable has no domain (DOMAIN)." ] .
+
+
+# ── Q1x Metadata consistency (dictionary only) ───────────────────────────────
+
+kgq:Q10_measurement_without_unit a sh:NodeShape ;
+    rdfs:comment "A continuous, numeric variable in the Measurement domain has a unit." ;
+    sh:targetClass obo:CMEO_0000009 ;
+    sh:severity sh:Warning ;
+    sh:sparql [
+        sh:prefixes kgq: ;
+        sh:message "Continuous numeric measurement without a unit." ;
+        sh:select """
+            SELECT $this WHERE {
+                $this sio:SIO_000255 ?cat . ?cat a skos:Concept ; obo:STATO_0000129 ?domain .
+                $this obo:IAO_0000235 ?st . ?st obo:STATO_0000129 ?stype . FILTER(STR(?stype) = "continuous_variable")
+                $this sio:SIO_000008 ?dt . ?dt a obo:CMEO_0000059 ; obo:STATO_0000129 ?dtype .
+                FILTER(LCASE(STR(?domain)) = "measurement")
+                FILTER(LCASE(STR(?dtype)) IN ("int", "integer", "float", "double", "numeric"))
+                FILTER NOT EXISTS {
+                    $this obo:IAO_0000039 ?u . ?u obo:STATO_0000129 ?unit .
+                    FILTER(STRLEN(STR(?unit)) > 0)
+                }
+            }""" ] .
+
+kgq:Q11_unit_not_standardised a sh:NodeShape ;
+    rdfs:comment "A unit label is mapped to a UCUM unit (date/time variables excluded: their UNITS holds a date format)." ;
+    sh:targetClass obo:CMEO_0000009 ;
+    sh:severity sh:Warning ;
+    sh:sparql [
+        sh:prefixes kgq: ;
+        sh:message "Unit '{?value}' is not mapped to a UCUM unit." ;
+        sh:select """
+            SELECT $this ?value WHERE {
+                $this obo:IAO_0000039 ?u . ?u obo:STATO_0000129 ?value .
+                FILTER(STRLEN(STR(?value)) > 0)
+                FILTER NOT EXISTS {
+                    $this sio:SIO_000008 ?dt . ?dt a obo:CMEO_0000059 ; obo:STATO_0000129 ?dtype .
+                    FILTER(CONTAINS(LCASE(STR(?dtype)), "date") || CONTAINS(LCASE(STR(?dtype)), "time"))
+                }
+                FILTER NOT EXISTS {
+                    ?u skos:closeMatch ?ucum .
+                    FILTER(STRSTARTS(STR(?ucum), "http://unitsofmeasure.org/"))
+                }
+            }""" ] .
+
+kgq:Q12_category_count a sh:NodeShape ;
+    rdfs:comment "A binary variable has exactly 2 categories; a multi-class variable at least 2." ;
+    sh:targetClass obo:CMEO_0000009 ;
+    sh:severity sh:Violation ;
+    sh:sparql [
+        sh:prefixes kgq: ;
+        sh:message "{?stype} with {?value} categories." ;
+        sh:select """
+            SELECT $this ?stype (COUNT(DISTINCT ?c) AS ?value) WHERE {
+                $this obo:IAO_0000235 ?st . ?st obo:STATO_0000129 ?stype .
+                FILTER(STR(?stype) IN ("binary_class_variable", "multi_class_variable"))
+                OPTIONAL { $this obo:OBI_0001938 ?c . ?c a obo:OBI_0001930 . }
+            }
+            GROUP BY $this ?stype
+            HAVING ((STR(?stype) = "binary_class_variable" && COUNT(DISTINCT ?c) != 2)
+                 || (STR(?stype) = "multi_class_variable"  && COUNT(DISTINCT ?c) < 2))""" ] .
+
+kgq:Q13_category_without_concept a sh:NodeShape ;
+    rdfs:comment "Each category is mapped to a standard concept." ;
+    sh:targetClass obo:CMEO_0000009 ;
+    sh:severity sh:Info ;
+    sh:sparql [
+        sh:prefixes kgq: ;
+        sh:message "Category '{?value}' has no concept mapping." ;
+        sh:select """
+            SELECT $this ?value WHERE {
+                $this obo:OBI_0001938 ?c . ?c a obo:OBI_0001930 ; rdfs:label ?value .
+                FILTER NOT EXISTS { ?c skos:closeMatch ?concept . }
+            }""" ] .
+
+kgq:Q14_categorical_with_unit a sh:NodeShape ;
+    rdfs:comment "A binary or multi-class variable carries no measurement unit." ;
+    sh:targetClass obo:CMEO_0000009 ;
+    sh:severity sh:Warning ;
+    sh:sparql [
+        sh:prefixes kgq: ;
+        sh:message "Categorical variable has unit '{?value}'." ;
+        sh:select """
+            SELECT $this ?value WHERE {
+                $this obo:IAO_0000235 ?st . ?st obo:STATO_0000129 ?stype .
+                FILTER(STR(?stype) IN ("binary_class_variable", "multi_class_variable"))
+                $this obo:IAO_0000039 ?u . ?u obo:STATO_0000129 ?value .
+                FILTER(STRLEN(STR(?value)) > 0)
+            }""" ] .
+
+kgq:Q15_text_with_unit a sh:NodeShape ;
+    rdfs:comment "A variable declared as text (str) carries no measurement unit." ;
+    sh:targetClass obo:CMEO_0000009 ;
+    sh:severity sh:Warning ;
+    sh:sparql [
+        sh:prefixes kgq: ;
+        sh:message "Data type is text but the variable has unit '{?value}'." ;
+        sh:select """
+            SELECT $this ?value WHERE {
+                $this sio:SIO_000008 ?dt . ?dt a obo:CMEO_0000059 ; obo:STATO_0000129 ?dtype .
+                FILTER(LCASE(STR(?dtype)) IN ("str", "string"))
+                $this obo:IAO_0000039 ?u . ?u obo:STATO_0000129 ?value .
+                FILTER(STRLEN(STR(?value)) > 0)
+            }""" ] .
+
+
+# ── Q2x Data vs metadata (graph statistics come from the EDA) ────────────────
+
+kgq:Q20_missing_code_as_bound a sh:NodeShape ;
+    rdfs:comment "A declared missing-value code is not the minimum or maximum (up to 3 codes, separated by | / ; ,)." ;
+    sh:targetClass obo:CMEO_0000009 ;
+    sh:severity sh:Violation ;
+    sh:sparql [
+        sh:prefixes kgq: ;
+        sh:message "{?bound} {?value} is a declared missing code ({?codes})." ;
+        sh:select """
+            SELECT $this ?bound ?value ?codes WHERE {
+                $this obo:OBI_0001938 ?m .
+                ?m a obo:CMEO_0000028 ; obo:STATO_0000129 ?codes .
+                BIND(CONCAT(REPLACE(REPLACE(STR(?codes), "\\\\s", ""), "[/;,]", "|"), "|") AS ?s0)
+                FILTER(STRLEN(?s0) > 1)
+                BIND(STRBEFORE(?s0, "|") AS ?c1) BIND(STRAFTER(?s0, "|") AS ?s1)
+                BIND(STRBEFORE(?s1, "|") AS ?c2) BIND(STRAFTER(?s1, "|") AS ?s2)
+                BIND(STRBEFORE(?s2, "|") AS ?c3)
+                $this obo:IAO_0000235 ?stt . ?ds obo:IAO_0000136 ?stt . ?stat a obo:STATO_0000039 ; obo:IAO_0000136 ?ds .
+                ?stat obo:BFO_0000051 ?p . ?p a ?kind ; obo:STATO_0000129 ?value .
+                FILTER(?kind IN (obo:STATO_0000150, obo:STATO_0000151))
+                BIND(IF(?kind = obo:STATO_0000150, "Minimum", "Maximum") AS ?bound)
+                BIND(xsd:double(STR(?value)) AS ?v)
+                FILTER(ABS(?v - xsd:double(?c1)) < 1e-6 || ABS(?v - xsd:double(?c2)) < 1e-6
+                    || ABS(?v - xsd:double(?c3)) < 1e-6)
+            }""" ] .
+
+kgq:Q21_int_with_decimals a sh:NodeShape ;
+    rdfs:comment "A variable declared as integer has whole-number minimum and maximum." ;
+    sh:targetClass obo:CMEO_0000009 ;
+    sh:severity sh:Violation ;
+    sh:sparql [
+        sh:prefixes kgq: ;
+        sh:message "Data type is integer but the {?bound} is {?value}." ;
+        sh:select """
+            SELECT $this ?bound ?value WHERE {
+                $this sio:SIO_000008 ?dt . ?dt a obo:CMEO_0000059 ; obo:STATO_0000129 ?dtype .
+                FILTER(LCASE(STR(?dtype)) IN ("int", "integer"))
+                $this obo:IAO_0000235 ?stt . ?ds obo:IAO_0000136 ?stt . ?stat a obo:STATO_0000039 ; obo:IAO_0000136 ?ds .
+                ?stat obo:BFO_0000051 ?p . ?p a ?kind ; obo:STATO_0000129 ?value .
+                FILTER(?kind IN (obo:STATO_0000150, obo:STATO_0000151))
+                BIND(IF(?kind = obo:STATO_0000150, "minimum", "maximum") AS ?bound)
+                BIND(xsd:double(STR(?value)) AS ?v)
+                FILTER(?v != FLOOR(?v))
+            }""" ] .
+
+kgq:Q22_text_with_numeric_data a sh:NodeShape ;
+    rdfs:comment "A variable declared as text has no numeric distribution in the data." ;
+    sh:targetClass obo:CMEO_0000009 ;
+    sh:severity sh:Violation ;
+    sh:sparql [
+        sh:prefixes kgq: ;
+        sh:message "Data type is text but the data are numeric (median {?value})." ;
+        sh:select """
+            SELECT $this ?value WHERE {
+                $this sio:SIO_000008 ?dt . ?dt a obo:CMEO_0000059 ; obo:STATO_0000129 ?dtype .
+                FILTER(LCASE(STR(?dtype)) IN ("str", "string"))
+                $this obo:IAO_0000235 ?stt . ?ds obo:IAO_0000136 ?stt . ?stat a obo:STATO_0000039 ; obo:IAO_0000136 ?ds .
+                ?stat obo:BFO_0000051 ?p . ?p a sio:SIO_001110 ; obo:STATO_0000129 ?value .
+            }""" ] .
+
+kgq:Q23_numeric_with_text_data a sh:NodeShape ;
+    rdfs:comment "A numeric, non-categorical variable profiled by the EDA has a numeric distribution." ;
+    sh:targetClass obo:CMEO_0000009 ;
+    sh:severity sh:Violation ;
+    sh:sparql [
+        sh:prefixes kgq: ;
+        sh:message "Data type is {?value} but the data were not read as numbers (no median in the EDA)." ;
+        sh:select """
+            SELECT $this ?value WHERE {
+                $this sio:SIO_000008 ?dt . ?dt a obo:CMEO_0000059 ; obo:STATO_0000129 ?value .
+                FILTER(LCASE(STR(?value)) IN ("int", "integer", "float", "double", "numeric"))
+                $this obo:IAO_0000235 ?st . ?st obo:STATO_0000129 ?stype . FILTER(STR(?stype) = "continuous_variable")
+                $this obo:IAO_0000235 ?stt . ?ds obo:IAO_0000136 ?stt . ?stat a obo:STATO_0000039 ; obo:IAO_0000136 ?ds .
+                ?stat obo:BFO_0000051 ?u . ?u a obo:STATO_0000047 ; rdfs:label ?ulabel ; obo:STATO_0000129 ?n . FILTER(STR(?ulabel) = "number of unique values")
+                FILTER(xsd:double(STR(?n)) > 0)
+                FILTER NOT EXISTS { ?stat obo:BFO_0000051 ?md . ?md a sio:SIO_001110 . }
+            }""" ] .
+
+kgq:Q24_percent_as_fraction a sh:NodeShape ;
+    rdfs:comment "A variable in % does not hold only values between 0 and 1." ;
+    sh:targetClass obo:CMEO_0000009 ;
+    sh:severity sh:Warning ;
+    sh:sparql [
+        sh:prefixes kgq: ;
+        sh:message "Unit is % but all values lie in [{?min}, {?value}]: fraction stored as %?" ;
+        sh:select """
+            SELECT $this ?min ?value WHERE {
+                $this obo:IAO_0000235 ?st . ?st obo:STATO_0000129 ?stype . FILTER(STR(?stype) = "continuous_variable")
+                $this obo:IAO_0000039 ?u . ?u obo:STATO_0000129 ?unit .
+                FILTER(LCASE(REPLACE(STR(?unit), "\\\\s", "")) IN ("%", "percent", "percentage"))
+                $this obo:IAO_0000235 ?stt . ?ds obo:IAO_0000136 ?stt . ?stat a obo:STATO_0000039 ; obo:IAO_0000136 ?ds .
+                ?stat obo:BFO_0000051 ?a . ?a a obo:STATO_0000150 ; obo:STATO_0000129 ?min .
+                ?stat obo:BFO_0000051 ?b . ?b a obo:STATO_0000151 ; obo:STATO_0000129 ?value .
+                ?stat obo:BFO_0000051 ?q . ?q a obo:STATO_0000047 ; rdfs:label ?ulabel ; obo:STATO_0000129 ?n . FILTER(STR(?ulabel) = "number of unique values")
+                FILTER(xsd:double(STR(?min)) >= 0 && xsd:double(STR(?value)) > 0
+                    && xsd:double(STR(?value)) <= 1 && xsd:double(STR(?n)) > 3)
+            }""" ] .
+
+kgq:Q25_fraction_above_one a sh:NodeShape ;
+    rdfs:comment "A variable whose unit is a proportion of a whole (L/L, fraction) does not exceed 1. Ratios (INR, cholesterol/HDL) can, so they are not included." ;
+    sh:targetClass obo:CMEO_0000009 ;
+    sh:severity sh:Warning ;
+    sh:sparql [
+        sh:prefixes kgq: ;
+        sh:message "Unit is a fraction ('{?unit}') but the maximum is {?value}: % stored as fraction?" ;
+        sh:select """
+            SELECT $this ?unit ?value WHERE {
+                $this obo:IAO_0000039 ?u . ?u obo:STATO_0000129 ?unit .
+                FILTER(LCASE(REPLACE(STR(?unit), "\\\\s", "")) IN ("l/l", "fraction", "{fraction}"))
+                $this obo:IAO_0000235 ?stt . ?ds obo:IAO_0000136 ?stt . ?stat a obo:STATO_0000039 ; obo:IAO_0000136 ?ds .
+                ?stat obo:BFO_0000051 ?b . ?b a obo:STATO_0000151 ; obo:STATO_0000129 ?value .
+                FILTER(xsd:double(STR(?value)) > 1)
+            }""" ] .
+
+kgq:Q26_min_above_max a sh:NodeShape ;
+    rdfs:comment "Minimum is not larger than maximum." ;
+    sh:targetClass obo:CMEO_0000009 ;
+    sh:severity sh:Violation ;
+    sh:sparql [
+        sh:prefixes kgq: ;
+        sh:message "Minimum {?min} is larger than maximum {?value}." ;
+        sh:select """
+            SELECT $this ?min ?value WHERE {
+                $this obo:IAO_0000235 ?stt . ?ds obo:IAO_0000136 ?stt . ?stat a obo:STATO_0000039 ; obo:IAO_0000136 ?ds .
+                ?stat obo:BFO_0000051 ?a . ?a a obo:STATO_0000150 ; obo:STATO_0000129 ?min .
+                ?stat obo:BFO_0000051 ?b . ?b a obo:STATO_0000151 ; obo:STATO_0000129 ?value .
+                FILTER(xsd:double(STR(?min)) > xsd:double(STR(?value)))
+            }""" ] .
+
+kgq:Q27_more_values_than_categories a sh:NodeShape ;
+    rdfs:comment "The data hold no more distinct values than the declared categories plus the declared missing codes. The EDA's unique count includes at most one 'empty' value, so an excess of 2 or more is certain." ;
+    sh:targetClass obo:CMEO_0000009 ;
+    sh:severity sh:Violation ;
+    sh:sparql [
+        sh:prefixes kgq: ;
+        sh:message "{?declared} categories and {?missing} missing code(s) declared, but the data hold {?value} distinct values (one may be 'empty')." ;
+        sh:select """
+            SELECT $this (COUNT(DISTINCT ?c) AS ?declared) (SAMPLE(?nm) AS ?missing) (SAMPLE(?n) AS ?value) WHERE {
+                $this obo:OBI_0001938 ?c . ?c a obo:OBI_0001930 .
+                $this obo:IAO_0000235 ?stt . ?ds obo:IAO_0000136 ?stt . ?stat a obo:STATO_0000039 ; obo:IAO_0000136 ?ds .
+                ?stat obo:BFO_0000051 ?q . ?q a obo:STATO_0000047 ; rdfs:label ?ulabel ; obo:STATO_0000129 ?n . FILTER(STR(?ulabel) = "number of unique values")
+                OPTIONAL {
+                    $this obo:OBI_0001938 ?m .
+                    ?m a obo:CMEO_0000028 ; obo:STATO_0000129 ?codes .
+                }
+                BIND(REPLACE(REPLACE(COALESCE(STR(?codes), ""), "\\\\s", ""), "[/;,]", "|") AS ?mc)
+                BIND(IF(STRLEN(?mc) = 0, 0, STRLEN(?mc) - STRLEN(REPLACE(?mc, "\\\\|", "")) + 1) AS ?nm)
+            }
+            GROUP BY $this
+            HAVING (xsd:double(STR(SAMPLE(?n))) - COUNT(DISTINCT ?c) - SAMPLE(?nm) >= 2)""" ] .
+
+kgq:Q28_categories_not_observed a sh:NodeShape ;
+    rdfs:comment "Every declared category occurs in the data (fewer distinct values than declared categories means some never occur)." ;
+    sh:targetClass obo:CMEO_0000009 ;
+    sh:severity sh:Info ;
+    sh:sparql [
+        sh:prefixes kgq: ;
+        sh:message "{?declared} categories declared, but the data hold only {?value} distinct values." ;
+        sh:select """
+            SELECT $this (COUNT(DISTINCT ?c) AS ?declared) (SAMPLE(?n) AS ?value) WHERE {
+                $this obo:OBI_0001938 ?c . ?c a obo:OBI_0001930 .
+                $this obo:IAO_0000235 ?stt . ?ds obo:IAO_0000136 ?stt . ?stat a obo:STATO_0000039 ; obo:IAO_0000136 ?ds .
+                ?stat obo:BFO_0000051 ?q . ?q a obo:STATO_0000047 ; rdfs:label ?ulabel ; obo:STATO_0000129 ?n . FILTER(STR(?ulabel) = "number of unique values")
+            }
+            GROUP BY $this
+            HAVING (xsd:double(STR(SAMPLE(?n))) < COUNT(DISTINCT ?c))""" ] .

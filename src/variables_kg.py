@@ -22,7 +22,8 @@ from .utils import (
     create_code_uri,
     split_categories,
     has_real_value,
-    get_var_uri
+    get_var_uri,
+    term_iri,
 )
 from typing import Optional, Any
 
@@ -38,7 +39,9 @@ def add_category_annotation(g: Graph, variable_uri: URIRef, category: str, cohor
         return g
     category_ = category.strip().lower().replace(' ','_')
     category_uri = URIRef(f"{variable_uri}/category/{category_}")
-    g.add((category_uri, RDF.type, OntologyNamespaces.CMEO.value.category, cohort_uri))
+    # CMEO 'category' is obsolete (the grouping is now the subset CMEO:0000085 in the
+    # ontology). The variable's domain stays an annotation node, typed as a SKOS concept.
+    g.add((category_uri, RDF.type, OntologyNamespaces.SKOS.value.Concept, cohort_uri))
     g.add((variable_uri, OntologyNamespaces.SIO.value.has_annotation, category_uri, cohort_uri))
     g.add((category_uri, OntologyNamespaces.CMEO.value.has_value, Literal(category_), cohort_uri))
     return g
@@ -113,7 +116,7 @@ def process_variables_metadata_file(file_path:str, study_metadata_graph_file_pat
                     unit = row['units'] if pd.notna(row['units']) else None,
                     var_label = row['variablelabel'] if pd.notna(row['variablelabel']) else None,
                 )
-            g.add((statistical_type_uri, RDF.type, URIRef(f"{OntologyNamespaces.CMEO.value}{statistical_type}"), cohort_graph))
+            g.add((statistical_type_uri, RDF.type, term_iri(statistical_type), cohort_graph))
             g.add((statistical_type_uri, OntologyNamespaces.CMEO.value.has_value, Literal(statistical_type, datatype=XSD.string), cohort_graph))
             g.add((var_uri, OntologyNamespaces.IAO.value.is_denoted_by, statistical_type_uri, cohort_graph))
             g.add((statistical_type_uri, OntologyNamespaces.IAO.value.denotes, var_uri, cohort_graph))
@@ -377,8 +380,9 @@ def add_numeric_statistic_generic(
     specific_stat_uri = URIRef(f"{statistic_uri}/{uri_suffix}")
 
     # 3. Add Triples
-    # Add Type
+    # Add Type (several statistics share a STATO class, e.g. count; the label keeps them apart)
     g.add((specific_stat_uri, RDF.type, stat_rdf_type, cohort_uri))
+    g.add((specific_stat_uri, RDFS.label, Literal(uri_suffix.strip("_").replace("_", " "), datatype=XSD.string), cohort_uri))
     
     # Add Value
     g.add((specific_stat_uri, OntologyNamespaces.CMEO.value.has_value, Literal(final_value, datatype=xsd_type), cohort_uri))
@@ -924,7 +928,7 @@ def add_composite_concepts_info(g: Graph, linked_uri: URIRef, concepts: list[Con
         code_uri = create_code_uri(code=code, cohort_uri=cohort_uri)
         label = concept.standard_label.strip().replace("\n","")
         omop_id = concept.omop_id
-        g.add((code_uri, RDF.type, OntologyNamespaces.SKOS.value.concept,cohort_uri))
+        g.add((code_uri, RDF.type, OntologyNamespaces.SKOS.value.Concept,cohort_uri))
         g.add((code_uri, RDFS.label, Literal(label, datatype=XSD.string),cohort_uri))
         g.add((code_uri, OntologyNamespaces.CMEO.value.has_value, Literal(code, datatype=XSD.string),cohort_uri))
         omop_id_uri = URIRef(f"{OntologyNamespaces.OMOP.value}{omop_id}")
@@ -961,7 +965,7 @@ def add_solo_concept_info(g: Graph, linked_uri: URIRef, concept: Concept, cohort
     omop_id = concept.omop_id
     code_uri = create_code_uri(code, cohort_uri)
  
-    g.add((code_uri, RDF.type, OntologyNamespaces.SKOS.value.concept,cohort_uri))
+    g.add((code_uri, RDF.type, OntologyNamespaces.SKOS.value.Concept,cohort_uri))
     g.add((code_uri, OntologyNamespaces.OBI.value.is_specified_output_of, data_standardization_uri,cohort_uri))
     g.add((data_standardization_uri, OntologyNamespaces.OBI.value.has_specified_output, code_uri,cohort_uri))
     g.add((code_uri, RDFS.label, Literal(label, datatype=XSD.string),cohort_uri))

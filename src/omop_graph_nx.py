@@ -296,9 +296,10 @@ class OmopGraphNX:
 
     def get_node_attr(self, nid, attr):
         try:
-            if attr in ('vocabulary', 'concept_name', 'name', 'concept_class', 'domain', 'concept_domain'):
+            if attr in ('vocabulary', 'concept_name', 'name', 'concept_class', 'domain', 'concept_domain',
+                        'code', 'concept_code'):
                 col = {'name': 'concept_name', 'vocabulary': 'concept_vocabulary',
-                       'domain': 'concept_domain'}.get(
+                       'domain': 'concept_domain', 'code': 'concept_code'}.get(
                     attr, f'concept_{attr}' if 'concept' not in attr else attr)
                 meta = self.graph.graph.get('meta')
                 if meta is None or col not in meta.columns:

@@ -1,88 +1,96 @@
 import re
 from src.config import settings
+from src.utils import sparql_prefixes, term_iri
+
+
+class _Terms:
+    """T.minimum_value -> <ontology IRI>, from the same table the KG generator uses,
+    so the queries and the graph cannot drift apart."""
+    def __getattr__(self, name):
+        if name.startswith("_"):
+            raise AttributeError(name)
+        return f"<{term_iri(name)}>"
+
+
+T = _Terms()
 
 class SPARQLQueryBuilder:
     """Responsible solely for constructing valid SPARQL queries."""
     
-    PREFIXES = """
-        PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
-        PREFIX sio:  <http://semanticscience.org/ontology/sio.owl/>
-        PREFIX rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
-        PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
-        PREFIX dc:   <http://purl.org/dc/elements/1.1/>
-        PREFIX iao:  <http://purl.obolibrary.org/obo/iao.owl/>
-        PREFIX cmeo: <https://w3id.org/CMEO/>
-        PREFIX obi: <http://purl.obolibrary.org/obo/obi.owl/>
-        PREFIX stato: <http://purl.obolibrary.org/obo/stato.owl/>
-        PREFIX ro:    <http://purl.obolibrary.org/obo/ro.owl/>
-        PREFIX xsd:   <http://www.w3.org/2001/XMLSchema#> 
-        PREFIX bfo: <http://purl.obolibrary.org/obo/bfo.owl/>
-    """
+    PREFIXES = sparql_prefixes()
     METADATA_GRAPH = "https://w3id.org/CMEO/graph/studies_metadata"
     GRAPHS_URI = settings.GRAPH_REPO
 
+    @staticmethod
+    def literal(value: str) -> str:
+        """A SPARQL string literal for value. Escapes \\ first, then ", so a
+        name like height"cm or dose\\day still matches the stored identifier
+        instead of breaking the query; the server returns the original value."""
+        return '"' + str(value).replace("\\", "\\\\").replace('"', '\\"') + '"'
+
+
+
+    @classmethod
+    def _alignment_side(cls, study: str, side: str) -> str:
+        """One study's coded variables, grouped by main OMOP concept.
+
+        Every value reaching an aggregate is bound: Oxigraph >= 0.4.7 treats an
+        unbound value inside GROUP_CONCAT as an error and blanks the whole
+        group, which is what emptied every concept shared by both studies.
+        """
+        return f"""
+                SELECT ?omop_id
+                    (SAMPLE(?lbl) AS ?{side}_lbl)
+                    (SAMPLE(?val) AS ?{side}_code)
+                    (GROUP_CONCAT(DISTINCT ?de_str; SEPARATOR="||") AS ?{side}_de_uris)
+                    (GROUP_CONCAT(DISTINCT ?combined; SEPARATOR="||") AS ?{side}_definition)
+                    (GROUP_CONCAT(DISTINCT ?domain; SEPARATOR="||") AS ?{side}_domain)
+                WHERE {{
+                    GRAPH <{cls.GRAPHS_URI}/{study}> {{
+                        ?de a {T.data_element} ;
+                            rdfs:label ?var_label ;
+                            dc:identifier ?var ;
+                            skos:closeMatch ?codeSet .
+                        ?codeSet rdf:_1 ?codeNode .
+                        ?codeNode rdfs:label ?lbl ;
+                                  {T.has_value} ?val ;
+                                  {T.denotes}/{T.has_value} ?omop_id .
+                        OPTIONAL {{ ?de {T.has_attribute}/skos:closeMatch/rdfs:label ?vis_label . }}
+                        OPTIONAL {{ ?de {T.has_annotation}/{T.has_value} ?domain_val . }}
+                        BIND(CONCAT(?var, ";;", ?var_label, ";;", COALESCE(?vis_label, "N/A")) AS ?combined)
+                        BIND(COALESCE(?domain_val, "") AS ?domain)
+                        BIND(STR(?de) AS ?de_str)
+                    }}
+                }}
+                GROUP BY ?omop_id"""
 
     @classmethod
     def build_alignment_query(cls, source: str, target: str) -> str:
-        # Optimized query structure
-        query= f""" 
+        # Each study is grouped on its own, then the two are merged per concept.
+        # A concept yields at most one row per side, so the outer GROUP_CONCAT
+        # with an empty separator just picks that side's value (or ""). The
+        # concept label and code prefer the source study's, so they no longer
+        # depend on which row SAMPLE happens to pick.
+        query = f"""
             {cls.PREFIXES}
             SELECT ?omop_id
-            (SAMPLE(?lbl) AS ?code_label)
-            (SAMPLE(?val) AS ?code_value)
-            (GROUP_CONCAT(DISTINCT ?src_de_str; SEPARATOR="||") AS ?source_de_uris)
-            (GROUP_CONCAT(DISTINCT ?tgt_de_str; SEPARATOR="||") AS ?target_de_uris)
-            (GROUP_CONCAT(DISTINCT ?src_combined; SEPARATOR="||") AS ?source_definition)
-            (GROUP_CONCAT(DISTINCT ?tgt_combined; SEPARATOR="||") AS ?target_definition)
-            (GROUP_CONCAT(DISTINCT ?src_val; SEPARATOR="||") AS ?source_domain)
-            (GROUP_CONCAT(DISTINCT ?tgt_val; SEPARATOR="||") AS ?target_domain)
+            (IF(GROUP_CONCAT(COALESCE(?src_lbl, ""); SEPARATOR="") != "",
+                GROUP_CONCAT(COALESCE(?src_lbl, ""); SEPARATOR=""),
+                GROUP_CONCAT(COALESCE(?tgt_lbl, ""); SEPARATOR="")) AS ?code_label)
+            (IF(GROUP_CONCAT(COALESCE(?src_code, ""); SEPARATOR="") != "",
+                GROUP_CONCAT(COALESCE(?src_code, ""); SEPARATOR=""),
+                GROUP_CONCAT(COALESCE(?tgt_code, ""); SEPARATOR="")) AS ?code_value)
+            (GROUP_CONCAT(COALESCE(?src_de_uris, ""); SEPARATOR="") AS ?source_de_uris)
+            (GROUP_CONCAT(COALESCE(?tgt_de_uris, ""); SEPARATOR="") AS ?target_de_uris)
+            (GROUP_CONCAT(COALESCE(?src_definition, ""); SEPARATOR="") AS ?source_definition)
+            (GROUP_CONCAT(COALESCE(?tgt_definition, ""); SEPARATOR="") AS ?target_definition)
+            (GROUP_CONCAT(COALESCE(?src_domain, ""); SEPARATOR="") AS ?source_domain)
+            (GROUP_CONCAT(COALESCE(?tgt_domain, ""); SEPARATOR="") AS ?target_domain)
             WHERE {{
-                {{
-                    SELECT ?omop_id  ?lbl ?val ?src_de_str  ?src_combined ?src_val 
-                    WHERE {{
-                        GRAPH <{cls.GRAPHS_URI}/{source}> {{
-                             ?deA a cmeo:data_element ; 
-                                rdfs:label ?src_var_label ;
-                                dc:identifier ?src_var ;
-                                  skos:closeMatch ?codeSetA .
-                             ?codeSetA rdf:_1 ?codeNodeA .
-                             ?codeNodeA rdfs:label ?lbl ;
-                                        cmeo:has_value ?val ;
-                                        iao:denotes/cmeo:has_value ?omop_id .
-                             OPTIONAL {{ ?deA sio:has_attribute/skos:closeMatch/rdfs:label ?src_vis_label . }}
-                             OPTIONAL {{ ?deA sio:has_annotation/cmeo:has_value ?src_val . }}
-                            BIND(IF(BOUND(?src_vis_label), 
-                                CONCAT(?src_var, ";;", ?src_var_label, ";;", ?src_vis_label), 
-                                CONCAT(?src_var, ";;", ?src_var_label, ";;N/A")
-                            ) AS ?src_combined)
-
-                            BIND(STR(?deA) AS ?src_de_str)
-                        }}
-                    }}
+                {{ {cls._alignment_side(source, "src")}
                 }}
                 UNION
-                {{
-                     SELECT ?omop_id ?lbl ?val ?tgt_de_str ?tgt_combined ?tgt_val 
-                    WHERE {{
-                        GRAPH <{cls.GRAPHS_URI}/{target}> {{
-                             ?deB a cmeo:data_element ; 
-                                rdfs:label ?tgt_var_label ;
-                                dc:identifier ?tgt_var ;
-                                  skos:closeMatch ?codeSetB .
-                             ?codeSetB rdf:_1 ?codeNodeB .
-                             ?codeNodeB rdfs:label ?lbl ;
-                                        cmeo:has_value ?val ;
-                                        iao:denotes/cmeo:has_value ?omop_id .
-                             OPTIONAL {{ ?deB sio:has_attribute/skos:closeMatch/rdfs:label ?tgt_vis_label . }}
-                             OPTIONAL {{ ?deB sio:has_annotation/cmeo:has_value ?tgt_val . }}
-                            BIND(IF(BOUND(?tgt_vis_label), 
-                            CONCAT(?tgt_var, ";;", ?tgt_var_label, ";;", ?tgt_vis_label), 
-                            CONCAT(?tgt_var, ";;", ?tgt_var_label, ";;N/A")
-                        ) AS ?tgt_combined)
-
-                        BIND(STR(?deB) AS ?tgt_de_str)
-                        }}
-                    }}
+                {{ {cls._alignment_side(target, "tgt")}
                 }}
             }}
             GROUP BY ?omop_id
@@ -92,12 +100,11 @@ class SPARQLQueryBuilder:
         # print(query)
         return query
 
-    # query_builder.py — add new method
 
-    @classmethod
+    
 
 
-   
+    @classmethod   
     def build_unmapped_variables_query(cls, study: str, use_filter:bool=False) -> str:
         """Variables with no skos:closeMatch — raw label/visit/unit/stat for NE mode."""
         if use_filter:
@@ -106,16 +113,16 @@ class SPARQLQueryBuilder:
             SELECT ?var ?var_label ?visit_label ?domain_val ?stat_label ?unit_label
             WHERE {{
                 GRAPH <{cls.GRAPHS_URI}/{study}> {{
-                    ?de a cmeo:data_element ;
+                    ?de a {T.data_element} ;
                         dc:identifier ?var ;
                         rdfs:label ?var_label .
                     FILTER NOT EXISTS {{ ?de skos:closeMatch ?any }}
-                    OPTIONAL {{ ?de iao:is_denoted_by/cmeo:has_value ?stat_label. }}
-                    OPTIONAL {{ ?de sio:has_attribute ?visit.
-                                ?visit a cmeo:visit_type;
-                                  cmeo:has_value ?visit_label. }}
-                    OPTIONAL {{ ?de sio:has_annotation/cmeo:has_value ?domain_val. }}
-                    OPTIONAL {{ ?de obi:has_measurement_unit_label/cmeo:has_value ?unit_label. }}
+                    OPTIONAL {{ ?de {T.is_denoted_by}/{T.has_value} ?stat_label. }}
+                    OPTIONAL {{ ?de {T.has_attribute} ?visit.
+                                ?visit a {T.visit_type};
+                                  {T.has_value} ?visit_label. }}
+                    OPTIONAL {{ ?de {T.has_annotation}/{T.has_value} ?domain_val. }}
+                    OPTIONAL {{ ?de {T.has_measurement_unit_label}/{T.has_value} ?unit_label. }}
                 }}
             }}
             """
@@ -125,16 +132,16 @@ class SPARQLQueryBuilder:
             SELECT ?var ?var_label ?visit_label ?domain_val ?stat_label ?unit_label
             WHERE {{
                 GRAPH <{cls.GRAPHS_URI}/{study}> {{
-                    ?de a cmeo:data_element ;
+                    ?de a {T.data_element} ;
                         dc:identifier ?var ;
                         rdfs:label ?var_label .
                   
-                    OPTIONAL {{ ?de iao:is_denoted_by/cmeo:has_value ?stat_label. }}
-                    OPTIONAL {{ ?de sio:has_attribute ?visit.
-                                  ?visit a cmeo:visit_type;
-                                  cmeo:has_value ?visit_label . }}
-                    OPTIONAL {{ ?de sio:has_annotation/cmeo:has_value ?domain_val. }}
-                    OPTIONAL {{ ?de obi:has_measurement_unit_label/cmeo:has_value ?unit_label. }}
+                    OPTIONAL {{ ?de {T.is_denoted_by}/{T.has_value} ?stat_label. }}
+                    OPTIONAL {{ ?de {T.has_attribute} ?visit.
+                                  ?visit a {T.visit_type};
+                                  {T.has_value} ?visit_label . }}
+                    OPTIONAL {{ ?de {T.has_annotation}/{T.has_value} ?domain_val. }}
+                    OPTIONAL {{ ?de {T.has_measurement_unit_label}/{T.has_value} ?unit_label. }}
                 }}
             }}
             """
@@ -150,10 +157,13 @@ class SPARQLQueryBuilder:
         (SAMPLE(?_data_type_val) AS ?data_type_val)
         (MAX(?_min_v)            AS ?min_val)
         (MAX(?_max_v)            AS ?max_val)
-        (GROUP_CONCAT(DISTINCT STR(?cat_omop_id); SEPARATOR="||") AS ?cat_omop_ids)
-        (GROUP_CONCAT(DISTINCT ?_catL; SEPARATOR="||") AS ?all_cat_labels)
-        (GROUP_CONCAT(DISTINCT ?_catV; SEPARATOR="||") AS ?all_original_cat_values)
-        (GROUP_CONCAT(DISTINCT ?_catPair; SEPARATOR="||") AS ?all_cat_pairs)
+        # COALESCE: on Oxigraph >= 0.4.7 one unbound value (e.g. a category with
+        # no OMOP code) blanks the whole GROUP_CONCAT for the variable. The ""
+        # parts it leaves are skipped by the parser (_split_labels / _split_ids).
+        (GROUP_CONCAT(DISTINCT COALESCE(STR(?cat_omop_id), ""); SEPARATOR="||") AS ?cat_omop_ids)
+        (GROUP_CONCAT(DISTINCT COALESCE(?_catL, ""); SEPARATOR="||") AS ?all_cat_labels)
+        (GROUP_CONCAT(DISTINCT COALESCE(?_catV, ""); SEPARATOR="||") AS ?all_original_cat_values)
+        (GROUP_CONCAT(DISTINCT COALESCE(?_catPair, ""); SEPARATOR="||") AS ?all_cat_pairs)
 
         (SAMPLE(?_ordered_code_labels) AS ?code_label)
         (SAMPLE(?_ordered_code_values) AS ?code_value)
@@ -162,50 +172,50 @@ class SPARQLQueryBuilder:
         WHERE {{
             GRAPH <{cls.GRAPHS_URI}/{source}> {{
             VALUES ?identifier {{ {values_str} }}
-            ?dataElement a cmeo:data_element ;
+            ?dataElement a {T.data_element} ;
                 dc:identifier ?identifier .
 
             OPTIONAL {{
-            ?dataElement iao:is_denoted_by/cmeo:has_value ?_stat_label .
+            ?dataElement {T.is_denoted_by}/{T.has_value} ?_stat_label .
         }}
 
             OPTIONAL {{
-            ?dataElement sio:has_attribute ?dt .
-            ?dt a cmeo:data_type ;
-            cmeo:has_value ?_data_type_val .
+            ?dataElement {T.has_attribute} ?dt .
+            ?dt a {T.data_type} ;
+            {T.has_value} ?_data_type_val .
         }}
 
             BIND(URI(CONCAT(STR(?dataElement), "/statistic")) AS ?statUri)
 
             OPTIONAL {{
-            ?statUri ro:has_part ?minPart .
-            ?minPart a stato:minimum_value ;
-            cmeo:has_value ?_min_v .
+            ?statUri {T.has_part} ?minPart .
+            ?minPart a {T.minimum_value} ;
+            {T.has_value} ?_min_v .
         }}
 
             OPTIONAL {{
-            ?statUri ro:has_part ?maxPart .
-            ?maxPart a stato:maximum_value ;
-            cmeo:has_value ?_max_v .
+            ?statUri {T.has_part} ?maxPart .
+            ?maxPart a {T.maximum_value} ;
+            {T.has_value} ?_max_v .
         }}
 
         #unit
         OPTIONAL {{
-            ?dataElement obi:has_measurement_unit_label ?unit_node .
+            ?dataElement {T.has_measurement_unit_label} ?unit_node .
 
             OPTIONAL {{
-                ?unit_node skos:closeMatch/cmeo:has_value ?standard_unit .
+                ?unit_node skos:closeMatch/{T.has_value} ?standard_unit .
                 }}
 
             OPTIONAL {{
-                ?unit_node cmeo:has_value ?raw_unit .
+                ?unit_node {T.has_value} ?raw_unit .
             }}
 
             # The unit's OMOP concept. UCUM strings are spelled many ways for one
             # unit across these dictionaries, so the id is what says two units are
             # the same; the label is kept for display and for the conversion table.
             OPTIONAL {{
-                ?unit_node skos:closeMatch/iao:denotes/cmeo:has_value ?_unit_omop_id .
+                ?unit_node skos:closeMatch/{T.denotes}/{T.has_value} ?_unit_omop_id .
             }}
 
             BIND(COALESCE(?standard_unit, ?raw_unit) AS ?_unit_label)
@@ -213,14 +223,14 @@ class SPARQLQueryBuilder:
 
             # Categories
             OPTIONAL {{
-            ?cat_val a obi:categorical_value_specification ;
-                obi:specifies_value_of ?dataElement ;
-                cmeo:has_value ?_catV .
+            ?cat_val a {T.categorical_value_specification} ;
+                {T.specifies_value_of} ?dataElement ;
+                {T.has_value} ?_catV .
             OPTIONAL {{
             ?cat_val skos:closeMatch ?cat_code .
-            ?cat_code a skos:concept ;
+            ?cat_code a skos:Concept ;
             rdfs:label ?_catL .
-            OPTIONAL {{ ?cat_code iao:denotes/cmeo:has_value ?cat_omop_id . }}
+            OPTIONAL {{ ?cat_code {T.denotes}/{T.has_value} ?cat_omop_id . }}
         
         }}
         BIND(CONCAT(STR(?_catV), "=", COALESCE(STR(?_catL), STR(?_catV))) AS ?_catPair)
@@ -238,10 +248,10 @@ class SPARQLQueryBuilder:
             SELECT ?dataElement ?cL ?cV ?omop_id ?seqNum WHERE {{
             ?dataElement skos:closeMatch ?codeSet .
             ?codeSet ?seqPred ?codeNode .
-            ?codeNode a skos:concept ;
+            ?codeNode a skos:Concept ;
             rdfs:label ?cL ;
-            cmeo:has_value ?cV;
-            iao:denotes/cmeo:has_value ?omop_id.
+            {T.has_value} ?cV;
+            {T.denotes}/{T.has_value} ?omop_id.
             FILTER(STRSTARTS(STR(?seqPred), CONCAT(STR(rdf:), "_")))
             BIND(xsd:integer(STRAFTER(STR(?seqPred), CONCAT(STR(rdf:), "_"))) AS ?seqNum)
         }}
@@ -290,76 +300,76 @@ class SPARQLQueryBuilder:
                 WHERE {{
                     GRAPH <{cls.METADATA_GRAPH}> {{
 
-                        ?sde a obi:study_design_execution ;
+                        ?sde a {T.study_design_execution} ;
                             dc:identifier ?study_name .
                         FILTER(REPLACE(LCASE(STR(?study_name)), "[ _-]+", " ") = "{study_key}")
 
                         # ── Study design ──
-                        OPTIONAL {{ ?sde ro:concretizes ?sdA . ?sdA cmeo:has_value ?design_val . }}
+                        OPTIONAL {{ ?sde {T.concretizes} ?sdA . ?sdA {T.has_value} ?design_val . }}
 
                         # ── Study descriptor ──
                         OPTIONAL {{
-                            ?sde ro:concretizes ?sdB .
-                            ?sdB iao:is_about ?desc .
-                            ?desc a sio:descriptor ; rdfs:label ?type_label .
+                            ?sde {T.concretizes} ?sdB .
+                            ?sdB {T.is_about} ?desc .
+                            ?desc a {T.descriptor} ; rdfs:label ?type_label .
                         }}
 
                         # ── Number of participants ──
                         OPTIONAL {{
-                            ?sde ro:concretizes ?sdC .
-                            ?sdC ro:has_part ?protC .
-                            ?protC a obi:protocol ; ro:has_part ?np .
-                            ?np a cmeo:number_of_participants ; cmeo:has_value ?n_val .
+                            ?sde {T.concretizes} ?sdC .
+                            ?sdC {T.has_part} ?protC .
+                            ?protC a {T.protocol} ; {T.has_part} ?np .
+                            ?np a {T.number_of_participants} ; {T.has_value} ?n_val .
                         }}
 
                         # ── Population morbidity ──
                         OPTIONAL {{
-                            ?sde ro:concretizes ?sdD .
-                            ?sdD ro:has_part ?protD .
-                            ?protD ro:has_part ?eligD .
-                            ?eligD a obi:eligibility_criterion ; ro:is_concretized_by ?enrollD .
-                            ?enrollD ro:has_output ?popD .
-                            ?popD ro:has_characteristic ?morb .
-                            ?morb a obi:morbidity ; rdfs:label ?morb_label .
+                            ?sde {T.concretizes} ?sdD .
+                            ?sdD {T.has_part} ?protD .
+                            ?protD {T.has_part} ?eligD .
+                            ?eligD a {T.eligibility_criterion} ; {T.is_concretized_by} ?enrollD .
+                            ?enrollD {T.has_output} ?popD .
+                            ?popD {T.has_characteristic} ?morb .
+                            ?morb a {T.morbidity} ; rdfs:label ?morb_label .
                         }}
 
                         # ── Age distribution ──
                         OPTIONAL {{
-                            ?sde ro:concretizes ?sdE .
-                            ?sdE ro:has_part ?protE .
-                            ?protE ro:has_part ?eligE .
-                            ?eligE a obi:eligibility_criterion ; ro:is_concretized_by ?enrollE .
-                            ?enrollE ro:has_output ?popE .
-                            ?popE ro:has_characteristic ?age .
-                            ?age a obi:age_distribution ; cmeo:has_value ?age_val .
+                            ?sde {T.concretizes} ?sdE .
+                            ?sdE {T.has_part} ?protE .
+                            ?protE {T.has_part} ?eligE .
+                            ?eligE a {T.eligibility_criterion} ; {T.is_concretized_by} ?enrollE .
+                            ?enrollE {T.has_output} ?popE .
+                            ?popE {T.has_characteristic} ?age .
+                            ?age a {T.age_distribution} ; {T.has_value} ?age_val .
                         }}
 
                         # ── Population location ──
                         OPTIONAL {{
-                            ?sde ro:concretizes ?sdF .
-                            ?sdF ro:has_part ?protF .
-                            ?protF ro:has_part ?eligF .
-                            ?eligF a obi:eligibility_criterion ; ro:is_concretized_by ?enrollF .
-                            ?enrollF ro:has_output ?popF .
-                            ?site a bfo:site ; iao:is_about ?popF ; cmeo:has_value ?loc_val .
+                            ?sde {T.concretizes} ?sdF .
+                            ?sdF {T.has_part} ?protF .
+                            ?protF {T.has_part} ?eligF .
+                            ?eligF a {T.eligibility_criterion} ; {T.is_concretized_by} ?enrollF .
+                            ?enrollF {T.has_output} ?popF .
+                            ?site a {T.site} ; {T.is_about} ?popF ; {T.has_value} ?loc_val .
                         }}
 
                         # ── Study objective ──
                         OPTIONAL {{
-                            ?sde ro:concretizes ?sdG .
-                            ?sdG ro:has_part ?protG .
-                            ?protG a obi:protocol ; ro:has_part ?obj .
-                            ?obj a obi:objective_specification ; cmeo:has_value ?obj_val .
+                            ?sde {T.concretizes} ?sdG .
+                            ?sdG {T.has_part} ?protG .
+                            ?protG a {T.protocol} ; {T.has_part} ?obj .
+                            ?obj a {T.objective_specification} ; {T.has_value} ?obj_val .
                         }}
 
                         # ── Inclusion criteria ──
                         OPTIONAL {{
-                            ?sde ro:concretizes ?sdH .
-                            ?sdH ro:has_part ?protH .
-                            ?protH ro:has_part ?eligH .
-                            ?eligH a obi:eligibility_criterion ; ro:has_part ?inc_crit .
-                            ?inc_crit a obi:inclusion_criterion ; ro:has_part ?inc_item .
-                            ?inc_item cmeo:has_value ?inc_val .
+                            ?sde {T.concretizes} ?sdH .
+                            ?sdH {T.has_part} ?protH .
+                            ?protH {T.has_part} ?eligH .
+                            ?eligH a {T.eligibility_criterion} ; {T.has_part} ?inc_crit .
+                            ?inc_crit a {T.inclusion_criterion} ; {T.has_part} ?inc_item .
+                            ?inc_item {T.has_value} ?inc_val .
                         }}
                     }}
                 }}

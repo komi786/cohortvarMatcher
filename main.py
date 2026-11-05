@@ -277,8 +277,8 @@ if __name__ == '__main__':
     select_relevant_studies = True
     embedding_mode = EmbeddingType.EH.value  # embedding_concepts
     mapping_mode = MappingType.OEH.value # ontology + embedding_concepts
-    create_study_metadata_graph(cohorts_metadata_file, recreate=False)             
-    create_cohort_specific_metadata_graph(cohort_file_path, recreate=False)      
+    create_study_metadata_graph(cohorts_metadata_file, recreate=True)             
+    create_cohort_specific_metadata_graph(cohort_file_path, recreate=True)      
     collection_name = f"studies_metadata_{model_name}_{embedding_mode}"      
     embedding_model, _ = get_model(model_name)     
     # llm_matcher = LocalLLMConceptMatcher(models=["llama3.3:70b", "llama3.1:latest"])

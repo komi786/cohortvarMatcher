@@ -194,3 +194,6 @@ data/studies_metadata.xlsx
 /docs
 /data/oxigraph
 /data/oxigraph_backup_0.4.0
+/analysis/adaptive_retrieval
+/tests
+/tests

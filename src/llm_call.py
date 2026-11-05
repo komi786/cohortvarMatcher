@@ -1646,7 +1646,7 @@ class LLMConceptMatcher:
                         {"role": "user", "content": prompt},
                     ],
                      "extra_body": {
-                        "reasoning_effort": "medium",
+                        "reasoning_effort": "xhigh",
                         "allowed_openai_params": ["reasoning_effort"],
                         "drop_params": True,
                     },

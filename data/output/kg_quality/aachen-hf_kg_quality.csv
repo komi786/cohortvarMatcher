@@ -1,0 +1,9 @@
+study,variable,label,check,severity,message,value,focus_node
+aachen-hf,moca,montreal cognitive assessment test,Q10_measurement_without_unit,Warning,Continuous numeric measurement without a unit.,,https://w3id.org/CMEO/aachen-hf/moca
+aachen-hf,adddiuretics,additional diuretics,Q12_category_count,Violation,multi_class_variable with 1 categories.,1,https://w3id.org/CMEO/aachen-hf/adddiuretics
+aachen-hf,arni,sacubitril/valsartan,Q12_category_count,Violation,multi_class_variable with 1 categories.,1,https://w3id.org/CMEO/aachen-hf/arni
+aachen-hf,ldlc,ldl-cholesterol,Q20_missing_code_as_bound,Violation,Maximum 997 is a declared missing code (997).,997,https://w3id.org/CMEO/aachen-hf/ldlc
+aachen-hf,sglt2dose,normalisation of sglt2,Q23_numeric_with_text_data,Violation,Data type is float but the data were not read as numbers (no median in the EDA).,float,https://w3id.org/CMEO/aachen-hf/sglt2dose
+aachen-hf,sglt2_dd,original dosage of sglt2 inhibitors,Q23_numeric_with_text_data,Violation,Data type is float but the data were not read as numbers (no median in the EDA).,float,https://w3id.org/CMEO/aachen-hf/sglt2_dd
+aachen-hf,arni_dd,original dosage of arni,Q23_numeric_with_text_data,Violation,Data type is float but the data were not read as numbers (no median in the EDA).,float,https://w3id.org/CMEO/aachen-hf/arni_dd
+aachen-hf,adddiuretics_dd,original dosage of additional diuretics,Q23_numeric_with_text_data,Violation,Data type is float but the data were not read as numbers (no median in the EDA).,float,https://w3id.org/CMEO/aachen-hf/adddiuretics_dd

@@ -298,6 +298,7 @@ class StudyMapper:
             node.unit_concept_id = _as_int(p.get("unit_omop_id")) if mapping_mode != MappingType.NE.value else node.unit_concept_id
             node.context_labels = _split_labels(p.get("composite_code_labels")) if mapping_mode != MappingType.NE.value else []
             node.context_ids = _split_ids(p.get("composite_code_omop_ids"))   if mapping_mode != MappingType.NE.value else []
+            node.context_codes = _split_labels(p.get("composite_code_values")) if mapping_mode != MappingType.NE.value else []
             node.category_labels = _split_labels(p.get("categories_labels"))
             node.category_ids = _split_ids(p.get("categories_omop_ids"))  if mapping_mode != MappingType.NE.value else []
             node.original_categories = _split_labels(p.get("original_categories"))
@@ -463,11 +464,9 @@ class StudyMapper:
                 variables=self._fetch_unmapped_variables(src_study, role="source"))
             tgt_col = VariableCollection(study=tgt_study,
                 variables=self._fetch_unmapped_variables(tgt_study, role="target"))
-
         else:
             query = SPARQLQueryBuilder.build_alignment_query(src_study, tgt_study)
             src_col, tgt_col = self._parse_sparql_results(query, src_study, tgt_study)
-        
         # ── Step 1b: Fetch unmapped variables (OEH/NE) ─────
         if mapping_mode == MappingType.OEH.value:
             for col, study in [(src_col, src_study), (tgt_col, tgt_study)]:

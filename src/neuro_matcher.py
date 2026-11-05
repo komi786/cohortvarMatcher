@@ -310,7 +310,7 @@ class NeuroSymbolicMatcher:
             for row in derived_rows:
                 row_visit = str(row.get('visit', '')).strip().lower()
                 if row_visit == visit:
-                    return row.get(key, default_name)
+                    return row.get(key) or default_name
             return default_name
 
         target_omop_id = int(standard_derived_variable[2])
@@ -397,9 +397,16 @@ class NeuroSymbolicMatcher:
                 f"derived_{variable_name}",
                 "target",
             )
-        
+            # A side that only computes the variable has no dictionary label;
+            # it falls back to the standard label.
+            source_label = _get_varname_for_visit(
+                source_derived_rows, src_visit, standard_derived_variable[1], "description")
+            target_label = _get_varname_for_visit(
+                target_derived_rows, tgt_visit, standard_derived_variable[1], "description")
+
             final_results.append({
                 "source": source_varname, "target": target_varname,
+                "source_label": source_label, "target_label": target_label,
                 "somop_id": target_omop_id, "tomop_id": target_omop_id,
                 "scode": standard_derived_variable[0], "slabel": standard_derived_variable[1],
                 "tcode": standard_derived_variable[0], "tlabel": standard_derived_variable[1],

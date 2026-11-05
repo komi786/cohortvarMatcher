@@ -189,6 +189,14 @@ class SearchInDbNames(unittest.TestCase):
         self.assertEqual(self.search(hits, with_names=True),
                          [(900, 0.9, ("t_anemia", "t_anemia_m6")), (900, 0.89, ("t_bleeding",))])
 
+    def test_point_without_omop_id_skipped(self):
+        # believe:epf_vasc_f is indexed with variable_omop_id "" in some collections;
+        # int("") used to crash the whole search.
+        for missing in ("", None, "nan"):
+            hits = [self.Hit(0.90, missing, "epf_vasc_f"), self.Hit(0.89, 900, "t_anemia")]
+            self.assertEqual(self.search(hits), [(900, 0.89)])
+            self.assertEqual(self.search(hits, with_names=True), [(900, 0.89, ("t_anemia",))])
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -1,0 +1,25 @@
+study,variable,label,check,severity,message,value,focus_node
+biostat-chf,mwt6_score2,6 minute walk test distance,Q10_measurement_without_unit,Warning,Continuous numeric measurement without a unit.,,https://w3id.org/CMEO/biostat-chf/mwt6_score2
+biostat-chf,eq5d_score2,eq5d score,Q10_measurement_without_unit,Warning,Continuous numeric measurement without a unit.,,https://w3id.org/CMEO/biostat-chf/eq5d_score2
+biostat-chf,eq5d_score1,eq5d score,Q10_measurement_without_unit,Warning,Continuous numeric measurement without a unit.,,https://w3id.org/CMEO/biostat-chf/eq5d_score1
+biostat-chf,mwt6_visit2,six minute walking test visit,Q12_category_count,Violation,multi_class_variable with 1 categories.,1,https://w3id.org/CMEO/biostat-chf/mwt6_visit2
+biostat-chf,echo_visit2,echocardiography visit baseline,Q12_category_count,Violation,multi_class_variable with 1 categories.,1,https://w3id.org/CMEO/biostat-chf/echo_visit2
+biostat-chf,kccq_visit2,kansas city cardiomyopathy questionnaire (kccq) 23-item visit,Q12_category_count,Violation,multi_class_variable with 1 categories.,1,https://w3id.org/CMEO/biostat-chf/kccq_visit2
+biostat-chf,mwt6_visit1,six minute walking test visit,Q12_category_count,Violation,multi_class_variable with 1 categories.,1,https://w3id.org/CMEO/biostat-chf/mwt6_visit1
+biostat-chf,ecg_visit2,ecg assessment visit - baseline,Q12_category_count,Violation,multi_class_variable with 1 categories.,1,https://w3id.org/CMEO/biostat-chf/ecg_visit2
+biostat-chf,eq5d_visit1,eq5d questionaire visit,Q12_category_count,Violation,multi_class_variable with 1 categories.,1,https://w3id.org/CMEO/biostat-chf/eq5d_visit1
+biostat-chf,xray_visit1,chest x-ray visit,Q12_category_count,Violation,multi_class_variable with 1 categories.,1,https://w3id.org/CMEO/biostat-chf/xray_visit1
+biostat-chf,xray_visit2,chest x-ray visit,Q12_category_count,Violation,multi_class_variable with 1 categories.,1,https://w3id.org/CMEO/biostat-chf/xray_visit2
+biostat-chf,kccq_visit1,kansas city cardiomyopathy questionnaire (kccq) 23-item visit,Q12_category_count,Violation,multi_class_variable with 1 categories.,1,https://w3id.org/CMEO/biostat-chf/kccq_visit1
+biostat-chf,symp_visit2,visit for symptoms,Q12_category_count,Violation,multi_class_variable with 1 categories.,1,https://w3id.org/CMEO/biostat-chf/symp_visit2
+biostat-chf,labv_visit2,lab visit follow-up,Q12_category_count,Violation,multi_class_variable with 1 categories.,1,https://w3id.org/CMEO/biostat-chf/labv_visit2
+biostat-chf,vis_visit1,visit number,Q12_category_count,Violation,multi_class_variable with 1 categories.,1,https://w3id.org/CMEO/biostat-chf/vis_visit1
+biostat-chf,ecg_visit1,ecg assessment visit - baseline,Q12_category_count,Violation,multi_class_variable with 1 categories.,1,https://w3id.org/CMEO/biostat-chf/ecg_visit1
+biostat-chf,labf_visit1,lab visit,Q12_category_count,Violation,multi_class_variable with 1 categories.,1,https://w3id.org/CMEO/biostat-chf/labf_visit1
+biostat-chf,symp_visit1,visit for symptoms,Q12_category_count,Violation,multi_class_variable with 1 categories.,1,https://w3id.org/CMEO/biostat-chf/symp_visit1
+biostat-chf,eq5d_visit2,eq5d questionaire visit,Q12_category_count,Violation,multi_class_variable with 1 categories.,1,https://w3id.org/CMEO/biostat-chf/eq5d_visit2
+biostat-chf,pe_visit2,9 month follow-up,Q12_category_count,Violation,multi_class_variable with 1 categories.,1,https://w3id.org/CMEO/biostat-chf/pe_visit2
+biostat-chf,echo_visit1,echocardiography visit baseline,Q12_category_count,Violation,multi_class_variable with 1 categories.,1,https://w3id.org/CMEO/biostat-chf/echo_visit1
+biostat-chf,pe_visit1,visit for physical examination,Q12_category_count,Violation,multi_class_variable with 1 categories.,1,https://w3id.org/CMEO/biostat-chf/pe_visit1
+biostat-chf,kccq_score142,sleep sitting up in a chair or with at least 3 pillows to prop you up because of shortness of breath over the past 2 weeks [kccq],Q28_categories_not_observed,Info,"7 categories declared, but the data hold only 6 distinct values.",6,https://w3id.org/CMEO/biostat-chf/kccq_score142
+biostat-chf,kccq_score141,sleep sitting up in a chair or with at least 3 pillows to prop you up because of shortness of breath over the past 2 weeks [kccq],Q28_categories_not_observed,Info,"7 categories declared, but the data hold only 6 distinct values.",6,https://w3id.org/CMEO/biostat-chf/kccq_score141

@@ -80,7 +80,9 @@ def create_cohort_specific_metadata_graph(dir_path, recreate=False):
                     if file.lower().endswith((".csv", ".xlsx")):
                         cohort_metadata_file = file
                     # Optionally single out an EDA JSON
-                    if os.path.basename(file).lower().startswith("eda") and file.lower().endswith(".json"):
+                    # if os.path.basename(file).lower().startswith("eda") and file.lower().endswith(".json"):
+                    if os.path.basename(file) and file.lower().endswith(".json"):
+
                         eda_file = file
                 # print(f"Processing cohort: {cohort_folder} at path: {cohort_path} for metadata file: {cohort_metadata_file}")
                 if cohort_metadata_file:
@@ -139,7 +141,10 @@ def concatenate_member_csvs_to_parent(
 ):
     """
     Concatenate member study CSVs into the parent study CSV.
-    Adds a 'member_study' column to track the origin of each row.
+    Each row keeps its 'member_study' column (the study whose dictionary holds
+    the target variable), so rows from the parent and from each member stay
+    distinguishable: a variable name can occur in both. The JSON's
+    'target_study' stays the parent.
     """
     parent_csv_path = f'{output_dir}/{source_study}_{parent_study}_{model_name}+{llm}_{mapping_mode}_full.csv'
     
@@ -149,8 +154,7 @@ def concatenate_member_csvs_to_parent(
     
     # Load parent CSV and add origin column
     parent_df = pd.read_csv(parent_csv_path)
-    parent_df['member_study'] = parent_study  # Mark rows as from parent
-    
+
     dfs_to_concat = [parent_df]
     
     # Load and append each member study CSV
@@ -159,7 +163,6 @@ def concatenate_member_csvs_to_parent(
         
         if os.path.exists(member_csv_path):
             member_df = pd.read_csv(member_csv_path)
-            member_df['member_study'] = member  # Mark rows as from member
             dfs_to_concat.append(member_df)
             # print(f"  📎 Appending {member} ({len(member_df)} rows) to {parent_study}")
             # delete memeber csv after appending
@@ -171,10 +174,6 @@ def concatenate_member_csvs_to_parent(
     # Concatenate all DataFrames
     if len(dfs_to_concat) > 1:
         combined_df = pd.concat(dfs_to_concat, ignore_index=True)
-        if 'member_study' in combined_df.columns:
-            # drop this column
-            combined_df.drop(columns=['member_study'], inplace=True)
-            
         # Save back to parent CSV (overwrites with combined data)
         combined_df.to_csv(parent_csv_path, encoding='utf-8',index=False)
         # print(f"✅ Combined {len(dfs_to_concat)} CSVs into {parent_study}: {len(combined_df)} total rows")
@@ -277,7 +276,7 @@ if __name__ == '__main__':
     model_name = "biolord"
     select_relevant_studies = True
     embedding_mode = EmbeddingType.EH.value  # embedding_concepts
-    mapping_mode = MappingType.OO.value # ontology + embedding_concepts
+    mapping_mode = MappingType.OEH.value # ontology + embedding_concepts
     create_study_metadata_graph(cohorts_metadata_file, recreate=False)             
     create_cohort_specific_metadata_graph(cohort_file_path, recreate=False)      
     collection_name = f"studies_metadata_{model_name}_{embedding_mode}"      
@@ -330,6 +329,7 @@ if __name__ == '__main__':
         csv_path = f'{run_output_dir}/{source_study}_{tstudy}_{model_name}+{llm_tag}_{mapping_mode}_full.csv'
         if not mapping_transformed.empty:
             mapping_transformed = mapping_transformed[mapping_transformed["harmonization_status"].str.strip().str.lower() != "not applicable"]
+        mapping_transformed.insert(0, "member_study", tstudy)
         mapping_transformed.to_csv(csv_path, index=False)
     tstudy_str = "_".join(target_studies)
     

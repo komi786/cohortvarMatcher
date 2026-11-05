@@ -8,8 +8,8 @@ load_dotenv()  # reads .env into os.environ
 @dataclass(frozen=True)
 class Settings:
     # Thresholds
-    ADAPTIVE_THRESHOLD: float = 0.5 # minimum score for adaptive retrival from vector db
-    ADAPTIVE_ALPHA = 0.8 # upper bound
+    ADAPTIVE_THRESHOLD: float = 0.5 # minimum score for adaptive retrival from vector db, use 0.45 for NE for article results
+    ADAPTIVE_ALPHA = 0.75 # upper bound, use 0.8 to reproduce article results
     LIMIT: int = 10 # limit for adaptive retrival from vector db
 
     DATE_HINTS: List[str] = field(default_factory=lambda: ["visit date", "date of visit", "date of event", "event date"])

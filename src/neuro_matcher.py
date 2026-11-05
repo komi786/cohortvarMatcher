@@ -5,7 +5,7 @@ import json
 import os
 from collections import defaultdict
 import pandas as pd
-from typing import Any, Dict, List, Set,Tuple
+from typing import Any, Dict, List
 from .llm_call import LLMConceptMatcher
 from .config import settings
 from .data_model import (
@@ -14,6 +14,7 @@ from .data_model import (
 )
 from .vector_db import search_category_by_id, search_in_db, _embed_cache,  _cache_key
 from .fuzz_match import FuzzyMatcher
+from .derived_variables import compute_derived_variables
 from .graph_similarity import (
     score_context,
     parse_post_cordinating_concepts_labels
@@ -234,203 +235,6 @@ class NeuroSymbolicMatcher:
 
 
 
-    # =================================================================
-    # Derived Variables (dict-based, converted at call site)
-    # cases examples:
-
-    #     one has bmi and other doesnot, but have parameters and dont care about direction. derive it
-    #     both has bmi and regardless they have parameters dont derive it
-    #     both have parameter but both side dont have variable, derive it
-    # =================================================================
-
-    def _extend_with_derived_variables(
-        self,
-        single_source: dict,
-        standard_derived_variable: tuple,
-        parameters_omop_ids: list,
-        variable_name: str,
-        category: str,
-        stats_type: str = "continuous_variable",
-        unit_label: str = "",
-    ) -> List[Dict]:
-        """Check if a derived variable can be synthesized. Returns list of match dicts."""
-        data_context = single_source.copy()
-
-        def _find_omop_id_rows(data_list: list, omop_code: int, code_key: str = "omop_id") -> list:
-            found = []
-            for row in data_list:
-                try:
-                    curr_val = int(row.get(code_key, 0))
-                except (ValueError, TypeError):
-                    continue
-                if curr_val == int(omop_code):
-                    found.append(row)
-            return found
-
-        def _get_parameter_visits(data: dict, parameters_codes: list, side: str = "source") -> Tuple[bool, Set[str]]:
-            code_key_mapped = "somop_id" if side == "source" else "tomop_id"
-            visit_key_mapped = "source_visit" if side == "source" else "target_visit"
-            per_param_visits: List[Set[str]] = []
-            for code in parameters_codes:
-                unmapped_rows = _find_omop_id_rows(data[side], code, code_key="omop_id")
-                mapped_rows = _find_omop_id_rows(data['mapped'], code, code_key=code_key_mapped)
-                visits_for_code: Set[str] = set()
-                if unmapped_rows:
-                    for row in unmapped_rows:
-                        v = str(row.get('visit', '')).strip().lower()
-                        if v:
-                            visits_for_code.add(v)
-                elif mapped_rows:
-                    for row in mapped_rows:
-                        v = str(row.get(visit_key_mapped, '')).strip().lower()
-                        if v:
-                            visits_for_code.add(v)
-                # A parameter with no visit-resolved occurrence cannot anchor a
-                # shared-visit derivation, so the side is not derivable.
-                if not visits_for_code:
-                    return False, set()
-                per_param_visits.append(visits_for_code)
-
-            if not per_param_visits:
-                return False, set()
-
-            # Derivation is only valid at visits where every parameter co-occurs.
-            shared_visits = set.intersection(*per_param_visits)
-            return (len(shared_visits) > 0), shared_visits
-
-        def _find_aligned_visit_pairs(source_visits: Set[str], target_visits: Set[str]) -> Dict[Tuple[str, str], bool]:
-            aligned_pairs = {}
-            for src_vis in source_visits:
-                for tgt_vis in target_visits:
-                    if FuzzyMatcher.check_visit_string(src_vis, tgt_vis):
-                        aligned_pairs[(src_vis, tgt_vis)] = True
-            return aligned_pairs
-
-        def _get_varname_for_visit(derived_rows: list, visit: str, default_name: str, key: str) -> str:
-            for row in derived_rows:
-                row_visit = str(row.get('visit', '')).strip().lower()
-                if row_visit == visit:
-                    return row.get(key) or default_name
-            return default_name
-
-        target_omop_id = int(standard_derived_variable[2])
-        source_derived_rows = _find_omop_id_rows(data_context["source"], target_omop_id, code_key="omop_id")
-        target_derived_rows = _find_omop_id_rows(data_context["target"], target_omop_id, code_key="omop_id")
-        if source_derived_rows and target_derived_rows:
-            return []
-
-        already_mapped = False
-
-        for row in data_context.get("mapped", []):
-            try:
-                s_id = int(float(row.get("somop_id", 0)))
-                t_id = int(float(row.get("tomop_id", 0)))
-            except (TypeError, ValueError):
-                continue
-
-            if s_id == target_omop_id and t_id == target_omop_id:
-                already_mapped = True
-                break
-        if already_mapped:
-            return []
-
-        source_can_calc, source_param_visits = _get_parameter_visits(
-            data_context,
-            parameters_omop_ids,
-            side="source",
-        )
-
-        target_can_calc, target_param_visits = _get_parameter_visits(
-            data_context,
-            parameters_omop_ids,
-            side="target",
-        )
-
-        for row in source_derived_rows:
-            v = str(row.get('visit', '')).strip().lower()
-            if v:
-                source_param_visits.add(v)
-        for row in target_derived_rows:
-            v = str(row.get('visit', '')).strip().lower()
-            if v:
-                target_param_visits.add(v)
-
-        source_valid = (len(source_derived_rows) > 0) or source_can_calc
-        target_valid = (len(target_derived_rows) > 0) or target_can_calc
-        if not (source_valid and target_valid):
-            return []
-
-        aligned_visit_pairs = _find_aligned_visit_pairs(source_param_visits, target_param_visits)
-        if not aligned_visit_pairs:
-            return []
-
-        final_stats_type = stats_type
-        all_rows = source_derived_rows + target_derived_rows
-        if all_rows and all_rows[0].get('stats_type'):
-            final_stats_type = all_rows[0].get('stats_type')
-
-        src_unit, tgt_unit = "", ""
-        if source_derived_rows and source_derived_rows[0].get('unit_label'):
-            src_unit = source_derived_rows[0].get('unit_label')
-        elif target_derived_rows and target_derived_rows[0].get('unit_label'):
-            tgt_unit = target_derived_rows[0].get('unit_label')
-
-        final_results = []
-
-        for (src_visit, tgt_visit) in aligned_visit_pairs.keys():
-            if not src_visit or not tgt_visit:
-                continue
-
-            # src_visit_norm = str(src_visit).strip().lower()
-            # tgt_visit_norm = str(tgt_visit).strip().lower()
-
-            source_varname = _get_varname_for_visit(
-                source_derived_rows,
-                src_visit,
-                f"derived_{variable_name}",
-                "source",
-            )
-
-            target_varname = _get_varname_for_visit(
-                target_derived_rows,
-                tgt_visit,
-                f"derived_{variable_name}",
-                "target",
-            )
-            # A side that only computes the variable has no dictionary label;
-            # it falls back to the standard label.
-            source_label = _get_varname_for_visit(
-                source_derived_rows, src_visit, standard_derived_variable[1], "description")
-            target_label = _get_varname_for_visit(
-                target_derived_rows, tgt_visit, standard_derived_variable[1], "description")
-
-            final_results.append({
-                "source": source_varname, "target": target_varname,
-                "source_label": source_label, "target_label": target_label,
-                "somop_id": target_omop_id, "tomop_id": target_omop_id,
-                "scode": standard_derived_variable[0], "slabel": standard_derived_variable[1],
-                "tcode": standard_derived_variable[0], "tlabel": standard_derived_variable[1],
-                "source_visit": src_visit, "target_visit": tgt_visit,
-                "category": category,
-                "source_type": final_stats_type, "target_type": final_stats_type,
-                "source_unit": src_unit if src_unit else unit_label,
-                "target_unit": tgt_unit if tgt_unit else unit_label,
-                "source_composite_code_labels": standard_derived_variable[1],
-                "source_composite_code_omop_ids": f"{target_omop_id}",
-                "target_composite_code_labels": standard_derived_variable[1],
-                "target_composite_code_omop_ids": f"{target_omop_id}",
-                "mapping_relation": MappingRelation.SymbolicCloseMatch.value,
-                "context_match_type": ContextMatchType.PARTIAL.value,
-                "sim_score": 0.8,
-                "derived_variable_name": variable_name,
-                "transformation_rule": (
-                    f"Derived variable {variable_name} using parameter columns "
-                    f"{parameters_omop_ids}."
-                ),
-              
-            })
-        return final_results
-    
     # =================================================================
     # Main Matching — Pipeline modularized
     # =================================================================
@@ -707,35 +511,11 @@ class NeuroSymbolicMatcher:
     
 
     def compute_derived_variables(self, df: pd.DataFrame, src_collection, tgt_collection) -> pd.DataFrame:
-        """Phase 3: Append derived variables to the mapped DataFrame."""
+        """Phase 3: Append derived variables to the mapped DataFrame (see derived_variables.py)."""
         if self.mapping_mode == MappingType.NE.value:
             return df
-            
-        single_source_context = {
-            "source": [n.to_element_dict("source") for n in src_collection.variables],
-            "target": [n.to_element_dict("target") for n in tgt_collection.variables],
-            "mapped": df.to_dict('records'),
-        }
-        
-        new_matches = []
-        for derived_def in settings.DERIVED_VARIABLES_LIST:
-            derived_match = self._extend_with_derived_variables(
-                single_source=single_source_context,
-                standard_derived_variable=(
-                    derived_def["code"], derived_def["label"], derived_def["omop_id"]),
-                parameters_omop_ids=derived_def["required_omops"],
-                variable_name=derived_def["name"],
-                category=derived_def["category"],
-                unit_label=derived_def.get("unit", ""),
-            )
-            if derived_match:
-                new_matches.extend(derived_match)
-                
-        if new_matches:
-            new_df = pd.DataFrame(new_matches)
-            df = pd.concat([df, new_df], ignore_index=True)
-            
-        return df
+        return compute_derived_variables(
+            df, src_collection, tgt_collection, self.graph, settings.DERIVED_VARIABLES_LIST)
 
     def _concept_key(self, src_node, tgt_node):
         """Build a concept-level key that collapses visit variants."""

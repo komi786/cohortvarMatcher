@@ -303,7 +303,7 @@ if __name__ == '__main__':
     # llm_models_used = ["litellm/gpt-oss:120b","gemini-3.1-flash-lite","openrouter/deepseek/deepseek-v4-flash:exacto"]
     # llm_model = "litellm/gpt-oss:120b" # running in openai with temp 0.5, top_p = 0.95 and thinking low
     llm_model = "litellm/qwen3.8-g2"
-    llm_model = None
+    # llm_model = None
     mapping_dict = {}  
     omop_graph = None if mapping_mode == MappingType.NE.value else OmopGraphNX(csv_file_path=settings.concepts_file_path)
     mapper = StudyMapper(

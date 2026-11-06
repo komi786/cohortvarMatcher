@@ -277,8 +277,8 @@ if __name__ == '__main__':
     select_relevant_studies = True
     embedding_mode = EmbeddingType.EH.value  # embedding_concepts
     mapping_mode = MappingType.OEH.value # ontology + embedding_concepts
-    create_study_metadata_graph(cohorts_metadata_file, recreate=False)             
-    create_cohort_specific_metadata_graph(cohort_file_path, recreate=False)      
+    create_study_metadata_graph(cohorts_metadata_file, recreate=True)             
+    create_cohort_specific_metadata_graph(cohort_file_path, recreate=True)      
     collection_name = f"studies_metadata_{model_name}_{embedding_mode}"      
     embedding_model, _ = get_model(model_name)     
     # llm_matcher = LocalLLMConceptMatcher(models=["llama3.3:70b", "llama3.1:latest"])
@@ -303,7 +303,7 @@ if __name__ == '__main__':
     # llm_models_used = ["litellm/gpt-oss:120b","gemini-3.1-flash-lite","openrouter/deepseek/deepseek-v4-flash:exacto"]
     # llm_model = "litellm/gpt-oss:120b" # running in openai with temp 0.5, top_p = 0.95 and thinking low
     llm_model = "litellm/qwen3.8-g2"
-    llm_model = None
+    # llm_model = None
     mapping_dict = {}  
     omop_graph = None if mapping_mode == MappingType.NE.value else OmopGraphNX(csv_file_path=settings.concepts_file_path)
     mapper = StudyMapper(
@@ -327,8 +327,8 @@ if __name__ == '__main__':
             tgt_study=tstudy,
             mapping_mode=mapping_mode)        
         csv_path = f'{run_output_dir}/{source_study}_{tstudy}_{model_name}+{llm_tag}_{mapping_mode}_full.csv'
-        if not mapping_transformed.empty:
-            mapping_transformed = mapping_transformed[mapping_transformed["harmonization_status"].str.strip().str.lower() != "not applicable"]
+        # if not mapping_transformed.empty:
+        #     mapping_transformed = mapping_transformed[mapping_transformed["harmonization_status"].str.strip().str.lower() != "not applicable"]
         mapping_transformed.insert(0, "member_study", tstudy)
         mapping_transformed.to_csv(csv_path, index=False)
     tstudy_str = "_".join(target_studies)

@@ -1531,6 +1531,7 @@ class LLMConceptMatcher:
 
     def _generation_fingerprint(self) -> str:
         cfg = {
+            "reasoning_effort": "xhigh" if self.backend == "litellm" else "high",
             "max_tokens": self.max_tokens,
             "temperature": self.temperature,
             "top_p": self.top_p,

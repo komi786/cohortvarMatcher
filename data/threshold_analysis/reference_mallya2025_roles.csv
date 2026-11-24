@@ -1,0 +1,871 @@
+desc,concept,cdesc,group,study,role,rule,visit
+Atrial fibrillation,AFIB,"Atrial fibrillation (0=No, 1=Yes)",Co-morbidities,ARIC,indicator,represents the concept,1
+Incident AF,AFIB,"Atrial fibrillation (0=No, 1=Yes)",Co-morbidities,ARIC,indicator,represents the concept,1
+time to incident af,AFIB,"Atrial fibrillation (0=No, 1=Yes)",Co-morbidities,ARIC,excluded,time/date variable,1
+DAYS SINCE EXAM 1,AFIB,"Atrial fibrillation (0=No, 1=Yes)",Co-morbidities,ARIC,excluded,time/date variable,1
+ATRIAL FIBRILLATION,AFIB,"Atrial fibrillation (0=No, 1=Yes)",Co-morbidities,Framingham,indicator,represents the concept,1
+D205-026-ATRIAL-FIBRILLATION,AFIB,"Atrial fibrillation (0=No, 1=Yes)",Co-morbidities,Framingham,indicator,represents the concept,1
+ATRIAL FIBRILLATION ON ECG,AFIB,"Atrial fibrillation (0=No, 1=Yes)",Co-morbidities,Framingham,indicator,represents the concept,1
+ECG-ATRIAL FIBRILLATION,AFIB,"Atrial fibrillation (0=No, 1=Yes)",Co-morbidities,Framingham,indicator,represents the concept,1
+ECG-RHYTHM,AFIB,"Atrial fibrillation (0=No, 1=Yes)",Co-morbidities,Framingham,indicator,represents the concept,1
+ECG - RHYTHM,AFIB,"Atrial fibrillation (0=No, 1=Yes)",Co-morbidities,Framingham,indicator,represents the concept,1
+ATRIAL FIBRILLATION / FLUTTER BY NOVACODE,AFIB,"Atrial fibrillation (0=No, 1=Yes)",Co-morbidities,MESA,indicator,represents the concept,1
+Atrial Fibrillation Diagnosis (via ICD10 Code),AFIB,"Atrial fibrillation (0=No, 1=Yes)",Co-morbidities,MESA,indicator,represents the concept,1
+Atrial Fibrillation (via ICD10 Code): Time from Baseline to Diagnosis (Days),AFIB,"Atrial fibrillation (0=No, 1=Yes)",Co-morbidities,MESA,excluded,time/date variable,1
+"Time between exam visits, in days",AFIB,"Atrial fibrillation (0=No, 1=Yes)",Co-morbidities,MESA,excluded,time/date variable,1
+"Time between first and third visits, in days",AFIB,"Atrial fibrillation (0=No, 1=Yes)",Co-morbidities,MESA,excluded,time/date variable,1
+"Time between first and fourth visits, in days",AFIB,"Atrial fibrillation (0=No, 1=Yes)",Co-morbidities,MESA,excluded,time/date variable,1
+ECG ATRIAL FIBRILLATION / FLUTTER,AFIB,"Atrial fibrillation (0=No, 1=Yes)",Co-morbidities,MESA,indicator,represents the concept,1
+"TIME BETWEEN FIRST AND FIFTH VISITS, IN DAYS",AFIB,"Atrial fibrillation (0=No, 1=Yes)",Co-morbidities,MESA,excluded,time/date variable,1
+AGE AT VISIT 1,AGE,Age,Socio-demographics,ARIC,indicator,represents the concept,1
+Age at Visit 2,AGE,Age,Socio-demographics,ARIC,indicator,represents the concept,2
+Age at Visit 3,AGE,Age,Socio-demographics,ARIC,indicator,represents the concept,3
+Age at Visit 4,AGE,Age,Socio-demographics,ARIC,indicator,represents the concept,4
+Corrected Visit 5 age,AGE,Age,Socio-demographics,ARIC,indicator,represents the concept,5
+"Age (years), Exam 1",AGE,Age,Socio-demographics,Framingham,indicator,represents the concept,1
+"Age (years), Exam 2",AGE,Age,Socio-demographics,Framingham,indicator,represents the concept,2
+"Age (years), Exam 3",AGE,Age,Socio-demographics,Framingham,indicator,represents the concept,3
+"Age (years), Exam 4",AGE,Age,Socio-demographics,Framingham,indicator,represents the concept,4
+"Age (years), Exam 5",AGE,Age,Socio-demographics,Framingham,indicator,represents the concept,5
+"Age (years), Exam 6",AGE,Age,Socio-demographics,Framingham,indicator,represents the concept,6
+"Age (years), Exam 7",AGE,Age,Socio-demographics,Framingham,indicator,represents the concept,7
+"Age (years), Exam 8",AGE,Age,Socio-demographics,Framingham,indicator,represents the concept,8
+"Age (years), Exam 9",AGE,Age,Socio-demographics,Framingham,indicator,represents the concept,9
+AGE,AGE,Age,Socio-demographics,MESA,indicator,represents the concept,1
+AGE AT EXAM 2,AGE,Age,Socio-demographics,MESA,indicator,represents the concept,2
+AGE AT EXAM3,AGE,Age,Socio-demographics,MESA,indicator,represents the concept,3
+Age at exam 4,AGE,Age,Socio-demographics,MESA,indicator,represents the concept,4
+AGE AT EXAM 5,AGE,Age,Socio-demographics,MESA,indicator,represents the concept,5
+DRINK ALCOHOLIC BEVERAGE Q90,ALCOHOL,Alcohol (servings per week),Diet,ARIC,indicator,represents the concept,1
+NO OF GLASSES WINE CONSUMED P WK Q96,ALCOHOL,Alcohol (servings per week),Diet,ARIC,item,narrower member of concept,1
+NO OF CANS OF BEER CONSUMED P WK Q97,ALCOHOL,Alcohol (servings per week),Diet,ARIC,item,narrower member of concept,1
+NO OF HARD LIQUOR DRINKS PER WK Q98,ALCOHOL,Alcohol (servings per week),Diet,ARIC,item,narrower member of concept,1
+EVER CONSUMED ALCOHOLIC BEVERAGES Q14,ALCOHOL,Alcohol (servings per week),Diet,ARIC,indicator,represents the concept,1
+DRINK ALCOHOL NOW Q15,ALCOHOL,Alcohol (servings per week),Diet,ARIC,indicator,represents the concept,1
+USUAL # OF GLASSES WINE/WK Q17A,ALCOHOL,Alcohol (servings per week),Diet,ARIC,item,narrower member of concept,1
+USUAL # OF BEERS PER WEEK Q18A,ALCOHOL,Alcohol (servings per week),Diet,ARIC,item,narrower member of concept,1
+USUAL # OF HARD LIQUOR DRINKS/WK Q19A,ALCOHOL,Alcohol (servings per week),Diet,ARIC,item,narrower member of concept,1
+Total Alcohol Consumption,ALCOHOL,Alcohol (servings per week),Diet,Framingham,indicator,represents the concept,1
+BEER:(servings/week),ALCOHOL,Alcohol (servings per week),Diet,Framingham,item,narrower member of concept,1
+RED WINE:(servings/week),ALCOHOL,Alcohol (servings per week),Diet,Framingham,item,narrower member of concept,1
+WHITE WINE:(servings/week),ALCOHOL,Alcohol (servings per week),Diet,Framingham,item,narrower member of concept,1
+LIQUOR:(servings/week),ALCOHOL,Alcohol (servings per week),Diet,Framingham,item,narrower member of concept,1
+# DRINKS PER WEEK (CURRENT AND FORMER DRINKERS),ALCOHOL,Alcohol (servings per week),Diet,MESA,indicator,represents the concept,1
+Cholesterol lowering medication w/in 2wks: Using 2004 Med Code -V1,ANYCHOLMED,"Taking cholesterol lowering medication (0=No, 1=Yes)",Medications,ARIC,indicator,represents the concept,1
+Cholesterol lowering medication w/in 2wks: Using 2004 Med Code -V2,ANYCHOLMED,"Taking cholesterol lowering medication (0=No, 1=Yes)",Medications,ARIC,indicator,represents the concept,2
+Cholesterol lowering medication w/in 2wks: Using 2004 Med Code -V3,ANYCHOLMED,"Taking cholesterol lowering medication (0=No, 1=Yes)",Medications,ARIC,indicator,represents the concept,3
+Cholesterol lowering medication w/in 2wks: Using 2004 Med Code -V4,ANYCHOLMED,"Taking cholesterol lowering medication (0=No, 1=Yes)",Medications,ARIC,indicator,represents the concept,4
+Medication taken for high blood cholesterol,ANYCHOLMED,"Taking cholesterol lowering medication (0=No, 1=Yes)",Medications,ARIC,indicator,represents the concept,1
+ANTI-CHOLESTEROL AGENTS,ANYCHOLMED,"Taking cholesterol lowering medication (0=No, 1=Yes)",Medications,Framingham,indicator,represents the concept,1
+D202-016-ANTI-CHOLESTEROL,ANYCHOLMED,"Taking cholesterol lowering medication (0=No, 1=Yes)",Medications,Framingham,indicator,represents the concept,1
+ANTI CHOLESTEROL DRUGS,ANYCHOLMED,"Taking cholesterol lowering medication (0=No, 1=Yes)",Medications,Framingham,indicator,represents the concept,1
+ANTI CHOLESTEROL DRUGS-RESINS,ANYCHOLMED,"Taking cholesterol lowering medication (0=No, 1=Yes)",Medications,Framingham,item,narrower member of concept,1
+ANTI CHOLESTEROL DRUGS-NIACIN,ANYCHOLMED,"Taking cholesterol lowering medication (0=No, 1=Yes)",Medications,Framingham,item,narrower member of concept,1
+ANTI CHOLESTEROL DRUGS-FIBRATES,ANYCHOLMED,"Taking cholesterol lowering medication (0=No, 1=Yes)",Medications,Framingham,item,narrower member of concept,1
+ANTI CHOLESTEROL DRUGS-STATINS,ANYCHOLMED,"Taking cholesterol lowering medication (0=No, 1=Yes)",Medications,Framingham,item,narrower member of concept,1
+ANTI CHOLESTEROL DRUGS-OTHER,ANYCHOLMED,"Taking cholesterol lowering medication (0=No, 1=Yes)",Medications,Framingham,item,narrower member of concept,1
+MEDS - ANTI-CHOL -RESINS,ANYCHOLMED,"Taking cholesterol lowering medication (0=No, 1=Yes)",Medications,Framingham,item,narrower member of concept,1
+MEDS - ANTI-CHOL -NIACIN/NICOTINIC ACID,ANYCHOLMED,"Taking cholesterol lowering medication (0=No, 1=Yes)",Medications,Framingham,item,narrower member of concept,1
+MEDS - ANTI-CHOL -FIBRATES,ANYCHOLMED,"Taking cholesterol lowering medication (0=No, 1=Yes)",Medications,Framingham,item,narrower member of concept,1
+MEDS - ANTI-CHOL -STATINS,ANYCHOLMED,"Taking cholesterol lowering medication (0=No, 1=Yes)",Medications,Framingham,item,narrower member of concept,1
+MEDS - ANTI-CHOL -OTHER,ANYCHOLMED,"Taking cholesterol lowering medication (0=No, 1=Yes)",Medications,Framingham,item,narrower member of concept,1
+MEDS - ANTI-CHOL - RESINS,ANYCHOLMED,"Taking cholesterol lowering medication (0=No, 1=Yes)",Medications,Framingham,item,narrower member of concept,1
+MEDS - ANTI-CHOL - NIACIN/NICOTINIC ACID,ANYCHOLMED,"Taking cholesterol lowering medication (0=No, 1=Yes)",Medications,Framingham,item,narrower member of concept,1
+MEDS - ANTI-CHOL - FIBRATES,ANYCHOLMED,"Taking cholesterol lowering medication (0=No, 1=Yes)",Medications,Framingham,item,narrower member of concept,1
+MEDS - ANTI-CHOL - STATINS,ANYCHOLMED,"Taking cholesterol lowering medication (0=No, 1=Yes)",Medications,Framingham,item,narrower member of concept,1
+MEDS - ANTI-CHOL - OTHER,ANYCHOLMED,"Taking cholesterol lowering medication (0=No, 1=Yes)",Medications,Framingham,item,narrower member of concept,1
+ATC CODE FOR MEDICATION OR FIRST DRUG IN COMPOUND,ANYCHOLMED,"Taking cholesterol lowering medication (0=No, 1=Yes)",Medications,Framingham,excluded,generic list/code field,1
+ATC CODE FOR SECOND DRUG IN COMPOUND,ANYCHOLMED,"Taking cholesterol lowering medication (0=No, 1=Yes)",Medications,Framingham,excluded,generic list/code field,1
+ATC CODE FOR THIRD DRUG IN COMPOUND,ANYCHOLMED,"Taking cholesterol lowering medication (0=No, 1=Yes)",Medications,Framingham,excluded,generic list/code field,1
+ATC CODE FOR FOURTH DRUG IN COMPOUND,ANYCHOLMED,"Taking cholesterol lowering medication (0=No, 1=Yes)",Medications,Framingham,excluded,generic list/code field,1
+ATC code for medication or first drug in compound,ANYCHOLMED,"Taking cholesterol lowering medication (0=No, 1=Yes)",Medications,Framingham,excluded,generic list/code field,1
+ATC code for medication or second drug in compound,ANYCHOLMED,"Taking cholesterol lowering medication (0=No, 1=Yes)",Medications,Framingham,excluded,generic list/code field,1
+ATC code for medication or third drug in compound,ANYCHOLMED,"Taking cholesterol lowering medication (0=No, 1=Yes)",Medications,Framingham,excluded,generic list/code field,1
+ATC code for medication or fourth drug in compound,ANYCHOLMED,"Taking cholesterol lowering medication (0=No, 1=Yes)",Medications,Framingham,excluded,generic list/code field,1
+HMG CoA reducatace inhibitors (statins),ANYCHOLMED,"Taking cholesterol lowering medication (0=No, 1=Yes)",Medications,MESA,item,narrower member of concept,1
+Bile-acid sequestrants,ANYCHOLMED,"Taking cholesterol lowering medication (0=No, 1=Yes)",Medications,MESA,item,narrower member of concept,1
+Fibrates,ANYCHOLMED,"Taking cholesterol lowering medication (0=No, 1=Yes)",Medications,MESA,item,narrower member of concept,1
+Miscellaneous lipid-lowering drugs,ANYCHOLMED,"Taking cholesterol lowering medication (0=No, 1=Yes)",Medications,MESA,item,narrower member of concept,1
+Niacin and nictotinic acid,ANYCHOLMED,"Taking cholesterol lowering medication (0=No, 1=Yes)",Medications,MESA,item,narrower member of concept,1
+Probucol,ANYCHOLMED,"Taking cholesterol lowering medication (0=No, 1=Yes)",Medications,MESA,item,narrower member of concept,1
+Any lipid-lowering medication,ANYCHOLMED,"Taking cholesterol lowering medication (0=No, 1=Yes)",Medications,MESA,indicator,represents the concept,1
+HMG COA REDUCATACE INHIBITORS (STATINS),ANYCHOLMED,"Taking cholesterol lowering medication (0=No, 1=Yes)",Medications,MESA,item,narrower member of concept,1
+BILE-ACID SEQUESTRANTS,ANYCHOLMED,"Taking cholesterol lowering medication (0=No, 1=Yes)",Medications,MESA,item,narrower member of concept,1
+FIBRATES,ANYCHOLMED,"Taking cholesterol lowering medication (0=No, 1=Yes)",Medications,MESA,item,narrower member of concept,1
+MISCELLANEOUS LIPID-LOWERING DRUGS,ANYCHOLMED,"Taking cholesterol lowering medication (0=No, 1=Yes)",Medications,MESA,item,narrower member of concept,1
+NIACIN AND NICTOTINIC ACID,ANYCHOLMED,"Taking cholesterol lowering medication (0=No, 1=Yes)",Medications,MESA,item,narrower member of concept,1
+PROBUCOL,ANYCHOLMED,"Taking cholesterol lowering medication (0=No, 1=Yes)",Medications,MESA,item,narrower member of concept,1
+ANY LIPID-LOWERING MEDICATION,ANYCHOLMED,"Taking cholesterol lowering medication (0=No, 1=Yes)",Medications,MESA,indicator,represents the concept,1
+"Used Aspirin-containing analgesics (at Visit 1) in last 2 weeks (0=No, 1=Yes), based on 2004 Med Code",ASPIRIN,"Taking aspirin (0=No, 1=Yes)",Medications,ARIC,indicator,represents the concept,1
+"Used Aspirin-containing analgesics (at Visit 2) in last 2 weeks (0=No, 1=Yes), based on 2004 Med Code",ASPIRIN,"Taking aspirin (0=No, 1=Yes)",Medications,ARIC,indicator,represents the concept,2
+"Used Aspirin-containing analgesics (at Visit 3) in last 2 weeks (0=No, 1=Yes), based on 2004 Med Code",ASPIRIN,"Taking aspirin (0=No, 1=Yes)",Medications,ARIC,indicator,represents the concept,3
+"Used Aspirin-containing analgesics (at Visit 4) in last 2 weeks (0=No, 1=Yes), based on 2004 Med Code",ASPIRIN,"Taking aspirin (0=No, 1=Yes)",Medications,ARIC,indicator,represents the concept,4
+Aspirin taken in last 4 weeks,ASPIRIN,"Taking aspirin (0=No, 1=Yes)",Medications,ARIC,indicator,represents the concept,1
+NUMBER OF ASPIRINS PER TIME INTERVAL,ASPIRIN,"Taking aspirin (0=No, 1=Yes)",Medications,Framingham,excluded,time/date variable,1
+TIME INTERVAL FOR ASPIRIN TAKEN,ASPIRIN,"Taking aspirin (0=No, 1=Yes)",Medications,Framingham,excluded,time/date variable,1
+NUMBER OF ASPIRINS TAKEN REGULARLY,ASPIRIN,"Taking aspirin (0=No, 1=Yes)",Medications,Framingham,indicator,represents the concept,1
+ASPIRIN FREQUENCY,ASPIRIN,"Taking aspirin (0=No, 1=Yes)",Medications,Framingham,indicator,represents the concept,1
+Number aspirins taken regularly,ASPIRIN,"Taking aspirin (0=No, 1=Yes)",Medications,Framingham,indicator,represents the concept,1
+Aspirin Frequency per,ASPIRIN,"Taking aspirin (0=No, 1=Yes)",Medications,Framingham,indicator,represents the concept,1
+ATC CODE FOR MEDICATION OR FIRST DRUG IN COMPOUND,ASPIRIN,"Taking aspirin (0=No, 1=Yes)",Medications,Framingham,excluded,generic list/code field,1
+ATC CODE FOR SECOND DRUG IN COMPOUND,ASPIRIN,"Taking aspirin (0=No, 1=Yes)",Medications,Framingham,excluded,generic list/code field,1
+ATC CODE FOR THIRD DRUG IN COMPOUND,ASPIRIN,"Taking aspirin (0=No, 1=Yes)",Medications,Framingham,excluded,generic list/code field,1
+ATC CODE FOR FOURTH DRUG IN COMPOUND,ASPIRIN,"Taking aspirin (0=No, 1=Yes)",Medications,Framingham,excluded,generic list/code field,1
+"MEDS - ASPIR, # OF",ASPIRIN,"Taking aspirin (0=No, 1=Yes)",Medications,Framingham,indicator,represents the concept,1
+"MEDS - ASPIR, PER DY/WK/MO/YR",ASPIRIN,"Taking aspirin (0=No, 1=Yes)",Medications,Framingham,indicator,represents the concept,1
+ATC code for medication or first drug in compound,ASPIRIN,"Taking aspirin (0=No, 1=Yes)",Medications,Framingham,excluded,generic list/code field,1
+ATC code for medication or second drug in compound,ASPIRIN,"Taking aspirin (0=No, 1=Yes)",Medications,Framingham,excluded,generic list/code field,1
+ATC code for medication or third drug in compound,ASPIRIN,"Taking aspirin (0=No, 1=Yes)",Medications,Framingham,excluded,generic list/code field,1
+ATC code for medication or fourth drug in compound,ASPIRIN,"Taking aspirin (0=No, 1=Yes)",Medications,Framingham,excluded,generic list/code field,1
+Aspirin from 280804 (anti-inflam agents),ASPIRIN,"Taking aspirin (0=No, 1=Yes)",Medications,MESA,indicator,represents the concept,1
+ASPIRIN FROM 280804 (ANTI-INFLAM AGENTS),ASPIRIN,"Taking aspirin (0=No, 1=Yes)",Medications,MESA,indicator,represents the concept,1
+PREVALENT CORONARY HEART DISEASE,BASE_CVD,Baseline CVD,Other,ARIC,item,narrower member of concept,1
+SYMPTOMATIC CORONARY HEART DISEASE,BASE_CVD,Baseline CVD,Other,ARIC,item,narrower member of concept,1
+"ROSE INTERMITTENT CLAUDICATION, DEF. 3",BASE_CVD,Baseline CVD,Other,ARIC,item,narrower member of concept,1
+Prevalent HF at Visit 1,BASE_CVD,Baseline CVD,Other,ARIC,item,narrower member of concept,1
+Cardiovascular Disease (CVD) status,BASE_CVD,Baseline CVD,Other,Framingham,indicator,represents the concept,1
+Date of Cardiovascular Disease (CVD) status,BASE_CVD,Baseline CVD,Other,Framingham,excluded,time/date variable,1
+Type of pre-baseline event,BASE_CVD,Baseline CVD,Other,MESA,indicator,represents the concept,1
+Stroke,BASE_STROKE,"Baseline Stroke/TIA (0=No, 1=TIA, 2=Stroke)",Other,ARIC,item,narrower member of concept,1
+TIA,BASE_STROKE,"Baseline Stroke/TIA (0=No, 1=TIA, 2=Stroke)",Other,ARIC,item,narrower member of concept,1
+Stroke status,BASE_STROKE,"Baseline Stroke/TIA (0=No, 1=TIA, 2=Stroke)",Other,Framingham,item,narrower member of concept,1
+Date of stroke,BASE_STROKE,"Baseline Stroke/TIA (0=No, 1=TIA, 2=Stroke)",Other,Framingham,excluded,time/date variable,1
+Stroke/TIA status,BASE_STROKE,"Baseline Stroke/TIA (0=No, 1=TIA, 2=Stroke)",Other,Framingham,indicator,represents the concept,1
+Date of stroke/TIA,BASE_STROKE,"Baseline Stroke/TIA (0=No, 1=TIA, 2=Stroke)",Other,Framingham,excluded,time/date variable,1
+"Blood glucose (mg/dL) (includes fasting and non-fasting), Exam 1",BG,Blood glucose (mg/dL) (fasting and non-fasting),Labs,Framingham,indicator,represents the concept,1
+"Blood glucose (mg/dL) (includes fasting and non-fasting), Exam 2",BG,Blood glucose (mg/dL) (fasting and non-fasting),Labs,Framingham,indicator,represents the concept,2
+"Blood glucose (mg/dL) (includes fasting and non-fasting), Exam 3",BG,Blood glucose (mg/dL) (fasting and non-fasting),Labs,Framingham,indicator,represents the concept,3
+"Blood glucose (mg/dL) (includes fasting and non-fasting), Exam 4",BG,Blood glucose (mg/dL) (fasting and non-fasting),Labs,Framingham,indicator,represents the concept,4
+"Blood glucose (mg/dL) (includes fasting and non-fasting), Exam 5",BG,Blood glucose (mg/dL) (fasting and non-fasting),Labs,Framingham,indicator,represents the concept,5
+"Blood glucose (mg/dL) (includes fasting and non-fasting), Exam 6",BG,Blood glucose (mg/dL) (fasting and non-fasting),Labs,Framingham,indicator,represents the concept,6
+"Blood glucose (mg/dL) (includes fasting and non-fasting), Exam 7",BG,Blood glucose (mg/dL) (fasting and non-fasting),Labs,Framingham,indicator,represents the concept,7
+"Blood glucose (mg/dL) (includes fasting and non-fasting), Exam 8",BG,Blood glucose (mg/dL) (fasting and non-fasting),Labs,Framingham,indicator,represents the concept,8
+"Blood glucose (mg/dL) (includes fasting and non-fasting), Exam 9",BG,Blood glucose (mg/dL) (fasting and non-fasting),Labs,Framingham,indicator,represents the concept,9
+BODY MASS INDEX IN KG/(M*M),BMI,Body mass index (kg/m2),Vitals,ARIC,indicator,represents the concept,1
+V2 body mass index in kg/m2,BMI,Body mass index (kg/m2),Vitals,ARIC,indicator,represents the concept,2
+Body Mass Index in kg/m**2,BMI,Body mass index (kg/m2),Vitals,ARIC,indicator,represents the concept,1
+Description not found,BMI,Body mass index (kg/m2),Vitals,ARIC,excluded,no description,1
+"Body mass index (kg/m²), Exam 1",BMI,Body mass index (kg/m2),Vitals,Framingham,indicator,represents the concept,1
+"Body mass index (kg/m²), Exam 2",BMI,Body mass index (kg/m2),Vitals,Framingham,indicator,represents the concept,2
+"Body mass index (kg/m²), Exam 3",BMI,Body mass index (kg/m2),Vitals,Framingham,indicator,represents the concept,3
+"Body mass index (kg/m²), Exam 4",BMI,Body mass index (kg/m2),Vitals,Framingham,indicator,represents the concept,4
+"Body mass index (kg/m²), Exam 5",BMI,Body mass index (kg/m2),Vitals,Framingham,indicator,represents the concept,5
+"Body mass index (kg/m²), Exam 6",BMI,Body mass index (kg/m2),Vitals,Framingham,indicator,represents the concept,6
+"Body mass index (kg/m²), Exam 7",BMI,Body mass index (kg/m2),Vitals,Framingham,indicator,represents the concept,7
+"Body mass index (kg/m²), Exam 8",BMI,Body mass index (kg/m2),Vitals,Framingham,indicator,represents the concept,8
+"Body mass index (kg/m²), Exam 9",BMI,Body mass index (kg/m2),Vitals,Framingham,indicator,represents the concept,9
+BODY MASS INDEX (kg)/(m^2),BMI,Body mass index (kg/m2),Vitals,MESA,indicator,represents the concept,1
+BODY MASS INDEX (kg/m^2),BMI,Body mass index (kg/m2),Vitals,MESA,indicator,represents the concept,1
+CAROTID BRUITS? Q10,CARSTEN,"Carotid stenosis (0=No, 1=Yes)",Co-morbidities,ARIC,indicator,represents the concept,1
+Alt. Plaque in any site,CARSTEN,"Carotid stenosis (0=No, 1=Yes)",Co-morbidities,ARIC,excluded,different measurement/concept,1
+CDI: LEFT CAROTID BRUIT,CARSTEN,"Carotid stenosis (0=No, 1=Yes)",Co-morbidities,Framingham,item,narrower member of concept,1
+CDI: RIGHT CAROTID BRUIT,CARSTEN,"Carotid stenosis (0=No, 1=Yes)",Co-morbidities,Framingham,item,narrower member of concept,1
+CAROTID BRUIT-LEFT,CARSTEN,"Carotid stenosis (0=No, 1=Yes)",Co-morbidities,Framingham,item,narrower member of concept,1
+CAROTID BRUIT-RIGHT,CARSTEN,"Carotid stenosis (0=No, 1=Yes)",Co-morbidities,Framingham,item,narrower member of concept,1
+CAROTID BRUIT - LEFT,CARSTEN,"Carotid stenosis (0=No, 1=Yes)",Co-morbidities,Framingham,item,narrower member of concept,1
+CAROTID BRUIT - RIGHT,CARSTEN,"Carotid stenosis (0=No, 1=Yes)",Co-morbidities,Framingham,item,narrower member of concept,1
+"MAXIMUM CAROTID STENOSIS, GRADED",CARSTEN,"Carotid stenosis (0=No, 1=Yes)",Co-morbidities,MESA,excluded,different measurement/concept,1
+Follow Up Days to Death by 2018,CENSDAY,Censor day,Other,ARIC,excluded,helper/derived concept,1
+Date of death,CENSDAY,Censor day,Other,Framingham,excluded,helper/derived concept,1
+Date of last contact,CENSDAY,Censor day,Other,Framingham,excluded,helper/derived concept,1
+Time until most recent follow-up (days),CENSDAY,Censor day,Other,MESA,excluded,helper/derived concept,1
+CREATININE (MG-DL) Q9,CREAT,Creatinine (mg/dL),Labs,ARIC,indicator,represents the concept,1
+CREATININE (mg per dL) DEC PT REQ Q8,CREAT,Creatinine (mg/dL),Labs,ARIC,indicator,represents the concept,1
+"Creatinine, Serum (mg/dL)",CREAT,Creatinine (mg/dL),Labs,ARIC,indicator,represents the concept,1
+"Creatinine (mg/dL), Exam 2",CREAT,Creatinine (mg/dL),Labs,Framingham,indicator,represents the concept,2
+"Creatinine (mg/dL), Exam 5",CREAT,Creatinine (mg/dL),Labs,Framingham,indicator,represents the concept,5
+"Creatinine (mg/dL), Exam 6",CREAT,Creatinine (mg/dL),Labs,Framingham,indicator,represents the concept,6
+"Creatinine (mg/dL), Exam 7",CREAT,Creatinine (mg/dL),Labs,Framingham,indicator,represents the concept,7
+"Creatinine (mg/dL), Exam 8",CREAT,Creatinine (mg/dL),Labs,Framingham,indicator,represents the concept,8
+"Creatinine (mg/dL), Exam 9",CREAT,Creatinine (mg/dL),Labs,Framingham,indicator,represents the concept,9
+CREATININE (mg/dl),CREAT,Creatinine (mg/dL),Labs,MESA,indicator,represents the concept,1
+Creatinine (mg/dl),CREAT,Creatinine (mg/dL),Labs,MESA,indicator,represents the concept,1
+CREATININE,CREAT,Creatinine (mg/dL),Labs,MESA,indicator,represents the concept,1
+CURRENT CIGARETTE SMOKER,CURRSMK,"Current cigarette smoker (0=No, 1=Yes)",Co-morbidities,ARIC,indicator,represents the concept,1
+Current Smoker Flag,CURRSMK,"Current cigarette smoker (0=No, 1=Yes)",Co-morbidities,ARIC,indicator,represents the concept,1
+Current Smoker,CURRSMK,"Current cigarette smoker (0=No, 1=Yes)",Co-morbidities,ARIC,indicator,represents the concept,1
+Current Cigarette Smoker,CURRSMK,"Current cigarette smoker (0=No, 1=Yes)",Co-morbidities,ARIC,indicator,represents the concept,1
+V5 Current Cigarette Smoker,CURRSMK,"Current cigarette smoker (0=No, 1=Yes)",Co-morbidities,ARIC,indicator,represents the concept,5
+"Current smoking status, Exam 1",CURRSMK,"Current cigarette smoker (0=No, 1=Yes)",Co-morbidities,Framingham,indicator,represents the concept,1
+"Current smoking status, Exam 2",CURRSMK,"Current cigarette smoker (0=No, 1=Yes)",Co-morbidities,Framingham,indicator,represents the concept,2
+"Current smoking status, Exam 3",CURRSMK,"Current cigarette smoker (0=No, 1=Yes)",Co-morbidities,Framingham,indicator,represents the concept,3
+"Current smoking status, Exam 4",CURRSMK,"Current cigarette smoker (0=No, 1=Yes)",Co-morbidities,Framingham,indicator,represents the concept,4
+"Current smoking status, Exam 5",CURRSMK,"Current cigarette smoker (0=No, 1=Yes)",Co-morbidities,Framingham,indicator,represents the concept,5
+"Current smoking status, Exam 6",CURRSMK,"Current cigarette smoker (0=No, 1=Yes)",Co-morbidities,Framingham,indicator,represents the concept,6
+"Current smoking status, Exam 7",CURRSMK,"Current cigarette smoker (0=No, 1=Yes)",Co-morbidities,Framingham,indicator,represents the concept,7
+"Current smoking status, Exam 8",CURRSMK,"Current cigarette smoker (0=No, 1=Yes)",Co-morbidities,Framingham,indicator,represents the concept,8
+"Current smoking status, Exam 9",CURRSMK,"Current cigarette smoker (0=No, 1=Yes)",Co-morbidities,Framingham,indicator,represents the concept,9
+CIGARETTE SMOKING STATUS,CURRSMK,"Current cigarette smoker (0=No, 1=Yes)",Co-morbidities,MESA,indicator,represents the concept,1
+"Cigarrette Smoking Status, Exam 2",CURRSMK,"Current cigarette smoker (0=No, 1=Yes)",Co-morbidities,MESA,indicator,represents the concept,2
+"Cigarrette Smoking Status, Exam 3",CURRSMK,"Current cigarette smoker (0=No, 1=Yes)",Co-morbidities,MESA,indicator,represents the concept,3
+"Cigarette Smoking Status, Exam 4",CURRSMK,"Current cigarette smoker (0=No, 1=Yes)",Co-morbidities,MESA,indicator,represents the concept,4
+"CIGARETTE SMOKING STATUS, EXAM 5",CURRSMK,"Current cigarette smoker (0=No, 1=Yes)",Co-morbidities,MESA,indicator,represents the concept,5
+DATE OF EVENT,DAYS_SINCE_EXAM1,Time to event,Other,Framingham,excluded,helper/derived concept,1
+Dead by 2018 from DTH/NDI/AFU,DEATH_IND,Death indicator,Other,ARIC,indicator,represents the concept,1
+Date of death,DEATH_IND,Death indicator,Other,Framingham,excluded,time/date variable,1
+Death,DEATH_IND,Death indicator,Other,MESA,indicator,represents the concept,1
+Time to All-Cause Death or End of Year 2015 (days),DEATH_IND_T2,Censoring time for all-cause death (only relevant to MESA),Other,MESA,excluded,helper/derived concept,1
+DIABETES w/ fasting glucose cutpt.<126,DIAB,"Diabetes(0=No, 1=Yes)",Co-morbidities,ARIC,indicator,represents the concept,1
+Diabts22 using chmb07=126,DIAB,"Diabetes(0=No, 1=Yes)",Co-morbidities,ARIC,indicator,represents the concept,1
+Diabetes Using Lower Cutpoint 126 mg/dL,DIAB,"Diabetes(0=No, 1=Yes)",Co-morbidities,ARIC,indicator,represents the concept,1
+V5 Diabetes - Lower Cutpoint 126 mg/dL,DIAB,"Diabetes(0=No, 1=Yes)",Co-morbidities,ARIC,indicator,represents the concept,5
+"Diabetes Mellitus Status, Exam 1",DIAB,"Diabetes(0=No, 1=Yes)",Co-morbidities,Framingham,indicator,represents the concept,1
+"Diabetes Mellitus Status, Exam 2",DIAB,"Diabetes(0=No, 1=Yes)",Co-morbidities,Framingham,indicator,represents the concept,2
+"Diabetes Mellitus Status, Exam 3",DIAB,"Diabetes(0=No, 1=Yes)",Co-morbidities,Framingham,indicator,represents the concept,3
+"Diabetes Mellitus Status, Exam 4",DIAB,"Diabetes(0=No, 1=Yes)",Co-morbidities,Framingham,indicator,represents the concept,4
+"Diabetes Mellitus Status, Exam 5",DIAB,"Diabetes(0=No, 1=Yes)",Co-morbidities,Framingham,indicator,represents the concept,5
+"Diabetes Mellitus Status, Exam 6",DIAB,"Diabetes(0=No, 1=Yes)",Co-morbidities,Framingham,indicator,represents the concept,6
+"Diabetes Mellitus Status, Exam 7",DIAB,"Diabetes(0=No, 1=Yes)",Co-morbidities,Framingham,indicator,represents the concept,7
+"Diabetes Mellitus Status, Exam 8",DIAB,"Diabetes(0=No, 1=Yes)",Co-morbidities,Framingham,indicator,represents the concept,8
+"Diabetes Mellitus Status, Exam 9",DIAB,"Diabetes(0=No, 1=Yes)",Co-morbidities,Framingham,indicator,represents the concept,9
+Exam 1 Diabetes mellitus by 2003 ADA fasting criteria algorithm,DIAB,"Diabetes(0=No, 1=Yes)",Co-morbidities,MESA,indicator,represents the concept,1
+Exam 2 Diabetes mellitus by 2003 ADA fasting criteria algorithm,DIAB,"Diabetes(0=No, 1=Yes)",Co-morbidities,MESA,indicator,represents the concept,2
+Exam 3 Diabetes mellitus by 2003 ADA fasting criteria algorithm,DIAB,"Diabetes(0=No, 1=Yes)",Co-morbidities,MESA,indicator,represents the concept,3
+Exam 4 Diabetes mellitus by 2003 ADA fasting criteria algorithm,DIAB,"Diabetes(0=No, 1=Yes)",Co-morbidities,MESA,indicator,represents the concept,4
+DIABETES 2003 ADA FASTING CRITERIA,DIAB,"Diabetes(0=No, 1=Yes)",Co-morbidities,MESA,indicator,represents the concept,1
+2ND AND 3RD DIASTOLIC BP AVERAGE Q22,DIABP,Seated diastolic blood pressure (MM HG),Vitals,ARIC,indicator,represents the concept,1
+2ND AND 3RD DIASTOLIC BP AVERAGE Q23,DIABP,Seated diastolic blood pressure (MM HG),Vitals,ARIC,indicator,represents the concept,1
+1ST AND 2ND DIASTOLIC BP AVERAGE Q20,DIABP,Seated diastolic blood pressure (MM HG),Vitals,ARIC,indicator,represents the concept,1
+AVG: Diastolic (mmHg),DIABP,Seated diastolic blood pressure (MM HG),Vitals,ARIC,indicator,represents the concept,1
+SEATED DIASTOLIC BLOOD PRESSURE (mmHg),DIABP,Seated diastolic blood pressure (MM HG),Vitals,MESA,indicator,represents the concept,1
+Seated Diastolic Blood Pressure (mmHg),DIABP,Seated diastolic blood pressure (MM HG),Vitals,MESA,indicator,represents the concept,1
+Seated diastolic blood pressure (mmhg),DIABP,Seated diastolic blood pressure (MM HG),Vitals,MESA,indicator,represents the concept,1
+"PHYSICIAN DIASTOLIC BLOOD PRESSURE, 1ST",DIABP1,"PHYSICIAN DIASTOLIC BLOOD PRESSURE, FIRST (MM HG)",Vitals,Framingham,indicator,represents the concept,1
+D201-050-DIAS-PHYS-FIRST,DIABP1,"PHYSICIAN DIASTOLIC BLOOD PRESSURE, FIRST (MM HG)",Vitals,Framingham,indicator,represents the concept,1
+FIRST DIASTOLIC BLOOD PRESSURE,DIABP1,"PHYSICIAN DIASTOLIC BLOOD PRESSURE, FIRST (MM HG)",Vitals,Framingham,indicator,represents the concept,1
+DIASTOLIC BP -PHYSICIAN - 1ST READING,DIABP1,"PHYSICIAN DIASTOLIC BLOOD PRESSURE, FIRST (MM HG)",Vitals,Framingham,indicator,represents the concept,1
+DIASTOLIC PRESSURE - 1ST MD READING,DIABP1,"PHYSICIAN DIASTOLIC BLOOD PRESSURE, FIRST (MM HG)",Vitals,Framingham,indicator,represents the concept,1
+PHYSICIAN BP-DIASTOLIC-1ST READING,DIABP1,"PHYSICIAN DIASTOLIC BLOOD PRESSURE, FIRST (MM HG)",Vitals,Framingham,indicator,represents the concept,1
+PHYSICIAN BP DIASTOLIC - 1ST READING,DIABP1,"PHYSICIAN DIASTOLIC BLOOD PRESSURE, FIRST (MM HG)",Vitals,Framingham,indicator,represents the concept,1
+PHYSICIAN DIASTOLIC BP - 1ST READING,DIABP1,"PHYSICIAN DIASTOLIC BLOOD PRESSURE, FIRST (MM HG)",Vitals,Framingham,indicator,represents the concept,1
+"MDBP1 - DIASTOLIC 1, MMHG",DIABP1,"PHYSICIAN DIASTOLIC BLOOD PRESSURE, FIRST (MM HG)",Vitals,Framingham,indicator,represents the concept,1
+"PHYSICIAN DIASTOLIC BLOOD PRESSURE, 2ND",DIABP2,"PHYSICIAN DIASTOLIC BLOOD PRESSURE, SECOND (MM HG)",Vitals,Framingham,indicator,represents the concept,1
+D201-056-DIAS-PHYS-SECOND,DIABP2,"PHYSICIAN DIASTOLIC BLOOD PRESSURE, SECOND (MM HG)",Vitals,Framingham,indicator,represents the concept,1
+SECOND DIASTOLIC BLOOD PRESSURE,DIABP2,"PHYSICIAN DIASTOLIC BLOOD PRESSURE, SECOND (MM HG)",Vitals,Framingham,indicator,represents the concept,1
+DIASTOLIC BP -PHYSICIAN - 2ND READING,DIABP2,"PHYSICIAN DIASTOLIC BLOOD PRESSURE, SECOND (MM HG)",Vitals,Framingham,indicator,represents the concept,1
+DIASTOLIC PRESSURE - 2ND MD READING,DIABP2,"PHYSICIAN DIASTOLIC BLOOD PRESSURE, SECOND (MM HG)",Vitals,Framingham,indicator,represents the concept,1
+PHYSICIAN BP-2ND READING-DIASTOLIC,DIABP2,"PHYSICIAN DIASTOLIC BLOOD PRESSURE, SECOND (MM HG)",Vitals,Framingham,indicator,represents the concept,1
+PHYSICIAN BP DIASTOLIC - 2ND READING,DIABP2,"PHYSICIAN DIASTOLIC BLOOD PRESSURE, SECOND (MM HG)",Vitals,Framingham,indicator,represents the concept,1
+PHYSICIAN DIASTOLIC BP - 2ND READING,DIABP2,"PHYSICIAN DIASTOLIC BLOOD PRESSURE, SECOND (MM HG)",Vitals,Framingham,indicator,represents the concept,1
+"MDBP2 - DIAST, MMHG",DIABP2,"PHYSICIAN DIASTOLIC BLOOD PRESSURE, SECOND (MM HG)",Vitals,Framingham,indicator,represents the concept,1
+HIGHEST EDUCATION COMPLETED Q54,EDUCLEV,"Education level (1=Less than High School, 2=High School, 3=Some College, 4=College)",Socio-demographics,ARIC,indicator,represents the concept,1
+D201-099-YEARS-EDUCATION,EDUCLEV,"Education level (1=Less than High School, 2=High School, 3=Some College, 4=College)",Socio-demographics,Framingham,indicator,represents the concept,1
+EDUCATION: HIGHEST LEVEL COMPLETED,EDUCLEV,"Education level (1=Less than High School, 2=High School, 3=Some College, 4=College)",Socio-demographics,MESA,indicator,represents the concept,1
+EVENT NUMBER ON SEQUENCE OF EVENTS,EVENT,Event code,Other,Framingham,excluded,helper/derived concept,1
+EVENT NUMBER ON SEQUENCE OF EVENTS,EVENT_DESC,Formatted value of EVENT,Other,Framingham,excluded,helper/derived concept,1
+Follow-up HEM Strokes (days),EVENT_T2_O,Days since exam 1,Other,ARIC,excluded,helper/derived concept,1
+Follow-up CHM Strokes (days),EVENT_T2_O,Days since exam 1,Other,ARIC,excluded,helper/derived concept,1
+Follow-up ISC Strokes (days),EVENT_T2_O,Days since exam 1,Other,ARIC,excluded,helper/derived concept,1
+Follow-up DP Strokes (days),EVENT_T2_O,Days since exam 1,Other,ARIC,excluded,helper/derived concept,1
+Follow-up DPP Strokes (days),EVENT_T2_O,Days since exam 1,Other,ARIC,excluded,helper/derived concept,1
+Time to Stroke or End of Year 2015 (days),EVENT_T2_O,Days since exam 1,Other,MESA,excluded,helper/derived concept,1
+Time until most recent follow-up (days),EVENT_T2_O,Days since exam 1,Other,MESA,excluded,helper/derived concept,1
+Time to All-Cause Death or End of Year 2015 (days),EVENT_T2_O,Days since exam 1,Other,MESA,excluded,helper/derived concept,1
+Def/Prob Hemmorrhagic Inc. Stroke by Censoring Date,EVENT_VAL_C,Event value (YES/NO),Other,ARIC,excluded,helper/derived concept,1
+Def/Prob Combined Hemm Inc. Stroke by Censoring Date,EVENT_VAL_C,Event value (YES/NO),Other,ARIC,excluded,helper/derived concept,1
+Def/Prob Ischemic Inc. Stroke by Censoring Date,EVENT_VAL_C,Event value (YES/NO),Other,ARIC,excluded,helper/derived concept,1
+Def/Prob Incident Stroke by Censoring Date,EVENT_VAL_C,Event value (YES/NO),Other,ARIC,excluded,helper/derived concept,1
+Def/Prob/Poss Inc. Stroke by Censoring Date,EVENT_VAL_C,Event value (YES/NO),Other,ARIC,excluded,helper/derived concept,1
+Stroke,EVENT_VAL_C,Event value (YES/NO),Other,MESA,excluded,helper/derived concept,1
+Stroke type,EVENT_VAL_C,Event value (YES/NO),Other,MESA,excluded,helper/derived concept,1
+Death,EVENT_VAL_C,Event value (YES/NO),Other,MESA,excluded,helper/derived concept,1
+Death type,EVENT_VAL_C,Event value (YES/NO),Other,MESA,excluded,helper/derived concept,1
+COMBINED FAMILY INCOME GROUP Q62,FAM_INCOME,Family Income,Socio-demographics,ARIC,indicator,represents the concept,1
+HOUSEHOLD INCOME LAST YEAR Q6,FAM_INCOME,Family Income,Socio-demographics,ARIC,indicator,represents the concept,1
+Current total family income/yr before tx,FAM_INCOME,Family Income,Socio-demographics,Framingham,indicator,represents the concept,1
+"TOTAL GROSS FAMILY INCOME, PAST 12 MONTHS",FAM_INCOME,Family Income,Socio-demographics,MESA,indicator,represents the concept,1
+FASTING TIME OF 12 HOURS OR MORE,FASTING_12HR,"Fasting time of 12 hours or more (0=No, 1=Yes)",Labs,ARIC,excluded,helper/derived concept,1
+"V2 Fast 12 Hrs or More, Definition 2",FASTING_12HR,"Fasting time of 12 hours or more (0=No, 1=Yes)",Labs,ARIC,excluded,helper/derived concept,2
+Fasting Time of 12 Hours or More,FASTING_12HR,"Fasting time of 12 hours or more (0=No, 1=Yes)",Labs,ARIC,excluded,helper/derived concept,1
+FASTING TIME OF 8 HOURS OR MORE,FASTING_8HR,"Fasting time of 8 hours or more (0=No, 1=Yes)",Labs,ARIC,excluded,helper/derived concept,1
+"V2 Fast 8 Hrs or More, Definition 2",FASTING_8HR,"Fasting time of 8 hours or more (0=No, 1=Yes)",Labs,ARIC,excluded,helper/derived concept,2
+Fasting Time of 8 Hours or More,FASTING_8HR,"Fasting time of 8 hours or more (0=No, 1=Yes)",Labs,ARIC,excluded,helper/derived concept,1
+"Fasting (>= 8 hours) blood glucose (mg/dL), Exam 3",FASTING_BG,Fasting blood glucose (&gt;: 8 hours) (mg/dL),Labs,Framingham,indicator,represents the concept,3
+"Fasting (>= 8 hours) blood glucose (mg/dL), Exam 4",FASTING_BG,Fasting blood glucose (&gt;: 8 hours) (mg/dL),Labs,Framingham,indicator,represents the concept,4
+"Fasting (>= 8 hours) blood glucose (mg/dL), Exam 5",FASTING_BG,Fasting blood glucose (&gt;: 8 hours) (mg/dL),Labs,Framingham,indicator,represents the concept,5
+"Fasting (>= 8 hours) blood glucose (mg/dL), Exam 6",FASTING_BG,Fasting blood glucose (&gt;: 8 hours) (mg/dL),Labs,Framingham,indicator,represents the concept,6
+"Fasting (>= 8 hours) blood glucose (mg/dL), Exam 7",FASTING_BG,Fasting blood glucose (&gt;: 8 hours) (mg/dL),Labs,Framingham,indicator,represents the concept,7
+"Fasting (>= 8 hours) blood glucose (mg/dL), Exam 8",FASTING_BG,Fasting blood glucose (&gt;: 8 hours) (mg/dL),Labs,Framingham,indicator,represents the concept,8
+"Fasting (>= 8 hours) blood glucose (mg/dL), Exam 9",FASTING_BG,Fasting blood glucose (&gt;: 8 hours) (mg/dL),Labs,Framingham,indicator,represents the concept,9
+Exam 1 Fasting Glucose- Calibrated,FASTING_BG,Fasting blood glucose (&gt;: 8 hours) (mg/dL),Labs,MESA,indicator,represents the concept,1
+FASTING GLUCOSE (mg/dL) CALIBRATED,FASTING_BG,Fasting blood glucose (&gt;: 8 hours) (mg/dL),Labs,MESA,indicator,represents the concept,1
+Fasting Glucose (mg/dL) Calibrated,FASTING_BG,Fasting blood glucose (&gt;: 8 hours) (mg/dL),Labs,MESA,indicator,represents the concept,1
+FASTING GLUCOSE (mg/dl),FASTING_BG,Fasting blood glucose (&gt;: 8 hours) (mg/dL),Labs,MESA,indicator,represents the concept,1
+New Maternal History of Stroke,FH_STROKE,"Family history of stroke, Mother or Father (0=No, 1=Yes)",Co-morbidities,ARIC,item,narrower member of concept,1
+New Paternal History of Stroke,FH_STROKE,"Family history of stroke, Mother or Father (0=No, 1=Yes)",Co-morbidities,ARIC,item,narrower member of concept,1
+FATHER-HAVE STROKE BEFORE AGE 65,FH_STROKE,"Family history of stroke, Mother or Father (0=No, 1=Yes)",Co-morbidities,Framingham,item,narrower member of concept,1
+MOTHER-HAVE STROKE BEFORE AGE 65,FH_STROKE,"Family history of stroke, Mother or Father (0=No, 1=Yes)",Co-morbidities,Framingham,item,narrower member of concept,1
+FAMILY HISTORY OF STROKE: PARENT,FH_STROKE,"Family history of stroke, Mother or Father (0=No, 1=Yes)",Co-morbidities,MESA,indicator,represents the concept,1
+CONSUMED APPLES OR PEARS Q9,FRUITS,Fruits (servings per week),Diet,ARIC,item,narrower member of concept,1
+CONSUMED ORANGES Q10,FRUITS,Fruits (servings per week),Diet,ARIC,item,narrower member of concept,1
+CONSUMED PEACHES APRICOTS PLUMS Q12,FRUITS,Fruits (servings per week),Diet,ARIC,item,narrower member of concept,1
+CONSUMED BANANAS Q13,FRUITS,Fruits (servings per week),Diet,ARIC,item,narrower member of concept,1
+CONSUMED OTHER FRUITS Q14,FRUITS,Fruits (servings per week),Diet,ARIC,item,narrower member of concept,1
+FRESH APPLE OR PAIR,FRUITS,Fruits (servings per week),Diet,Framingham,item,narrower member of concept,1
+ORANGE OR TANGERINE,FRUITS,Fruits (servings per week),Diet,Framingham,item,narrower member of concept,1
+HALF GRAPEFRUIT OR GLASS JUICE,FRUITS,Fruits (servings per week),Diet,Framingham,item,narrower member of concept,1
+"PEACHES,APRICOTS,PLUMS OR NECTARINES",FRUITS,Fruits (servings per week),Diet,Framingham,item,narrower member of concept,1
+BANANAS,FRUITS,Fruits (servings per week),Diet,Framingham,item,narrower member of concept,1
+"FRESH,FROZEN OR CANNED STRAWBERRIES",FRUITS,Fruits (servings per week),Diet,Framingham,item,narrower member of concept,1
+"BLACKBERRIES,BLUEBERRIES,RASPBERRIES",FRUITS,Fruits (servings per week),Diet,Framingham,item,narrower member of concept,1
+CANTELOUPE OR HONEYDEW MELON-SLICE,FRUITS,Fruits (servings per week),Diet,Framingham,item,narrower member of concept,1
+SLICE OF WATERMELON,FRUITS,Fruits (servings per week),Diet,Framingham,item,narrower member of concept,1
+FRESH OR CANNED PINEAPPLE,FRUITS,Fruits (servings per week),Diet,Framingham,item,narrower member of concept,1
+FRESH OR CANNED CHERRIES,FRUITS,Fruits (servings per week),Diet,Framingham,item,narrower member of concept,1
+HALF CUP PAPAYAS,FRUITS,Fruits (servings per week),Diet,Framingham,item,narrower member of concept,1
+ONE QUARTER OF AN AVOCADO,FRUITS,Fruits (servings per week),Diet,Framingham,item,narrower member of concept,1
+HALF CUP RAISINS OR DRY APRICOTS,FRUITS,Fruits (servings per week),Diet,Framingham,item,narrower member of concept,1
+HALF CUP DATES OR FIGS,FRUITS,Fruits (servings per week),Diet,Framingham,item,narrower member of concept,1
+SMALL PACK RAISINS OR GRAPES,FRUITS,Fruits (servings per week),Diet,Framingham,item,narrower member of concept,1
+RAISINS:(servings/week),FRUITS,Fruits (servings per week),Diet,Framingham,item,narrower member of concept,1
+PRUNES:(servings/week),FRUITS,Fruits (servings per week),Diet,Framingham,item,narrower member of concept,1
+BANANAS:(servings/week),FRUITS,Fruits (servings per week),Diet,Framingham,item,narrower member of concept,1
+CANTALOUPE:(servings/week),FRUITS,Fruits (servings per week),Diet,Framingham,item,narrower member of concept,1
+WATERMELON:(servings/week),FRUITS,Fruits (servings per week),Diet,Framingham,item,narrower member of concept,1
+"APPLES/PEARS, FRESH:(servings/week)",FRUITS,Fruits (servings per week),Diet,Framingham,item,narrower member of concept,1
+ORANGES:(servings/week),FRUITS,Fruits (servings per week),Diet,Framingham,item,narrower member of concept,1
+GRAPEFRUIT:(servings/week),FRUITS,Fruits (servings per week),Diet,Framingham,item,narrower member of concept,1
+STRAWBERRIES:(servings/week),FRUITS,Fruits (servings per week),Diet,Framingham,item,narrower member of concept,1
+BLUEBERRIES:(servings/week),FRUITS,Fruits (servings per week),Diet,Framingham,item,narrower member of concept,1
+PEACHES:(servings/week),FRUITS,Fruits (servings per week),Diet,Framingham,item,narrower member of concept,1
+HEALTH CONDITION Q9,GENHLTH,General Health (visit 1),Co-morbidities,ARIC,indicator,represents the concept,1
+YOUR HEALTH NOW IN GENERAL,GENHLTH,General Health (visit 1),Co-morbidities,Framingham,indicator,represents the concept,1
+Rate general health,GENHLTH2,General Health (visit 5),Co-morbidities,ARIC,indicator,represents the concept,1
+"IN GENERAL, HOW IS YOUR HEALTH",GENHLTH2,General Health (visit 5),Co-morbidities,Framingham,indicator,represents the concept,1
+SF-12 - HOW YOUR HLTH,GENHLTH2,General Health (visit 5),Co-morbidities,Framingham,indicator,represents the concept,1
+IN GENERAL YOUR HEALTH IS,GENHLTH2,General Health (visit 5),Co-morbidities,MESA,indicator,represents the concept,1
+DERIVED GLUCOSE VALUE in mg/dl,GLUCOSE,Glucose value in mg/dL,Labs,ARIC,indicator,represents the concept,1
+GLUCOSE (mg per dL) DEC PT REQ Q7,GLUCOSE,Glucose value in mg/dL,Labs,ARIC,indicator,represents the concept,1
+GLUCOSE (VALUE IN MG/DL) Q4A,GLUCOSE,Glucose value in mg/dL,Labs,ARIC,indicator,represents the concept,1
+FASTING GLUCOSE (VALUE) Q4A,GLUCOSE,Glucose value in mg/dL,Labs,ARIC,indicator,represents the concept,1
+Fasting Glucose (mg/dL),GLUCOSE,Glucose value in mg/dL,Labs,ARIC,indicator,represents the concept,1
+RE-CALIBRATED HDL CHOL. in mg/dl,HDL,HDL cholesterol,Labs,ARIC,indicator,represents the concept,1
+HDL CHOLESTREROL (VALUE) Q3A,HDL,HDL cholesterol,Labs,ARIC,indicator,represents the concept,1
+HDL CHOLESTEROL (VALUE IN MG/DL) Q3A,HDL,HDL cholesterol,Labs,ARIC,indicator,represents the concept,1
+HDL CHOLESTEROL (VALUE) Q3A,HDL,HDL cholesterol,Labs,ARIC,indicator,represents the concept,1
+HDLC-Cholesterol (mg/dL),HDL,HDL cholesterol,Labs,ARIC,indicator,represents the concept,1
+"HDL cholesterol (mg/dL), Exam 1",HDL,HDL cholesterol,Labs,Framingham,indicator,represents the concept,1
+"HDL cholesterol (mg/dL), Exam 2",HDL,HDL cholesterol,Labs,Framingham,indicator,represents the concept,2
+"HDL cholesterol (mg/dL), Exam 3",HDL,HDL cholesterol,Labs,Framingham,indicator,represents the concept,3
+"HDL cholesterol (mg/dL), Exam 4",HDL,HDL cholesterol,Labs,Framingham,indicator,represents the concept,4
+"HDL cholesterol (mg/dL), Exam 5",HDL,HDL cholesterol,Labs,Framingham,indicator,represents the concept,5
+"HDL cholesterol (mg/dL), Exam 6",HDL,HDL cholesterol,Labs,Framingham,indicator,represents the concept,6
+"HDL cholesterol (mg/dL), Exam 7",HDL,HDL cholesterol,Labs,Framingham,indicator,represents the concept,7
+"HDL cholesterol (mg/dL), Exam 8",HDL,HDL cholesterol,Labs,Framingham,indicator,represents the concept,8
+"HDL cholesterol (mg/dL), Exam 9",HDL,HDL cholesterol,Labs,Framingham,indicator,represents the concept,9
+HDL CHOLESTROL (mg/dl),HDL,HDL cholesterol,Labs,MESA,indicator,represents the concept,1
+HDL CHOLESTEROL (mg/dl),HDL,HDL cholesterol,Labs,MESA,indicator,represents the concept,1
+HDL Cholesterol (mg/dl),HDL,HDL cholesterol,Labs,MESA,indicator,represents the concept,1
+STANDING HEIGHT TO NEAREST CM Q1,HGT_CM,Standing height (to the nearest cm),Vitals,ARIC,indicator,represents the concept,1
+Description not found,HGT_CM,Standing height (to the nearest cm),Vitals,ARIC,excluded,no description,1
+Standing height (cm),HGT_CM,Standing height (to the nearest cm),Vitals,ARIC,indicator,represents the concept,1
+"Height (inches), Exam 1",HGT_CM,Standing height (to the nearest cm),Vitals,Framingham,indicator,represents the concept,1
+"Height (inches), Exam 2",HGT_CM,Standing height (to the nearest cm),Vitals,Framingham,indicator,represents the concept,2
+"Height (inches), Exam 3",HGT_CM,Standing height (to the nearest cm),Vitals,Framingham,indicator,represents the concept,3
+"Height (inches), Exam 4",HGT_CM,Standing height (to the nearest cm),Vitals,Framingham,indicator,represents the concept,4
+"Height (inches), Exam 5",HGT_CM,Standing height (to the nearest cm),Vitals,Framingham,indicator,represents the concept,5
+"Height (inches), Exam 6",HGT_CM,Standing height (to the nearest cm),Vitals,Framingham,indicator,represents the concept,6
+"Height (inches), Exam 7",HGT_CM,Standing height (to the nearest cm),Vitals,Framingham,indicator,represents the concept,7
+"Height (inches), Exam 8",HGT_CM,Standing height (to the nearest cm),Vitals,Framingham,indicator,represents the concept,8
+"Height (inches), Exam 9",HGT_CM,Standing height (to the nearest cm),Vitals,Framingham,indicator,represents the concept,9
+HEIGHT (cm),HGT_CM,Standing height (to the nearest cm),Vitals,MESA,indicator,represents the concept,1
+"HYPERTENSION LOWERING MED. USE, DEF. 1",HRX,"Taking blood pressure lowering medication (0=No, 1=Yes)",Co-morbidities,ARIC,indicator,represents the concept,1
+Hypertension Meds (Self reported),HRX,"Taking blood pressure lowering medication (0=No, 1=Yes)",Co-morbidities,ARIC,indicator,represents the concept,1
+"V3 HYPERTENSION MEDICATIONS, DEF. 1",HRX,"Taking blood pressure lowering medication (0=No, 1=Yes)",Co-morbidities,ARIC,indicator,represents the concept,3
+V4 Hypert Med in Past 2 Wks: Self-rptd,HRX,"Taking blood pressure lowering medication (0=No, 1=Yes)",Co-morbidities,ARIC,indicator,represents the concept,4
+Medication taken for high blodd pressure or hypertension,HRX,"Taking blood pressure lowering medication (0=No, 1=Yes)",Co-morbidities,ARIC,indicator,represents the concept,1
+"Treated for hypertension, Exam 1",HRX,"Taking blood pressure lowering medication (0=No, 1=Yes)",Co-morbidities,Framingham,indicator,represents the concept,1
+"Treated for hypertension, Exam 2",HRX,"Taking blood pressure lowering medication (0=No, 1=Yes)",Co-morbidities,Framingham,indicator,represents the concept,2
+"Treated for hypertension, Exam 3",HRX,"Taking blood pressure lowering medication (0=No, 1=Yes)",Co-morbidities,Framingham,indicator,represents the concept,3
+"Treated for hypertension, Exam 4",HRX,"Taking blood pressure lowering medication (0=No, 1=Yes)",Co-morbidities,Framingham,indicator,represents the concept,4
+"Treated for hypertension, Exam 5",HRX,"Taking blood pressure lowering medication (0=No, 1=Yes)",Co-morbidities,Framingham,indicator,represents the concept,5
+"Treated for hypertension, Exam 6",HRX,"Taking blood pressure lowering medication (0=No, 1=Yes)",Co-morbidities,Framingham,indicator,represents the concept,6
+"Treated for hypertension, Exam 7",HRX,"Taking blood pressure lowering medication (0=No, 1=Yes)",Co-morbidities,Framingham,indicator,represents the concept,7
+"Treated for hypertension, Exam 8",HRX,"Taking blood pressure lowering medication (0=No, 1=Yes)",Co-morbidities,Framingham,indicator,represents the concept,8
+"Treated for hypertension, Exam 9",HRX,"Taking blood pressure lowering medication (0=No, 1=Yes)",Co-morbidities,Framingham,indicator,represents the concept,9
+Hypertension Medication,HRX,"Taking blood pressure lowering medication (0=No, 1=Yes)",Co-morbidities,MESA,indicator,represents the concept,1
+Any hypertension medication,HRX,"Taking blood pressure lowering medication (0=No, 1=Yes)",Co-morbidities,MESA,indicator,represents the concept,1
+ANY HYPERTENSION MEDICATION,HRX,"Taking blood pressure lowering medication (0=No, 1=Yes)",Co-morbidities,MESA,indicator,represents the concept,1
+"ROSE INTERMITTENT CLAUDICATION, DEF. 3",HXCVD,History of cardiovascular disease,Co-morbidities,ARIC,item,narrower member of concept,1
+PREVALENT CORONARY HEART DISEASE,HXCVD,History of cardiovascular disease,Co-morbidities,ARIC,item,narrower member of concept,1
+ROSE ANGINA,HXCVD,History of cardiovascular disease,Co-morbidities,ARIC,item,narrower member of concept,1
+Prevalent HF at Visit 1,HXCVD,History of cardiovascular disease,Co-morbidities,ARIC,item,narrower member of concept,1
+Follow-up time for INCHF18 in days,HXCVD,History of cardiovascular disease,Co-morbidities,ARIC,excluded,time/date variable,1
+Incident HF (from discharge codes),HXCVD,History of cardiovascular disease,Co-morbidities,ARIC,item,narrower member of concept,1
+"Prevalent CHD at V3, definition 3",HXCVD,History of cardiovascular disease,Co-morbidities,ARIC,item,narrower member of concept,3
+DAYS SINCE EXAM 1,HXCVD,History of cardiovascular disease,Co-morbidities,ARIC,excluded,time/date variable,1
+REPORT ROSE ANGINA IN AFU? Q1,HXCVD,History of cardiovascular disease,Co-morbidities,ARIC,item,narrower member of concept,1
+"Prevalent CHD at V4, definition 3",HXCVD,History of cardiovascular disease,Co-morbidities,ARIC,item,narrower member of concept,4
+Cardiovascular Disease (CVD) status,HXCVD,History of cardiovascular disease,Co-morbidities,Framingham,indicator,represents the concept,1
+Date of Cardiovascular Disease (CVD) status,HXCVD,History of cardiovascular disease,Co-morbidities,Framingham,excluded,time/date variable,1
+DATE OF EVENT,HXCVD,History of cardiovascular disease,Co-morbidities,Framingham,excluded,time/date variable,1
+EVENT NUMBER ON SEQUENCE OF EVENTS,HXCVD,History of cardiovascular disease,Co-morbidities,Framingham,excluded,generic list/code field,1
+Date of Exam 2,HXCVD,History of cardiovascular disease,Co-morbidities,Framingham,excluded,time/date variable,2
+Date of Exam 3,HXCVD,History of cardiovascular disease,Co-morbidities,Framingham,excluded,time/date variable,3
+Date of Exam 4,HXCVD,History of cardiovascular disease,Co-morbidities,Framingham,excluded,time/date variable,4
+Date of Exam 5,HXCVD,History of cardiovascular disease,Co-morbidities,Framingham,excluded,time/date variable,5
+Date of Exam 6,HXCVD,History of cardiovascular disease,Co-morbidities,Framingham,excluded,time/date variable,6
+Date of Exam 7,HXCVD,History of cardiovascular disease,Co-morbidities,Framingham,excluded,time/date variable,7
+Date of Exam 8,HXCVD,History of cardiovascular disease,Co-morbidities,Framingham,excluded,time/date variable,8
+Date of Exam 9,HXCVD,History of cardiovascular disease,Co-morbidities,Framingham,excluded,time/date variable,9
+Myocardial Infarction (MI),HXCVD,History of cardiovascular disease,Co-morbidities,MESA,item,narrower member of concept,1
+Time to MI or End of Year 2015 (days),HXCVD,History of cardiovascular disease,Co-morbidities,MESA,excluded,time/date variable,1
+Resuscitated Cardiac Arrest,HXCVD,History of cardiovascular disease,Co-morbidities,MESA,item,narrower member of concept,1
+Time to RCA or End of Year 2015 (days),HXCVD,History of cardiovascular disease,Co-morbidities,MESA,excluded,time/date variable,1
+Angina Pectoris,HXCVD,History of cardiovascular disease,Co-morbidities,MESA,item,narrower member of concept,1
+Time to Angina or End of Year 2015 (days),HXCVD,History of cardiovascular disease,Co-morbidities,MESA,excluded,time/date variable,1
+Congestive Heart Failure (CHF),HXCVD,History of cardiovascular disease,Co-morbidities,MESA,item,narrower member of concept,1
+Time to CHF or End of Year 2015 (days),HXCVD,History of cardiovascular disease,Co-morbidities,MESA,excluded,time/date variable,1
+Peripheral Vascular Disease (PVD),HXCVD,History of cardiovascular disease,Co-morbidities,MESA,item,narrower member of concept,1
+Time to PVD or End of Year 2015 (days),HXCVD,History of cardiovascular disease,Co-morbidities,MESA,excluded,time/date variable,1
+Type of pre-baseline event,HXCVD,History of cardiovascular disease,Co-morbidities,MESA,indicator,represents the concept,1
+WHO ROSE Intermittent Claudication,HXCVD,History of cardiovascular disease,Co-morbidities,MESA,item,narrower member of concept,1
+"Time between exam visits, in days",HXCVD,History of cardiovascular disease,Co-morbidities,MESA,excluded,time/date variable,1
+Any hypertension medication,HXCVD,History of cardiovascular disease,Co-morbidities,MESA,excluded,different measurement/concept,1
+"Time between first and third visits, in days",HXCVD,History of cardiovascular disease,Co-morbidities,MESA,excluded,time/date variable,1
+"Time between first and fourth visits, in days",HXCVD,History of cardiovascular disease,Co-morbidities,MESA,excluded,time/date variable,1
+"TIME BETWEEN FIRST AND FIFTH VISITS, IN DAYS",HXCVD,History of cardiovascular disease,Co-morbidities,MESA,excluded,time/date variable,1
+"PAD V1, Def 2 (same for both genders)",HXHRTD,History of heart disease,Co-morbidities,ARIC,item,narrower member of concept,1
+ROSE ANGINA,HXHRTD,History of heart disease,Co-morbidities,ARIC,item,narrower member of concept,1
+Prevalent HF at Visit 1,HXHRTD,History of heart disease,Co-morbidities,ARIC,item,narrower member of concept,1
+Follow-up time for INCHF18 in days,HXHRTD,History of heart disease,Co-morbidities,ARIC,excluded,time/date variable,1
+Incident HF (from discharge codes),HXHRTD,History of heart disease,Co-morbidities,ARIC,item,narrower member of concept,1
+Follow up time for PROC18 (days),HXHRTD,History of heart disease,Co-morbidities,ARIC,excluded,time/date variable,1
+Cardiac Procedures,HXHRTD,History of heart disease,Co-morbidities,ARIC,item,narrower member of concept,1
+"PAD V3, Def 2 (same for both genders)",HXHRTD,History of heart disease,Co-morbidities,ARIC,item,narrower member of concept,3
+DAYS SINCE EXAM 1,HXHRTD,History of heart disease,Co-morbidities,ARIC,excluded,time/date variable,1
+REPORT ROSE ANGINA IN AFU? Q1,HXHRTD,History of heart disease,Co-morbidities,ARIC,item,narrower member of concept,1
+"PAD V4, Def 2 (same for both genders)",HXHRTD,History of heart disease,Co-morbidities,ARIC,item,narrower member of concept,4
+Cardiovascular Disease (CVD) status,HXHRTD,History of heart disease,Co-morbidities,Framingham,indicator,represents the concept,1
+Date of Cardiovascular Disease (CVD) status,HXHRTD,History of heart disease,Co-morbidities,Framingham,excluded,time/date variable,1
+DATE OF EVENT,HXHRTD,History of heart disease,Co-morbidities,Framingham,excluded,time/date variable,1
+EVENT NUMBER ON SEQUENCE OF EVENTS,HXHRTD,History of heart disease,Co-morbidities,Framingham,excluded,generic list/code field,1
+Date of cardiovascular procedure,HXHRTD,History of heart disease,Co-morbidities,Framingham,excluded,time/date variable,1
+PROCEDURE NUMBER,HXHRTD,History of heart disease,Co-morbidities,Framingham,excluded,generic list/code field,1
+Date of Exam 2,HXHRTD,History of heart disease,Co-morbidities,Framingham,excluded,time/date variable,2
+Date of Exam 3,HXHRTD,History of heart disease,Co-morbidities,Framingham,excluded,time/date variable,3
+Date of Exam 4,HXHRTD,History of heart disease,Co-morbidities,Framingham,excluded,time/date variable,4
+Date of Exam 5,HXHRTD,History of heart disease,Co-morbidities,Framingham,excluded,time/date variable,5
+Date of Exam 6,HXHRTD,History of heart disease,Co-morbidities,Framingham,excluded,time/date variable,6
+Date of Exam 7,HXHRTD,History of heart disease,Co-morbidities,Framingham,excluded,time/date variable,7
+Date of Exam 8,HXHRTD,History of heart disease,Co-morbidities,Framingham,excluded,time/date variable,8
+Date of Exam 9,HXHRTD,History of heart disease,Co-morbidities,Framingham,excluded,time/date variable,9
+Myocardial Infarction (MI),HXHRTD,History of heart disease,Co-morbidities,MESA,item,narrower member of concept,1
+Time to MI or End of Year 2015 (days),HXHRTD,History of heart disease,Co-morbidities,MESA,excluded,time/date variable,1
+Resuscitated Cardiac Arrest,HXHRTD,History of heart disease,Co-morbidities,MESA,item,narrower member of concept,1
+Time to RCA or End of Year 2015 (days),HXHRTD,History of heart disease,Co-morbidities,MESA,excluded,time/date variable,1
+Angina Pectoris,HXHRTD,History of heart disease,Co-morbidities,MESA,item,narrower member of concept,1
+Time to Angina or End of Year 2015 (days),HXHRTD,History of heart disease,Co-morbidities,MESA,excluded,time/date variable,1
+Congestive Heart Failure (CHF),HXHRTD,History of heart disease,Co-morbidities,MESA,item,narrower member of concept,1
+Time to CHF or End of Year 2015 (days),HXHRTD,History of heart disease,Co-morbidities,MESA,excluded,time/date variable,1
+Peripheral Vascular Disease (PVD),HXHRTD,History of heart disease,Co-morbidities,MESA,item,narrower member of concept,1
+Time to PVD or End of Year 2015 (days),HXHRTD,History of heart disease,Co-morbidities,MESA,excluded,time/date variable,1
+Coronary Bypass Graft (CBG),HXHRTD,History of heart disease,Co-morbidities,MESA,item,narrower member of concept,1
+Time to CBG or End of Year 2015 (days),HXHRTD,History of heart disease,Co-morbidities,MESA,excluded,time/date variable,1
+"PTCA, Cor. Stent, or Cor. Atherectomy",HXHRTD,History of heart disease,Co-morbidities,MESA,item,narrower member of concept,1
+Time to PTCA or End of Year 2015 (days),HXHRTD,History of heart disease,Co-morbidities,MESA,excluded,time/date variable,1
+Coronary Revascularization,HXHRTD,History of heart disease,Co-morbidities,MESA,item,narrower member of concept,1
+Time to Cor. Revasc. or End of Year 2015 (days),HXHRTD,History of heart disease,Co-morbidities,MESA,excluded,time/date variable,1
+Type of pre-baseline event,HXHRTD,History of heart disease,Co-morbidities,MESA,indicator,represents the concept,1
+"Time between exam visits, in days",HXHRTD,History of heart disease,Co-morbidities,MESA,excluded,time/date variable,1
+"Time between first and third visits, in days",HXHRTD,History of heart disease,Co-morbidities,MESA,excluded,time/date variable,1
+"Time between first and fourth visits, in days",HXHRTD,History of heart disease,Co-morbidities,MESA,excluded,time/date variable,1
+"TIME BETWEEN FIRST AND FIFTH VISITS, IN DAYS",HXHRTD,History of heart disease,Co-morbidities,MESA,excluded,time/date variable,1
+MD DIAGNOSED MYOCARDIAL INFARCTION,HXMI,History of MI(REGARDS model),Co-morbidities,ARIC,indicator,represents the concept,1
+HISTORY OF MYOCARDIAL INFARCTION,HXMI,History of MI(REGARDS model),Co-morbidities,ARIC,indicator,represents the concept,1
+Follow up time for MI18 (days),HXMI,History of MI(REGARDS model),Co-morbidities,ARIC,excluded,time/date variable,1
+Follow up time for INC_BY18 (days),HXMI,History of MI(REGARDS model),Co-morbidities,ARIC,excluded,time/date variable,1
+MI by Censoring Date,HXMI,History of MI(REGARDS model),Co-morbidities,ARIC,excluded,time/date variable,1
+MI/FATCHD by Censoring Date,HXMI,History of MI(REGARDS model),Co-morbidities,ARIC,excluded,time/date variable,1
+V2 MD Diagnosed Myocardial Infarction,HXMI,History of MI(REGARDS model),Co-morbidities,ARIC,indicator,represents the concept,2
+V2 History of Myocardial Infarction,HXMI,History of MI(REGARDS model),Co-morbidities,ARIC,indicator,represents the concept,2
+DAYS SINCE EXAM 1,HXMI,History of MI(REGARDS model),Co-morbidities,ARIC,excluded,time/date variable,1
+V3 MD Diagnosed Myocardial Infarction,HXMI,History of MI(REGARDS model),Co-morbidities,ARIC,indicator,represents the concept,3
+V3 History of Myocardial Infarction,HXMI,History of MI(REGARDS model),Co-morbidities,ARIC,indicator,represents the concept,3
+V4 MD Diagnosed Myocardial Infarction,HXMI,History of MI(REGARDS model),Co-morbidities,ARIC,indicator,represents the concept,4
+V4 History of Myocardial Infarction,HXMI,History of MI(REGARDS model),Co-morbidities,ARIC,indicator,represents the concept,4
+DATE OF EVENT,HXMI,History of MI(REGARDS model),Co-morbidities,Framingham,excluded,time/date variable,1
+EVENT NUMBER ON SEQUENCE OF EVENTS,HXMI,History of MI(REGARDS model),Co-morbidities,Framingham,excluded,generic list/code field,1
+Date of Exam 2,HXMI,History of MI(REGARDS model),Co-morbidities,Framingham,excluded,time/date variable,2
+Date of Exam 3,HXMI,History of MI(REGARDS model),Co-morbidities,Framingham,excluded,time/date variable,3
+Date of Exam 4,HXMI,History of MI(REGARDS model),Co-morbidities,Framingham,excluded,time/date variable,4
+Date of Exam 5,HXMI,History of MI(REGARDS model),Co-morbidities,Framingham,excluded,time/date variable,5
+Date of Exam 6,HXMI,History of MI(REGARDS model),Co-morbidities,Framingham,excluded,time/date variable,6
+Date of Exam 7,HXMI,History of MI(REGARDS model),Co-morbidities,Framingham,excluded,time/date variable,7
+Date of Exam 8,HXMI,History of MI(REGARDS model),Co-morbidities,Framingham,excluded,time/date variable,8
+Date of Exam 9,HXMI,History of MI(REGARDS model),Co-morbidities,Framingham,excluded,time/date variable,9
+Myocardial Infarction (MI),HXMI,History of MI(REGARDS model),Co-morbidities,MESA,indicator,represents the concept,1
+Time to MI or End of Year 2015 (days),HXMI,History of MI(REGARDS model),Co-morbidities,MESA,excluded,time/date variable,1
+"Time between exam visits, in days",HXMI,History of MI(REGARDS model),Co-morbidities,MESA,excluded,time/date variable,1
+"Time between first and third visits, in days",HXMI,History of MI(REGARDS model),Co-morbidities,MESA,excluded,time/date variable,1
+"Time between first and fourth visits, in days",HXMI,History of MI(REGARDS model),Co-morbidities,MESA,excluded,time/date variable,1
+"TIME BETWEEN FIRST AND FIFTH VISITS, IN DAYS",HXMI,History of MI(REGARDS model),Co-morbidities,MESA,excluded,time/date variable,1
+Hypertension by JNC VI (1997) criteria,HYPT,"Hypertension (0=No, 1=Yes)",Co-morbidities,MESA,indicator,represents the concept,1
+"Hypertension by JNC VI (1997) criteria, Exam 2",HYPT,"Hypertension (0=No, 1=Yes)",Co-morbidities,MESA,indicator,represents the concept,2
+"Hypertension by JNC VI (1997) criteria, Exam 3",HYPT,"Hypertension (0=No, 1=Yes)",Co-morbidities,MESA,indicator,represents the concept,3
+"Hypertension by JNC VI (1997) criteria, Exam 4",HYPT,"Hypertension (0=No, 1=Yes)",Co-morbidities,MESA,indicator,represents the concept,4
+"HYPERTENSION BY JNC VI (1997) CRITERIA, EXAM 5",HYPT,"Hypertension (0=No, 1=Yes)",Co-morbidities,MESA,indicator,represents the concept,5
+Scrambled Cohort Visit ID,ID_C,ARIC subject ID,Other,ARIC,excluded,helper/derived concept,1
+MEDICATION & CONCENTRATION Q4M01A,INSULIN,"Taking insulin (0=No, 1=Yes)",Medications,ARIC,excluded,generic list/code field,1
+MEDICATION & CONCENTRATION Q4M02A,INSULIN,"Taking insulin (0=No, 1=Yes)",Medications,ARIC,excluded,generic list/code field,1
+MEDICATION & CONCENTRATION Q4M03A,INSULIN,"Taking insulin (0=No, 1=Yes)",Medications,ARIC,excluded,generic list/code field,1
+MEDICATION & CONCENTRATION Q4M04A,INSULIN,"Taking insulin (0=No, 1=Yes)",Medications,ARIC,excluded,generic list/code field,1
+MEDICATION & CONCENTRATION Q4M05A,INSULIN,"Taking insulin (0=No, 1=Yes)",Medications,ARIC,excluded,generic list/code field,1
+MEDICATION & CONCENTRATION Q4M06A,INSULIN,"Taking insulin (0=No, 1=Yes)",Medications,ARIC,excluded,generic list/code field,1
+MEDICATION & CONCENTRATION Q4M07A,INSULIN,"Taking insulin (0=No, 1=Yes)",Medications,ARIC,excluded,generic list/code field,1
+MEDICATION & CONCENTRATION Q4M08A,INSULIN,"Taking insulin (0=No, 1=Yes)",Medications,ARIC,excluded,generic list/code field,1
+MEDICATION & CONCENTRATION Q4M09A,INSULIN,"Taking insulin (0=No, 1=Yes)",Medications,ARIC,excluded,generic list/code field,1
+MEDICATION & CONCENTRATION Q4M10A,INSULIN,"Taking insulin (0=No, 1=Yes)",Medications,ARIC,excluded,generic list/code field,1
+MEDICATION & CONCENTRATION Q4M11A,INSULIN,"Taking insulin (0=No, 1=Yes)",Medications,ARIC,excluded,generic list/code field,1
+MEDICATION & CONCENTRATION Q4M12A,INSULIN,"Taking insulin (0=No, 1=Yes)",Medications,ARIC,excluded,generic list/code field,1
+MEDICATION & CONCENTRATION Q4M13A,INSULIN,"Taking insulin (0=No, 1=Yes)",Medications,ARIC,excluded,generic list/code field,1
+MEDICATION & CONCENTRATION Q4M14A,INSULIN,"Taking insulin (0=No, 1=Yes)",Medications,ARIC,excluded,generic list/code field,1
+MEDICATION & CONCENTRATION Q4M15A,INSULIN,"Taking insulin (0=No, 1=Yes)",Medications,ARIC,excluded,generic list/code field,1
+MEDICATION & CONCENTRATION Q4M16A,INSULIN,"Taking insulin (0=No, 1=Yes)",Medications,ARIC,excluded,generic list/code field,1
+MEDICATION & CONCENTRATION Q4M17A,INSULIN,"Taking insulin (0=No, 1=Yes)",Medications,ARIC,excluded,generic list/code field,1
+MEDICATION NAME & CONCENTRATION Q4A,INSULIN,"Taking insulin (0=No, 1=Yes)",Medications,ARIC,excluded,generic list/code field,1
+MEDICATION NAME & CONCENTRATION Q5A,INSULIN,"Taking insulin (0=No, 1=Yes)",Medications,ARIC,excluded,generic list/code field,1
+MEDICATION NAME & CONCENTRATION Q6A,INSULIN,"Taking insulin (0=No, 1=Yes)",Medications,ARIC,excluded,generic list/code field,1
+MEDICATION NAME & CONCENTRATION Q7A,INSULIN,"Taking insulin (0=No, 1=Yes)",Medications,ARIC,excluded,generic list/code field,1
+MEDICATION NAME & CONCENTRATION Q8A,INSULIN,"Taking insulin (0=No, 1=Yes)",Medications,ARIC,excluded,generic list/code field,1
+MEDICATION NAME & CONCENTRATION Q9A,INSULIN,"Taking insulin (0=No, 1=Yes)",Medications,ARIC,excluded,generic list/code field,1
+MEDICATION NAME & CONCENTRATION Q10A,INSULIN,"Taking insulin (0=No, 1=Yes)",Medications,ARIC,excluded,generic list/code field,1
+MEDICATION NAME & CONCENTRATION Q11A,INSULIN,"Taking insulin (0=No, 1=Yes)",Medications,ARIC,excluded,generic list/code field,1
+MEDICATION NAME & CONCENTRATION Q12A,INSULIN,"Taking insulin (0=No, 1=Yes)",Medications,ARIC,excluded,generic list/code field,1
+MEDICATION NAME & CONCENTRATION Q13A,INSULIN,"Taking insulin (0=No, 1=Yes)",Medications,ARIC,excluded,generic list/code field,1
+MEDICATION NAME & CONCENTRATION Q14A,INSULIN,"Taking insulin (0=No, 1=Yes)",Medications,ARIC,excluded,generic list/code field,1
+MEDICATION NAME & CONCENTRATION Q15A,INSULIN,"Taking insulin (0=No, 1=Yes)",Medications,ARIC,excluded,generic list/code field,1
+MEDICATION NAME & CONCENTRATION Q16A,INSULIN,"Taking insulin (0=No, 1=Yes)",Medications,ARIC,excluded,generic list/code field,1
+MEDICATION NAME & CONCENTRATION Q17A,INSULIN,"Taking insulin (0=No, 1=Yes)",Medications,ARIC,excluded,generic list/code field,1
+MEDICATION NAME & CONCENTRATION Q18A,INSULIN,"Taking insulin (0=No, 1=Yes)",Medications,ARIC,excluded,generic list/code field,1
+MEDICATION NAME & CONCENTRATION Q19A,INSULIN,"Taking insulin (0=No, 1=Yes)",Medications,ARIC,excluded,generic list/code field,1
+MEDICATION NAME & CONCENTRATION Q20A,INSULIN,"Taking insulin (0=No, 1=Yes)",Medications,ARIC,excluded,generic list/code field,1
+MEDICATION A NAME & CONCENTATION Q4A,INSULIN,"Taking insulin (0=No, 1=Yes)",Medications,ARIC,excluded,generic list/code field,1
+MEDICATION B NAME & CONCENTRATION Q5A,INSULIN,"Taking insulin (0=No, 1=Yes)",Medications,ARIC,excluded,generic list/code field,1
+MEDICATION C NAME & CONCENTRATION Q6A,INSULIN,"Taking insulin (0=No, 1=Yes)",Medications,ARIC,excluded,generic list/code field,1
+MEDICATION D NAME & CONCENTRATION Q7A,INSULIN,"Taking insulin (0=No, 1=Yes)",Medications,ARIC,excluded,generic list/code field,1
+MEDICATION E NAME & CONCENTRATION Q8A,INSULIN,"Taking insulin (0=No, 1=Yes)",Medications,ARIC,excluded,generic list/code field,1
+MEDICATION F NAME & CONCENTRATION Q9A,INSULIN,"Taking insulin (0=No, 1=Yes)",Medications,ARIC,excluded,generic list/code field,1
+MEDICATION G NAME & CONCENTRATION Q10A,INSULIN,"Taking insulin (0=No, 1=Yes)",Medications,ARIC,excluded,generic list/code field,1
+MEDICATION H NAME & CONCENTRATION Q11A,INSULIN,"Taking insulin (0=No, 1=Yes)",Medications,ARIC,excluded,generic list/code field,1
+MEDICATION I NAME & CONCENTRATION Q12A,INSULIN,"Taking insulin (0=No, 1=Yes)",Medications,ARIC,excluded,generic list/code field,1
+MEDICATION J NAME & CONCENTRATION Q13A,INSULIN,"Taking insulin (0=No, 1=Yes)",Medications,ARIC,excluded,generic list/code field,1
+MEDICATION K NAME & CONCENTRATION Q14A,INSULIN,"Taking insulin (0=No, 1=Yes)",Medications,ARIC,excluded,generic list/code field,1
+MEDICATION L NAME & CONCENTRATION Q15A,INSULIN,"Taking insulin (0=No, 1=Yes)",Medications,ARIC,excluded,generic list/code field,1
+MEDICATION M NAME & CONCENTRATION Q16A,INSULIN,"Taking insulin (0=No, 1=Yes)",Medications,ARIC,excluded,generic list/code field,1
+MEDICATION N NAME & CONCENTRATION Q17A,INSULIN,"Taking insulin (0=No, 1=Yes)",Medications,ARIC,excluded,generic list/code field,1
+MEDICATION P NAME & CONCENTRATION Q19A,INSULIN,"Taking insulin (0=No, 1=Yes)",Medications,ARIC,excluded,generic list/code field,1
+MEDICATION Q NAME & CONCENTRATION Q20A,INSULIN,"Taking insulin (0=No, 1=Yes)",Medications,ARIC,excluded,generic list/code field,1
+MEDICATION A NAME Q4A,INSULIN,"Taking insulin (0=No, 1=Yes)",Medications,ARIC,excluded,generic list/code field,1
+MEDICATION B NAME Q5A,INSULIN,"Taking insulin (0=No, 1=Yes)",Medications,ARIC,excluded,generic list/code field,1
+MEDICATION C NAME Q6A,INSULIN,"Taking insulin (0=No, 1=Yes)",Medications,ARIC,excluded,generic list/code field,1
+MEDICATION D NAME Q7A,INSULIN,"Taking insulin (0=No, 1=Yes)",Medications,ARIC,excluded,generic list/code field,1
+MEDICATION E NAME Q8A,INSULIN,"Taking insulin (0=No, 1=Yes)",Medications,ARIC,excluded,generic list/code field,1
+MEDICATION F NAME Q9A,INSULIN,"Taking insulin (0=No, 1=Yes)",Medications,ARIC,excluded,generic list/code field,1
+MEDICATION G NAME Q10A,INSULIN,"Taking insulin (0=No, 1=Yes)",Medications,ARIC,excluded,generic list/code field,1
+MEDICATION H NAME Q11A,INSULIN,"Taking insulin (0=No, 1=Yes)",Medications,ARIC,excluded,generic list/code field,1
+MEDICATION I NAME Q12A,INSULIN,"Taking insulin (0=No, 1=Yes)",Medications,ARIC,excluded,generic list/code field,1
+MEDICATION J NAME Q13A,INSULIN,"Taking insulin (0=No, 1=Yes)",Medications,ARIC,excluded,generic list/code field,1
+MEDICATION K NAME Q14A,INSULIN,"Taking insulin (0=No, 1=Yes)",Medications,ARIC,excluded,generic list/code field,1
+MEDICATION L NAME Q15A,INSULIN,"Taking insulin (0=No, 1=Yes)",Medications,ARIC,excluded,generic list/code field,1
+MEDICATION M NAME Q16A,INSULIN,"Taking insulin (0=No, 1=Yes)",Medications,ARIC,excluded,generic list/code field,1
+MEDICATION N NAME Q17A,INSULIN,"Taking insulin (0=No, 1=Yes)",Medications,ARIC,excluded,generic list/code field,1
+MEDICATION O NAME Q18A,INSULIN,"Taking insulin (0=No, 1=Yes)",Medications,ARIC,excluded,generic list/code field,1
+MEDICATION P NAME Q19A,INSULIN,"Taking insulin (0=No, 1=Yes)",Medications,ARIC,excluded,generic list/code field,1
+MEDICATION Q NAME Q20A,INSULIN,"Taking insulin (0=No, 1=Yes)",Medications,ARIC,excluded,generic list/code field,1
+Med 1: Scanned UPC med name,INSULIN,"Taking insulin (0=No, 1=Yes)",Medications,ARIC,excluded,generic list/code field,1
+Med 2: Scanned UPC med name,INSULIN,"Taking insulin (0=No, 1=Yes)",Medications,ARIC,excluded,generic list/code field,1
+Med 3: Scanned UPC med name,INSULIN,"Taking insulin (0=No, 1=Yes)",Medications,ARIC,excluded,generic list/code field,1
+Med 4: Scanned UPC med name,INSULIN,"Taking insulin (0=No, 1=Yes)",Medications,ARIC,excluded,generic list/code field,1
+Med 5: Scanned UPC med name,INSULIN,"Taking insulin (0=No, 1=Yes)",Medications,ARIC,excluded,generic list/code field,1
+Med 6: Scanned UPC med name,INSULIN,"Taking insulin (0=No, 1=Yes)",Medications,ARIC,excluded,generic list/code field,1
+Med 7: Scanned UPC med name,INSULIN,"Taking insulin (0=No, 1=Yes)",Medications,ARIC,excluded,generic list/code field,1
+Med 8: Scanned UPC med name,INSULIN,"Taking insulin (0=No, 1=Yes)",Medications,ARIC,excluded,generic list/code field,1
+Med 9: Scanned UPC med name,INSULIN,"Taking insulin (0=No, 1=Yes)",Medications,ARIC,excluded,generic list/code field,1
+Med 10: Scanned UPC med name,INSULIN,"Taking insulin (0=No, 1=Yes)",Medications,ARIC,excluded,generic list/code field,1
+Med 11: Scanned UPC med name,INSULIN,"Taking insulin (0=No, 1=Yes)",Medications,ARIC,excluded,generic list/code field,1
+Med 12: Scanned UPC med name,INSULIN,"Taking insulin (0=No, 1=Yes)",Medications,ARIC,excluded,generic list/code field,1
+Med 13: Scanned UPC med name,INSULIN,"Taking insulin (0=No, 1=Yes)",Medications,ARIC,excluded,generic list/code field,1
+Med 14: Scanned UPC med name,INSULIN,"Taking insulin (0=No, 1=Yes)",Medications,ARIC,excluded,generic list/code field,1
+Med 15: Scanned UPC med name,INSULIN,"Taking insulin (0=No, 1=Yes)",Medications,ARIC,excluded,generic list/code field,1
+Med 16: Scanned UPC med name,INSULIN,"Taking insulin (0=No, 1=Yes)",Medications,ARIC,excluded,generic list/code field,1
+Med 17: Scanned UPC med name,INSULIN,"Taking insulin (0=No, 1=Yes)",Medications,ARIC,excluded,generic list/code field,1
+Med 18: Scanned UPC med name,INSULIN,"Taking insulin (0=No, 1=Yes)",Medications,ARIC,excluded,generic list/code field,1
+Med 19: Scanned UPC med name,INSULIN,"Taking insulin (0=No, 1=Yes)",Medications,ARIC,excluded,generic list/code field,1
+Med 20: Scanned UPC med name,INSULIN,"Taking insulin (0=No, 1=Yes)",Medications,ARIC,excluded,generic list/code field,1
+Med 21: Scanned UPC med name,INSULIN,"Taking insulin (0=No, 1=Yes)",Medications,ARIC,excluded,generic list/code field,1
+Med 22: Scanned UPC med name,INSULIN,"Taking insulin (0=No, 1=Yes)",Medications,ARIC,excluded,generic list/code field,1
+Med 23: Scanned UPC med name,INSULIN,"Taking insulin (0=No, 1=Yes)",Medications,ARIC,excluded,generic list/code field,1
+Med 24: Scanned UPC med name,INSULIN,"Taking insulin (0=No, 1=Yes)",Medications,ARIC,excluded,generic list/code field,1
+Med 25: Scanned UPC med name,INSULIN,"Taking insulin (0=No, 1=Yes)",Medications,ARIC,excluded,generic list/code field,1
+D202-23-INSULIN,INSULIN,"Taking insulin (0=No, 1=Yes)",Medications,Framingham,indicator,represents the concept,1
+INSULIN,INSULIN,"Taking insulin (0=No, 1=Yes)",Medications,Framingham,indicator,represents the concept,1
+MEDS - INSULIN,INSULIN,"Taking insulin (0=No, 1=Yes)",Medications,Framingham,indicator,represents the concept,1
+ATC CODE FOR MEDICATION OR FIRST DRUG IN COMPOUND,INSULIN,"Taking insulin (0=No, 1=Yes)",Medications,Framingham,excluded,generic list/code field,1
+ATC CODE FOR SECOND DRUG IN COMPOUND,INSULIN,"Taking insulin (0=No, 1=Yes)",Medications,Framingham,excluded,generic list/code field,1
+ATC CODE FOR THIRD DRUG IN COMPOUND,INSULIN,"Taking insulin (0=No, 1=Yes)",Medications,Framingham,excluded,generic list/code field,1
+ATC CODE FOR FOURTH DRUG IN COMPOUND,INSULIN,"Taking insulin (0=No, 1=Yes)",Medications,Framingham,excluded,generic list/code field,1
+ATC code for medication or first drug in compound,INSULIN,"Taking insulin (0=No, 1=Yes)",Medications,Framingham,excluded,generic list/code field,1
+ATC code for medication or second drug in compound,INSULIN,"Taking insulin (0=No, 1=Yes)",Medications,Framingham,excluded,generic list/code field,1
+ATC code for medication or third drug in compound,INSULIN,"Taking insulin (0=No, 1=Yes)",Medications,Framingham,excluded,generic list/code field,1
+ATC code for medication or fourth drug in compound,INSULIN,"Taking insulin (0=No, 1=Yes)",Medications,Framingham,excluded,generic list/code field,1
+Insulins,INSULIN,"Taking insulin (0=No, 1=Yes)",Medications,MESA,indicator,represents the concept,1
+INSULINS,INSULIN,"Taking insulin (0=No, 1=Yes)",Medications,MESA,indicator,represents the concept,1
+RE-CALIBRATED LDL CHOL. in mg/dl,LDL,LDL cholesterol,Labs,ARIC,indicator,represents the concept,1
+V2 re-calculated LDL-C in mg/dL,LDL,LDL cholesterol,Labs,ARIC,indicator,represents the concept,2
+Re-Calibrated LDL Cholesterol in mg/dL,LDL,LDL cholesterol,Labs,ARIC,indicator,represents the concept,1
+V4 Recalculated LDL Cholesterol,LDL,LDL cholesterol,Labs,ARIC,indicator,represents the concept,4
+LDLCC-Cholesterol calculated (mg/dL),LDL,LDL cholesterol,Labs,ARIC,indicator,represents the concept,1
+LDL CHOLESTEROL (mg/dl),LDL,LDL cholesterol,Labs,MESA,indicator,represents the concept,1
+LDL Cholesterol (mg/dl),LDL,LDL cholesterol,Labs,MESA,indicator,represents the concept,1
+LVH present by cornell definition,LVH,"Left ventricular hypertrophy(0=No, 1=Yes)",Co-morbidities,ARIC,indicator,represents the concept,1
+"Definite left ventricular hypertrophy, Exam 1",LVH,"Left ventricular hypertrophy(0=No, 1=Yes)",Co-morbidities,Framingham,indicator,represents the concept,1
+"Definite left ventricular hypertrophy, Exam 2",LVH,"Left ventricular hypertrophy(0=No, 1=Yes)",Co-morbidities,Framingham,indicator,represents the concept,2
+"Definite left ventricular hypertrophy, Exam 3",LVH,"Left ventricular hypertrophy(0=No, 1=Yes)",Co-morbidities,Framingham,indicator,represents the concept,3
+"Definite left ventricular hypertrophy, Exam 4",LVH,"Left ventricular hypertrophy(0=No, 1=Yes)",Co-morbidities,Framingham,indicator,represents the concept,4
+"Definite left ventricular hypertrophy, Exam 5",LVH,"Left ventricular hypertrophy(0=No, 1=Yes)",Co-morbidities,Framingham,indicator,represents the concept,5
+"Definite left ventricular hypertrophy, Exam 6",LVH,"Left ventricular hypertrophy(0=No, 1=Yes)",Co-morbidities,Framingham,indicator,represents the concept,6
+"Definite left ventricular hypertrophy, Exam 7",LVH,"Left ventricular hypertrophy(0=No, 1=Yes)",Co-morbidities,Framingham,indicator,represents the concept,7
+"Definite left ventricular hypertrophy, Exam 8",LVH,"Left ventricular hypertrophy(0=No, 1=Yes)",Co-morbidities,Framingham,indicator,represents the concept,8
+"Definite left ventricular hypertrophy, Exam 9",LVH,"Left ventricular hypertrophy(0=No, 1=Yes)",Co-morbidities,Framingham,indicator,represents the concept,9
+LEFT VENTRICULAR HYPERTROPHY BY NOVACODE,LVH,"Left ventricular hypertrophy(0=No, 1=Yes)",Co-morbidities,MESA,indicator,represents the concept,1
+ECG LEFT VENTRICULAR HYPERTROPHY BY NOVACODE,LVH,"Left ventricular hypertrophy(0=No, 1=Yes)",Co-morbidities,MESA,indicator,represents the concept,1
+MESA Participant Identification Number,MESAID,MESA Participant Identification Number,Other,MESA,excluded,helper/derived concept,1
+MESA PARTICIPANT IDENTIFICATION NUMBER,MESAID,MESA Participant Identification Number,Other,MESA,excluded,helper/derived concept,1
+ANTI-CHOLESTEROL AGENTS,NONSTATIN,"Taking non-statin medication (0=No, 1=Yes)",Medications,Framingham,indicator,represents the concept,1
+D202-016-ANTI-CHOLESTEROL,NONSTATIN,"Taking non-statin medication (0=No, 1=Yes)",Medications,Framingham,indicator,represents the concept,1
+ANTI CHOLESTEROL DRUGS,NONSTATIN,"Taking non-statin medication (0=No, 1=Yes)",Medications,Framingham,indicator,represents the concept,1
+ANTI CHOLESTEROL DRUGS-RESINS,NONSTATIN,"Taking non-statin medication (0=No, 1=Yes)",Medications,Framingham,item,narrower member of concept,1
+ANTI CHOLESTEROL DRUGS-NIACIN,NONSTATIN,"Taking non-statin medication (0=No, 1=Yes)",Medications,Framingham,item,narrower member of concept,1
+ANTI CHOLESTEROL DRUGS-FIBRATES,NONSTATIN,"Taking non-statin medication (0=No, 1=Yes)",Medications,Framingham,item,narrower member of concept,1
+ANTI CHOLESTEROL DRUGS-OTHER,NONSTATIN,"Taking non-statin medication (0=No, 1=Yes)",Medications,Framingham,item,narrower member of concept,1
+MEDS - ANTI-CHOL -RESINS,NONSTATIN,"Taking non-statin medication (0=No, 1=Yes)",Medications,Framingham,item,narrower member of concept,1
+MEDS - ANTI-CHOL -NIACIN/NICOTINIC ACID,NONSTATIN,"Taking non-statin medication (0=No, 1=Yes)",Medications,Framingham,item,narrower member of concept,1
+MEDS - ANTI-CHOL -FIBRATES,NONSTATIN,"Taking non-statin medication (0=No, 1=Yes)",Medications,Framingham,item,narrower member of concept,1
+MEDS - ANTI-CHOL -OTHER,NONSTATIN,"Taking non-statin medication (0=No, 1=Yes)",Medications,Framingham,item,narrower member of concept,1
+MEDS - ANTI-CHOL - RESINS,NONSTATIN,"Taking non-statin medication (0=No, 1=Yes)",Medications,Framingham,item,narrower member of concept,1
+MEDS - ANTI-CHOL - NIACIN/NICOTINIC ACID,NONSTATIN,"Taking non-statin medication (0=No, 1=Yes)",Medications,Framingham,item,narrower member of concept,1
+MEDS - ANTI-CHOL - FIBRATES,NONSTATIN,"Taking non-statin medication (0=No, 1=Yes)",Medications,Framingham,item,narrower member of concept,1
+MEDS - ANTI-CHOL - OTHER,NONSTATIN,"Taking non-statin medication (0=No, 1=Yes)",Medications,Framingham,item,narrower member of concept,1
+ATC CODE FOR MEDICATION OR FIRST DRUG IN COMPOUND,NONSTATIN,"Taking non-statin medication (0=No, 1=Yes)",Medications,Framingham,excluded,generic list/code field,1
+ATC CODE FOR SECOND DRUG IN COMPOUND,NONSTATIN,"Taking non-statin medication (0=No, 1=Yes)",Medications,Framingham,excluded,generic list/code field,1
+ATC CODE FOR THIRD DRUG IN COMPOUND,NONSTATIN,"Taking non-statin medication (0=No, 1=Yes)",Medications,Framingham,excluded,generic list/code field,1
+ATC CODE FOR FOURTH DRUG IN COMPOUND,NONSTATIN,"Taking non-statin medication (0=No, 1=Yes)",Medications,Framingham,excluded,generic list/code field,1
+ATC code for medication or first drug in compound,NONSTATIN,"Taking non-statin medication (0=No, 1=Yes)",Medications,Framingham,excluded,generic list/code field,1
+ATC code for medication or second drug in compound,NONSTATIN,"Taking non-statin medication (0=No, 1=Yes)",Medications,Framingham,excluded,generic list/code field,1
+ATC code for medication or third drug in compound,NONSTATIN,"Taking non-statin medication (0=No, 1=Yes)",Medications,Framingham,excluded,generic list/code field,1
+ATC code for medication or fourth drug in compound,NONSTATIN,"Taking non-statin medication (0=No, 1=Yes)",Medications,Framingham,excluded,generic list/code field,1
+Bile-acid sequestrants,NONSTATIN,"Taking non-statin medication (0=No, 1=Yes)",Medications,MESA,item,narrower member of concept,1
+Fibrates,NONSTATIN,"Taking non-statin medication (0=No, 1=Yes)",Medications,MESA,item,narrower member of concept,1
+Miscellaneous lipid-lowering drugs,NONSTATIN,"Taking non-statin medication (0=No, 1=Yes)",Medications,MESA,item,narrower member of concept,1
+Niacin and nictotinic acid,NONSTATIN,"Taking non-statin medication (0=No, 1=Yes)",Medications,MESA,item,narrower member of concept,1
+Probucol,NONSTATIN,"Taking non-statin medication (0=No, 1=Yes)",Medications,MESA,item,narrower member of concept,1
+BILE-ACID SEQUESTRANTS,NONSTATIN,"Taking non-statin medication (0=No, 1=Yes)",Medications,MESA,item,narrower member of concept,1
+FIBRATES,NONSTATIN,"Taking non-statin medication (0=No, 1=Yes)",Medications,MESA,item,narrower member of concept,1
+MISCELLANEOUS LIPID-LOWERING DRUGS,NONSTATIN,"Taking non-statin medication (0=No, 1=Yes)",Medications,MESA,item,narrower member of concept,1
+NIACIN AND NICTOTINIC ACID,NONSTATIN,"Taking non-statin medication (0=No, 1=Yes)",Medications,MESA,item,narrower member of concept,1
+PROBUCOL,NONSTATIN,"Taking non-statin medication (0=No, 1=Yes)",Medications,MESA,item,narrower member of concept,1
+COHORT GENERAL EXAM DATA RANDOM ID,PID,UNIQUE PARTICIPANT ID,Other,Framingham,excluded,helper/derived concept,1
+RACE (from FTRA23),RACE_C,Race,Socio-demographics,ARIC,indicator,represents the concept,1
+RACE,RACE_C,Race,Socio-demographics,MESA,indicator,represents the concept,1
+SEX (from FTRA22),SEX_C,"Participant gender (character: F, M)",Socio-demographics,ARIC,indicator,represents the concept,1
+'Participant gender',SEX_C,"Participant gender (character: F, M)",Socio-demographics,Framingham,indicator,represents the concept,1
+gender,SEX_C,"Participant gender (character: F, M)",Socio-demographics,MESA,indicator,represents the concept,1
+SEX (from FTRA22),SEX_N,"Participant gender(0=Female, 1=Male)",Socio-demographics,ARIC,indicator,represents the concept,1
+'Participant gender',SEX_N,"Participant gender(0=Female, 1=Male)",Socio-demographics,Framingham,indicator,represents the concept,1
+gender,SEX_N,"Participant gender(0=Female, 1=Male)",Socio-demographics,MESA,indicator,represents the concept,1
+sodium (mg),SODIUM,Sodium intake (mg/day),Diet,ARIC,indicator,represents the concept,1
+SODIUM (mg),SODIUM,Sodium intake (mg/day),Diet,Framingham,indicator,represents the concept,1
+Sodium mg,SODIUM,Sodium intake (mg/day),Diet,Framingham,indicator,represents the concept,1
+Description not found,STATE,Site location (state),Socio-demographics,ARIC,excluded,no description,1
+Exam 1: Site,STATE,Site location (state),Socio-demographics,MESA,indicator,represents the concept,1
+"Used Statin (at Visit 1) last 2weeks (0=No, 1=Yes) based on 2004 Med Code",STATIN,"Taking statin (0=No, 1=Yes)",Medications,ARIC,indicator,represents the concept,1
+"Used Statin (at Visit 2) last 2weeks (0=No, 1=Yes) based on 2004 Med Code",STATIN,"Taking statin (0=No, 1=Yes)",Medications,ARIC,indicator,represents the concept,2
+"Used Statin (at Visit 3) last 2weeks (0=No, 1=Yes) based on 2004 Med Code",STATIN,"Taking statin (0=No, 1=Yes)",Medications,ARIC,indicator,represents the concept,3
+"Used Statin (at Visit 4) last 2weeks (0=No, 1=Yes) based on 2004 Med Code",STATIN,"Taking statin (0=No, 1=Yes)",Medications,ARIC,indicator,represents the concept,4
+Med 1: Therapeutic Class Code,STATIN,"Taking statin (0=No, 1=Yes)",Medications,ARIC,excluded,generic list/code field,1
+Med 2: Therapeutic Class Code,STATIN,"Taking statin (0=No, 1=Yes)",Medications,ARIC,excluded,generic list/code field,1
+Med 3: Therapeutic Class Code,STATIN,"Taking statin (0=No, 1=Yes)",Medications,ARIC,excluded,generic list/code field,1
+Med 4: Therapeutic Class Code,STATIN,"Taking statin (0=No, 1=Yes)",Medications,ARIC,excluded,generic list/code field,1
+Med 5: Therapeutic Class Code,STATIN,"Taking statin (0=No, 1=Yes)",Medications,ARIC,excluded,generic list/code field,1
+Med 6: Therapeutic Class Code,STATIN,"Taking statin (0=No, 1=Yes)",Medications,ARIC,excluded,generic list/code field,1
+Med 7: Therapeutic Class Code,STATIN,"Taking statin (0=No, 1=Yes)",Medications,ARIC,excluded,generic list/code field,1
+Med 8: Therapeutic Class Code,STATIN,"Taking statin (0=No, 1=Yes)",Medications,ARIC,excluded,generic list/code field,1
+Med 9: Therapeutic Class Code,STATIN,"Taking statin (0=No, 1=Yes)",Medications,ARIC,excluded,generic list/code field,1
+Med 10: Therapeutic Class Code,STATIN,"Taking statin (0=No, 1=Yes)",Medications,ARIC,excluded,generic list/code field,1
+Med 11: Therapeutic Class Code,STATIN,"Taking statin (0=No, 1=Yes)",Medications,ARIC,excluded,generic list/code field,1
+Med 12: Therapeutic Class Code,STATIN,"Taking statin (0=No, 1=Yes)",Medications,ARIC,excluded,generic list/code field,1
+Med 13: Therapeutic Class Code,STATIN,"Taking statin (0=No, 1=Yes)",Medications,ARIC,excluded,generic list/code field,1
+Med 14: Therapeutic Class Code,STATIN,"Taking statin (0=No, 1=Yes)",Medications,ARIC,excluded,generic list/code field,1
+Med 15: Therapeutic Class Code,STATIN,"Taking statin (0=No, 1=Yes)",Medications,ARIC,excluded,generic list/code field,1
+Med 16: Therapeutic Class Code,STATIN,"Taking statin (0=No, 1=Yes)",Medications,ARIC,excluded,generic list/code field,1
+Med 17: Therapeutic Class Code,STATIN,"Taking statin (0=No, 1=Yes)",Medications,ARIC,excluded,generic list/code field,1
+Med 18: Therapeutic Class Code,STATIN,"Taking statin (0=No, 1=Yes)",Medications,ARIC,excluded,generic list/code field,1
+Med 19: Therapeutic Class Code,STATIN,"Taking statin (0=No, 1=Yes)",Medications,ARIC,excluded,generic list/code field,1
+Med 20: Therapeutic Class Code,STATIN,"Taking statin (0=No, 1=Yes)",Medications,ARIC,excluded,generic list/code field,1
+Med 21: Therapeutic Class Code,STATIN,"Taking statin (0=No, 1=Yes)",Medications,ARIC,excluded,generic list/code field,1
+Med 22: Therapeutic Class Code,STATIN,"Taking statin (0=No, 1=Yes)",Medications,ARIC,excluded,generic list/code field,1
+Med 23: Therapeutic Class Code,STATIN,"Taking statin (0=No, 1=Yes)",Medications,ARIC,excluded,generic list/code field,1
+Med 24: Therapeutic Class Code,STATIN,"Taking statin (0=No, 1=Yes)",Medications,ARIC,excluded,generic list/code field,1
+Med 25: Therapeutic Class Code,STATIN,"Taking statin (0=No, 1=Yes)",Medications,ARIC,excluded,generic list/code field,1
+ANTI CHOLESTEROL DRUGS-STATINS,STATIN,"Taking statin (0=No, 1=Yes)",Medications,Framingham,indicator,represents the concept,1
+MEDS - ANTI-CHOL -STATINS,STATIN,"Taking statin (0=No, 1=Yes)",Medications,Framingham,indicator,represents the concept,1
+MEDS - ANTI-CHOL - STATINS,STATIN,"Taking statin (0=No, 1=Yes)",Medications,Framingham,indicator,represents the concept,1
+ATC CODE FOR MEDICATION OR FIRST DRUG IN COMPOUND,STATIN,"Taking statin (0=No, 1=Yes)",Medications,Framingham,excluded,generic list/code field,1
+ATC CODE FOR SECOND DRUG IN COMPOUND,STATIN,"Taking statin (0=No, 1=Yes)",Medications,Framingham,excluded,generic list/code field,1
+ATC CODE FOR THIRD DRUG IN COMPOUND,STATIN,"Taking statin (0=No, 1=Yes)",Medications,Framingham,excluded,generic list/code field,1
+ATC CODE FOR FOURTH DRUG IN COMPOUND,STATIN,"Taking statin (0=No, 1=Yes)",Medications,Framingham,excluded,generic list/code field,1
+ATC code for medication or first drug in compound,STATIN,"Taking statin (0=No, 1=Yes)",Medications,Framingham,excluded,generic list/code field,1
+ATC code for medication or second drug in compound,STATIN,"Taking statin (0=No, 1=Yes)",Medications,Framingham,excluded,generic list/code field,1
+ATC code for medication or third drug in compound,STATIN,"Taking statin (0=No, 1=Yes)",Medications,Framingham,excluded,generic list/code field,1
+ATC code for medication or fourth drug in compound,STATIN,"Taking statin (0=No, 1=Yes)",Medications,Framingham,excluded,generic list/code field,1
+HMG CoA reducatace inhibitors (statins),STATIN,"Taking statin (0=No, 1=Yes)",Medications,MESA,indicator,represents the concept,1
+HMG COA REDUCATACE INHIBITORS (STATINS),STATIN,"Taking statin (0=No, 1=Yes)",Medications,MESA,indicator,represents the concept,1
+ATC CODE FOR MEDICATION OR FIRST DRUG IN COMPOUND,STATNONSTAT,"Taking statin/non-statin combination (0=No, 1=Yes)",Medications,Framingham,excluded,helper/derived concept,1
+ATC CODE FOR SECOND DRUG IN COMPOUND,STATNONSTAT,"Taking statin/non-statin combination (0=No, 1=Yes)",Medications,Framingham,excluded,helper/derived concept,1
+ATC code for medication or first drug in compound,STATNONSTAT,"Taking statin/non-statin combination (0=No, 1=Yes)",Medications,Framingham,excluded,helper/derived concept,1
+ATC code for medication or second drug in compound,STATNONSTAT,"Taking statin/non-statin combination (0=No, 1=Yes)",Medications,Framingham,excluded,helper/derived concept,1
+2ND AND 3RD SYSTOLIC BP AVERAGE Q21,SYSBP,Seated systolic blood pressure (MM HG),Vitals,ARIC,indicator,represents the concept,1
+2ND AND 3RD SYSTOLIC BP AVERAGE Q22,SYSBP,Seated systolic blood pressure (MM HG),Vitals,ARIC,indicator,represents the concept,1
+AVG: Systolic (mmHg),SYSBP,Seated systolic blood pressure (MM HG),Vitals,ARIC,indicator,represents the concept,1
+SEATED SYSTOLIC BLOOD PRESSURE (mmHg),SYSBP,Seated systolic blood pressure (MM HG),Vitals,MESA,indicator,represents the concept,1
+Seated Systolic Blood Pressure (mmHg),SYSBP,Seated systolic blood pressure (MM HG),Vitals,MESA,indicator,represents the concept,1
+Seated systolic blood pressure (mmhg),SYSBP,Seated systolic blood pressure (MM HG),Vitals,MESA,indicator,represents the concept,1
+"PHYSICIAN SYSTOLIC BLOOD PRESSURE, 1ST",SYSBP1,"PHYSICIAN SYSTOLIC BLOOD PRESSURE, FIRST (MM HG)",Vitals,Framingham,indicator,represents the concept,1
+D201-047-SYS-PHYS-FIRST,SYSBP1,"PHYSICIAN SYSTOLIC BLOOD PRESSURE, FIRST (MM HG)",Vitals,Framingham,indicator,represents the concept,1
+FIRST SYSTOLIC BLOOD PRESSURE,SYSBP1,"PHYSICIAN SYSTOLIC BLOOD PRESSURE, FIRST (MM HG)",Vitals,Framingham,indicator,represents the concept,1
+SYSTOLIC BP - PHYSICIAN - 1ST READING,SYSBP1,"PHYSICIAN SYSTOLIC BLOOD PRESSURE, FIRST (MM HG)",Vitals,Framingham,indicator,represents the concept,1
+SYSTOLIC PRESSURE - 1ST MD READING,SYSBP1,"PHYSICIAN SYSTOLIC BLOOD PRESSURE, FIRST (MM HG)",Vitals,Framingham,indicator,represents the concept,1
+PHYSICIAN BP-SYSTOLIC-1ST READING,SYSBP1,"PHYSICIAN SYSTOLIC BLOOD PRESSURE, FIRST (MM HG)",Vitals,Framingham,indicator,represents the concept,1
+PHYSICIAN BP SYSTOLIC - 1ST READING,SYSBP1,"PHYSICIAN SYSTOLIC BLOOD PRESSURE, FIRST (MM HG)",Vitals,Framingham,indicator,represents the concept,1
+PHYSICIAN SYSTOLIC BP - 1ST READING,SYSBP1,"PHYSICIAN SYSTOLIC BLOOD PRESSURE, FIRST (MM HG)",Vitals,Framingham,indicator,represents the concept,1
+"MDBP1 - SYSTOLIC1, MMHG",SYSBP1,"PHYSICIAN SYSTOLIC BLOOD PRESSURE, FIRST (MM HG)",Vitals,Framingham,indicator,represents the concept,1
+"PHYSICIAN SYSTOLIC BLOOD PRESSURE, 2ND",SYSBP2,"PHYSICIAN SYSTOLIC BLOOD PRESSURE, SECOND (MM HG)",Vitals,Framingham,indicator,represents the concept,1
+D201-053-SYS-PHYS-SECOND,SYSBP2,"PHYSICIAN SYSTOLIC BLOOD PRESSURE, SECOND (MM HG)",Vitals,Framingham,indicator,represents the concept,1
+SECOND SYSTOLIC BLOOD PRESSURE,SYSBP2,"PHYSICIAN SYSTOLIC BLOOD PRESSURE, SECOND (MM HG)",Vitals,Framingham,indicator,represents the concept,1
+SYSTOLIC BP - PHYSICIAN - 2ND READING,SYSBP2,"PHYSICIAN SYSTOLIC BLOOD PRESSURE, SECOND (MM HG)",Vitals,Framingham,indicator,represents the concept,1
+SYSTOLIC PRESSURE - 2ND MD READING,SYSBP2,"PHYSICIAN SYSTOLIC BLOOD PRESSURE, SECOND (MM HG)",Vitals,Framingham,indicator,represents the concept,1
+PHYSICIAN BP-2ND READING-SYSTOLIC,SYSBP2,"PHYSICIAN SYSTOLIC BLOOD PRESSURE, SECOND (MM HG)",Vitals,Framingham,indicator,represents the concept,1
+PHYSICIAN BP SYSTOLIC - 2ND READING,SYSBP2,"PHYSICIAN SYSTOLIC BLOOD PRESSURE, SECOND (MM HG)",Vitals,Framingham,indicator,represents the concept,1
+PHYSICIAN SYSTOLIC BP - 2ND READING,SYSBP2,"PHYSICIAN SYSTOLIC BLOOD PRESSURE, SECOND (MM HG)",Vitals,Framingham,indicator,represents the concept,1
+"MDBP2 - SYST, MMHG",SYSBP2,"PHYSICIAN SYSTOLIC BLOOD PRESSURE, SECOND (MM HG)",Vitals,Framingham,indicator,represents the concept,1
+TOTAL CHOLESTEROL (MG-DL),TC,Total cholesterol (mg/dL),Labs,ARIC,indicator,represents the concept,1
+CHOLESTEROL (VALUE) Q1A,TC,Total cholesterol (mg/dL),Labs,ARIC,indicator,represents the concept,1
+CHOLESTEROL (VALUE IN MG/DL) Q1A,TC,Total cholesterol (mg/dL),Labs,ARIC,indicator,represents the concept,1
+Total Cholesterol (mg/dL),TC,Total cholesterol (mg/dL),Labs,ARIC,indicator,represents the concept,1
+"Total cholesterol (mg/dL), Exam 1",TC,Total cholesterol (mg/dL),Labs,Framingham,indicator,represents the concept,1
+"Total cholesterol (mg/dL), Exam 2",TC,Total cholesterol (mg/dL),Labs,Framingham,indicator,represents the concept,2
+"Total cholesterol (mg/dL), Exam 3",TC,Total cholesterol (mg/dL),Labs,Framingham,indicator,represents the concept,3
+"Total cholesterol (mg/dL), Exam 4",TC,Total cholesterol (mg/dL),Labs,Framingham,indicator,represents the concept,4
+"Total cholesterol (mg/dL), Exam 5",TC,Total cholesterol (mg/dL),Labs,Framingham,indicator,represents the concept,5
+"Total cholesterol (mg/dL), Exam 6",TC,Total cholesterol (mg/dL),Labs,Framingham,indicator,represents the concept,6
+"Total cholesterol (mg/dL), Exam 7",TC,Total cholesterol (mg/dL),Labs,Framingham,indicator,represents the concept,7
+"Total cholesterol (mg/dL), Exam 8",TC,Total cholesterol (mg/dL),Labs,Framingham,indicator,represents the concept,8
+"Total cholesterol (mg/dL), Exam 9",TC,Total cholesterol (mg/dL),Labs,Framingham,indicator,represents the concept,9
+TOTAL CHOLESTEROL (mg/dl),TC,Total cholesterol (mg/dL),Labs,MESA,indicator,represents the concept,1
+Total Cholesterol (mg/dl),TC,Total cholesterol (mg/dL),Labs,MESA,indicator,represents the concept,1
+TOTAL TRIGLYCERIDES (MG-DL),TRIG,Total Triglycerides (mg/dL),Labs,ARIC,indicator,represents the concept,1
+TRIGLYCERIDE (VALUE) Q2A,TRIG,Total Triglycerides (mg/dL),Labs,ARIC,indicator,represents the concept,1
+TRIGLYCERIDE (VALUE IN MG/DL) Q2A,TRIG,Total Triglycerides (mg/dL),Labs,ARIC,indicator,represents the concept,1
+Total Triglycerides (mg/dL),TRIG,Total Triglycerides (mg/dL),Labs,ARIC,indicator,represents the concept,1
+"Triglycerides (mg/dL), Exam 1",TRIG,Total Triglycerides (mg/dL),Labs,Framingham,indicator,represents the concept,1
+"Triglycerides (mg/dL), Exam 2",TRIG,Total Triglycerides (mg/dL),Labs,Framingham,indicator,represents the concept,2
+"Triglycerides (mg/dL), Exam 3",TRIG,Total Triglycerides (mg/dL),Labs,Framingham,indicator,represents the concept,3
+"Triglycerides (mg/dL), Exam 4",TRIG,Total Triglycerides (mg/dL),Labs,Framingham,indicator,represents the concept,4
+"Triglycerides (mg/dL), Exam 5",TRIG,Total Triglycerides (mg/dL),Labs,Framingham,indicator,represents the concept,5
+"Triglycerides (mg/dL), Exam 6",TRIG,Total Triglycerides (mg/dL),Labs,Framingham,indicator,represents the concept,6
+"Triglycerides (mg/dL), Exam 7",TRIG,Total Triglycerides (mg/dL),Labs,Framingham,indicator,represents the concept,7
+"Triglycerides (mg/dL), Exam 8",TRIG,Total Triglycerides (mg/dL),Labs,Framingham,indicator,represents the concept,8
+"Triglycerides (mg/dL), Exam 9",TRIG,Total Triglycerides (mg/dL),Labs,Framingham,indicator,represents the concept,9
+TRIGLYCERIDES (mg/dl),TRIG,Total Triglycerides (mg/dL),Labs,MESA,indicator,represents the concept,1
+Triglycerides (mg/dl),TRIG,Total Triglycerides (mg/dL),Labs,MESA,indicator,represents the concept,1
+CDI: RHEUMATIC HEART DISEASE,VALVDIS,"Valvular heart disease (0=No, 1=Yes)",Co-morbidities,Framingham,item,narrower member of concept,1
+CDI: AORTIC VALVE DISEASE,VALVDIS,"Valvular heart disease (0=No, 1=Yes)",Co-morbidities,Framingham,item,narrower member of concept,1
+CDI: MITRAL VALVE DISEASE,VALVDIS,"Valvular heart disease (0=No, 1=Yes)",Co-morbidities,Framingham,item,narrower member of concept,1
+CDI-RHEUMATIC HEART DISEASE,VALVDIS,"Valvular heart disease (0=No, 1=Yes)",Co-morbidities,Framingham,item,narrower member of concept,1
+CDI-AORTIC VALVE DISEASE,VALVDIS,"Valvular heart disease (0=No, 1=Yes)",Co-morbidities,Framingham,item,narrower member of concept,1
+CDI-MITRAL VALVE DISEASE,VALVDIS,"Valvular heart disease (0=No, 1=Yes)",Co-morbidities,Framingham,item,narrower member of concept,1
+CDI - RHEUMATIC HEART DISEASE,VALVDIS,"Valvular heart disease (0=No, 1=Yes)",Co-morbidities,Framingham,item,narrower member of concept,1
+CDI - AORTIC VALVE DISEASE,VALVDIS,"Valvular heart disease (0=No, 1=Yes)",Co-morbidities,Framingham,item,narrower member of concept,1
+CDI - MITRAL VALVE DISEASE,VALVDIS,"Valvular heart disease (0=No, 1=Yes)",Co-morbidities,Framingham,item,narrower member of concept,1
+RHEUMATIC HEART DISEASE: SELF-REPORT,VALVDIS,"Valvular heart disease (0=No, 1=Yes)",Co-morbidities,MESA,item,narrower member of concept,1
+CONSUMED STRING OR GREEN BEANS Q15,VEGETABLES,Vegetables (servings per week),Diet,ARIC,item,narrower member of concept,1
+CONSUMED BROCCOLI Q16,VEGETABLES,Vegetables (servings per week),Diet,ARIC,item,narrower member of concept,1
+"CABBAGE, CAULIFLWR,BUS SPROUT Q17",VEGETABLES,Vegetables (servings per week),Diet,ARIC,item,narrower member of concept,1
+CONSUMED CARROTS Q18,VEGETABLES,Vegetables (servings per week),Diet,ARIC,item,narrower member of concept,1
+CONSUMED CORN Q19,VEGETABLES,Vegetables (servings per week),Diet,ARIC,item,narrower member of concept,1
+"SPINACH, COLLARDS, GREENS Q20",VEGETABLES,Vegetables (servings per week),Diet,ARIC,item,narrower member of concept,1
+CONSUMED PEAS OR LIMA BEANS Q21,VEGETABLES,Vegetables (servings per week),Diet,ARIC,item,narrower member of concept,1
+CONSUMED DARK YELLOW SQUASH Q22,VEGETABLES,Vegetables (servings per week),Diet,ARIC,item,narrower member of concept,1
+CONSUMED SWEET POTATOES Q23,VEGETABLES,Vegetables (servings per week),Diet,ARIC,item,narrower member of concept,1
+CONSUMED BEANS OR LENTILS Q24,VEGETABLES,Vegetables (servings per week),Diet,ARIC,item,narrower member of concept,1
+CONSUMED TOMATOES Q25,VEGETABLES,Vegetables (servings per week),Diet,ARIC,item,narrower member of concept,1
+"CABBAGE, CAULIFLWR, BRUS SPROUTS Q17",VEGETABLES,Vegetables (servings per week),Diet,ARIC,item,narrower member of concept,1
+GREEN STRING BEANS OR ASPARAGUS,VEGETABLES,Vegetables (servings per week),Diet,Framingham,item,narrower member of concept,1
+HALF CUP BROCCOLI,VEGETABLES,Vegetables (servings per week),Diet,Framingham,item,narrower member of concept,1
+CABBAGE COLE SLAW OR SAUERKRAUT,VEGETABLES,Vegetables (servings per week),Diet,Framingham,item,narrower member of concept,1
+CAULIFLOWER-HALF CUP,VEGETABLES,Vegetables (servings per week),Diet,Framingham,item,narrower member of concept,1
+HALF CUP BRUSSEL SPROUTS,VEGETABLES,Vegetables (servings per week),Diet,Framingham,item,narrower member of concept,1
+ONE WHOLE OR HALF CUP COOKED,VEGETABLES,Vegetables (servings per week),Diet,Framingham,item,narrower member of concept,1
+EAR OR HALF CUP FROZEN,VEGETABLES,Vegetables (servings per week),Diet,Framingham,item,narrower member of concept,1
+HALF CUP SPINACH RAW OR COOKED,VEGETABLES,Vegetables (servings per week),Diet,Framingham,item,narrower member of concept,1
+GREEN OR RED PEPPERS-HALF CUP,VEGETABLES,Vegetables (servings per week),Diet,Framingham,item,narrower member of concept,1
+"KALE,MUSTARD,CHARD,BEET OR OTHER GREENS",VEGETABLES,Vegetables (servings per week),Diet,Framingham,item,narrower member of concept,1
+CUP OF ICEBERG OR HEAD LETTUCE,VEGETABLES,Vegetables (servings per week),Diet,Framingham,item,narrower member of concept,1
+"ESCAROLE,ROMAINE,WATERCRESS LEAFLETTUCE",VEGETABLES,Vegetables (servings per week),Diet,Framingham,item,narrower member of concept,1
+"PEAS,LIMA BEANS OR PEA PODS",VEGETABLES,Vegetables (servings per week),Diet,Framingham,item,narrower member of concept,1
+YELLOW WINTER SQUASH OR PUMPKINS,VEGETABLES,Vegetables (servings per week),Diet,Framingham,item,narrower member of concept,1
+"EGGPLANT,ZUCCHINI,OTHER SUMMER SQUASH",VEGETABLES,Vegetables (servings per week),Diet,Framingham,item,narrower member of concept,1
+HALF CUP YAMS OR SWEET POTATOES,VEGETABLES,Vegetables (servings per week),Diet,Framingham,item,narrower member of concept,1
+ONE TOMATO OR HALF CUP,VEGETABLES,Vegetables (servings per week),Diet,Framingham,item,narrower member of concept,1
+"LENTILS, CHICK PEAS, KIDNEY,PINTO BEANS",VEGETABLES,Vegetables (servings per week),Diet,Framingham,item,narrower member of concept,1
+TOMATOES:(servings/week),VEGETABLES,Vegetables (servings per week),Diet,Framingham,item,narrower member of concept,1
+STRING BEANS:(servings/week),VEGETABLES,Vegetables (servings per week),Diet,Framingham,item,narrower member of concept,1
+BROCCOLI:(servings/week),VEGETABLES,Vegetables (servings per week),Diet,Framingham,item,narrower member of concept,1
+CABBAGE/COLE SLAW:(servings/week),VEGETABLES,Vegetables (servings per week),Diet,Framingham,item,narrower member of concept,1
+CAULIFLOWER:(servings/week),VEGETABLES,Vegetables (servings per week),Diet,Framingham,item,narrower member of concept,1
+BRUSSELS SPROUTS:(servings/week),VEGETABLES,Vegetables (servings per week),Diet,Framingham,item,narrower member of concept,1
+"CARROTS, RAW:(servings/week)",VEGETABLES,Vegetables (servings per week),Diet,Framingham,item,narrower member of concept,1
+"CARROTS, COOKED:(servings/week)",VEGETABLES,Vegetables (servings per week),Diet,Framingham,item,narrower member of concept,1
+CORN:(servings/week),VEGETABLES,Vegetables (servings per week),Diet,Framingham,item,narrower member of concept,1
+PEAS/LIMA BEANS:(servings/week),VEGETABLES,Vegetables (servings per week),Diet,Framingham,item,narrower member of concept,1
+MIXED VEGETABLES:(servings/week),VEGETABLES,Vegetables (servings per week),Diet,Framingham,item,narrower member of concept,1
+BEANS/LENTILS:(servings/week),VEGETABLES,Vegetables (servings per week),Diet,Framingham,item,narrower member of concept,1
+WINTER SQUASH:(servings/week),VEGETABLES,Vegetables (servings per week),Diet,Framingham,item,narrower member of concept,1
+SUMMER SQUASH:(servings/week),VEGETABLES,Vegetables (servings per week),Diet,Framingham,item,narrower member of concept,1
+YAMS/SWEET POTATOES:(servings/week),VEGETABLES,Vegetables (servings per week),Diet,Framingham,item,narrower member of concept,1
+"SPINACH, COOKED:(servings/week)",VEGETABLES,Vegetables (servings per week),Diet,Framingham,item,narrower member of concept,1
+"SPANACH, RAW:(servings/week)",VEGETABLES,Vegetables (servings per week),Diet,Framingham,item,narrower member of concept,1
+KALE/MUSTARD/CHARD:(servings/week),VEGETABLES,Vegetables (servings per week),Diet,Framingham,item,narrower member of concept,1
+ICEBERG/HEAD LETTUCE:(servings/week),VEGETABLES,Vegetables (servings per week),Diet,Framingham,item,narrower member of concept,1
+ROMAINE/LEAF LETTUCE:(servings/week),VEGETABLES,Vegetables (servings per week),Diet,Framingham,item,narrower member of concept,1
+CELERY:(servings/week),VEGETABLES,Vegetables (servings per week),Diet,Framingham,item,narrower member of concept,1
+BEETS:(servings/week),VEGETABLES,Vegetables (servings per week),Diet,Framingham,item,narrower member of concept,1
+DAYS SINCE EXAM 1,VISDAY,Visit day (days since exam 1),Other,ARIC,excluded,helper/derived concept,1
+"Visit 5 Date, NCS Stage 1 - days from visit 1",VISDAY,Visit day (days since exam 1),Other,ARIC,excluded,helper/derived concept,5
+Date of Exam 2,VISDAY,Visit day (days since exam 1),Other,Framingham,excluded,helper/derived concept,2
+Date of Exam 3,VISDAY,Visit day (days since exam 1),Other,Framingham,excluded,helper/derived concept,3
+Date of Exam 4,VISDAY,Visit day (days since exam 1),Other,Framingham,excluded,helper/derived concept,4
+Date of Exam 5,VISDAY,Visit day (days since exam 1),Other,Framingham,excluded,helper/derived concept,5
+Date of Exam 6,VISDAY,Visit day (days since exam 1),Other,Framingham,excluded,helper/derived concept,6
+Date of Exam 7,VISDAY,Visit day (days since exam 1),Other,Framingham,excluded,helper/derived concept,7
+Date of Exam 8,VISDAY,Visit day (days since exam 1),Other,Framingham,excluded,helper/derived concept,8
+Date of Exam 9,VISDAY,Visit day (days since exam 1),Other,Framingham,excluded,helper/derived concept,9
+"Time between exam visits, in days",VISDAY,Visit day (days since exam 1),Other,MESA,excluded,helper/derived concept,1
+"Time between first and third visits, in days",VISDAY,Visit day (days since exam 1),Other,MESA,excluded,helper/derived concept,1
+"Time between first and fourth visits, in days",VISDAY,Visit day (days since exam 1),Other,MESA,excluded,helper/derived concept,1
+"TIME BETWEEN FIRST AND FIFTH VISITS, IN DAYS",VISDAY,Visit day (days since exam 1),Other,MESA,excluded,helper/derived concept,1
+WEIGHT TO THE NEAREST LB Q4,WGT,Weight (to the nearest lb),Vitals,ARIC,indicator,represents the concept,1
+WEIGHT TO NEAREST LB Q1,WGT,Weight (to the nearest lb),Vitals,ARIC,indicator,represents the concept,1
+WEIGHT TO NEAREST LB Q2,WGT,Weight (to the nearest lb),Vitals,ARIC,indicator,represents the concept,1
+Weight (kg),WGT,Weight (to the nearest lb),Vitals,ARIC,indicator,represents the concept,1
+"Weight (pounds), Exam 1",WGT,Weight (to the nearest lb),Vitals,Framingham,indicator,represents the concept,1
+"Weight (pounds), Exam 2",WGT,Weight (to the nearest lb),Vitals,Framingham,indicator,represents the concept,2
+"Weight (pounds), Exam 3",WGT,Weight (to the nearest lb),Vitals,Framingham,indicator,represents the concept,3
+"Weight (pounds), Exam 4",WGT,Weight (to the nearest lb),Vitals,Framingham,indicator,represents the concept,4
+"Weight (pounds), Exam 5",WGT,Weight (to the nearest lb),Vitals,Framingham,indicator,represents the concept,5
+"Weight (pounds), Exam 6",WGT,Weight (to the nearest lb),Vitals,Framingham,indicator,represents the concept,6
+"Weight (pounds), Exam 7",WGT,Weight (to the nearest lb),Vitals,Framingham,indicator,represents the concept,7
+"Weight (pounds), Exam 8",WGT,Weight (to the nearest lb),Vitals,Framingham,indicator,represents the concept,8
+"Weight (pounds), Exam 9",WGT,Weight (to the nearest lb),Vitals,Framingham,indicator,represents the concept,9
+WEIGHT (lbs),WGT,Weight (to the nearest lb),Vitals,MESA,indicator,represents the concept,1

@@ -1,0 +1,385 @@
+source_study,target_study,text1,text2,cosine,rank,r@1,r@3,r@5,r@10
+aachen-hf,aric,History of atrial fibrillation,Atrial fibrillation,0.96615,1,True,True,True,True
+aachen-hf,aric,age at visit,AGE AT VISIT 1 (baseline),0.9552,1,True,True,True,True
+aachen-hf,aric,History of stroke,Stroke status,0.95373,1,True,True,True,True
+aachen-hf,aric,History of stroke,Transient ischemic attack status,0.94647,2,False,True,True,True
+aachen-hf,aric,body mass index,Body mass index (kg/m2),0.96521,1,True,True,True,True
+aachen-hf,aric,History of peripheral artery disease,Intermittent claudication: symptom of peripheral artery disease,0.95781,1,True,True,True,True
+aachen-hf,aric,creatinine,Creatinine (mg/dL),0.96401,1,True,True,True,True
+aachen-hf,aric,Smoking status,CURRENT CIGARETTE SMOKER,0.93954,3,False,True,True,True
+aachen-hf,aric,History of diabetes,DIABETES with fasting glucose,0.95385,1,True,True,True,True
+aachen-hf,aric,History of diabetes,DIABETES using 126 mg/dL CGM Reading,0.94425,3,False,True,True,True
+aachen-hf,aric,History of diabetes,Diabetes fasting plasma glucose (FPG) of 126 mg/dL or higher,0.94819,2,False,True,True,True
+aachen-hf,aric,HDL-cholesterol,RE-CALIBRATED HDL CHOL. in mg/dl,0.96176,3,False,True,True,True
+aachen-hf,aric,HDL-cholesterol,HDL cholesterol,0.97097,1,True,True,True,True
+aachen-hf,aric,HDL-cholesterol,HDLC-Cholesterol (mg/dL),0.96916,2,False,True,True,True
+aachen-hf,aric,Height,Standing height (to the nearest cm),0.95822,2,False,True,True,True
+aachen-hf,aric,Height,Standing height (cm),0.95941,1,True,True,True,True
+aachen-hf,aric,History of myocardial infarction,HISTORY OF MYOCARDIAL INFARCTION,0.95277,1,True,True,True,True
+aachen-hf,aric,LDL-cholesterol,RE-CALIBRATED LDL CHOL. in mg/dl,0.9622,5,False,False,True,True
+aachen-hf,aric,LDL-cholesterol,Re-Calibrated LDL Cholesterol in mg/dL,0.96362,3,False,True,True,True
+aachen-hf,aric,LDL-cholesterol,LDLCC-Cholesterol calculated (mg/dL),0.96643,1,True,True,True,True
+aachen-hf,aric,sex,"Participant gender(0=Female, 1=Male)",0.95774,1,True,True,True,True
+aachen-hf,aric,Systolic Blood pressure (sbp) at baseline recumbent position,systolic blood pressure,0.9337,1,True,True,True,True
+aachen-hf,aric,weight,WEIGHT TO THE NEAREST in LB,0.95326,5,False,False,True,True
+aachen-hf,aric,weight,WEIGHT TO NEAREST in LB,0.95511,4,False,False,True,True
+aachen-hf,aric,weight,WEIGHT TO NEAREST in lb,0.95741,3,False,True,True,True
+aachen-hf,aric,weight,Weight (kg),0.96356,1,True,True,True,True
+adni,nacc,first allele of the APOE gene,Combined genotype showing both alleles of the apolipoprotein E (APOE) gene,0.95525,1,True,True,True,True
+adni,nacc,second allele of the APOE gene,Combined genotype showing both alleles of the apolipoprotein E (APOE) gene,0.95592,1,True,True,True,True
+adni,nacc,Participant ID,Subject ID number,0.93907,1,True,True,True,True
+adni,nacc,A-beta 1-42 in CSF,Cerebrospinal fluid amyloid-beta 42 (CSF ABETA),0.95615,1,True,True,True,True
+adni,nacc,Visit code,UDS visit number (order),0.93975,1,True,True,True,True
+adni,nacc,Age,Age,0.96646,1,True,True,True,True
+adni,nacc,Participant Gender ( 1=Male;2=Female),Subject 's sex,0.95639,1,True,True,True,True
+adni,nacc,Education,Years of education,0.96491,1,True,True,True,True
+adni,nacc,Race (1=American Indian or Alaskan Native; 2=Asian; 3=Native Hawaiian or Other Pacific Islander; 4=Black or African American; 5=White; 6=More than one race; 7=Unknown),Race,0.9648,1,True,True,True,True
+adni,nacc,Marital  status (1=Married; 2=Widowed; 3=Divorced; 4=Never married; 5=Unknown),Marital status,0.96784,1,True,True,True,True
+adni,nacc,"Average FDG-PET (F-Fluorodeoxyglucose (FDG) PET) of angular, temporal, and posterior cingulate",FDG-PET pattern of AD,0.93891,1,True,True,True,True
+adni,nacc,Reference region - florbetapir mean of whole cerebellum. Regions defined by Freesurfer; see Jagust lab PDF on LONI for details,Abnormally elevated amyloid on PET,0.93117,128,False,False,False,False
+adni,nacc,Clinical Dementia Rating (CDR) Sum of Boxes.,CDR® sum of boxes,0.95229,1,True,True,True,True
+adni,nacc,Mini-Mental State Examination (MMSE),Total MMSE score (using D-L-R-O-W),0.95907,1,True,True,True,True
+adni,nacc,Participant diagnosis,"Primary etiologic diagnosis (MCI); impaired, not MCI; or dementia",0.93089,1,True,True,True,True
+adni,nacc,Montreal Cognitive Assessment (MoCA),MoCA Total Raw Score ??uncorrected,0.95374,1,True,True,True,True
+adni,nacc,CSF PTAU (Cerebrospinal fluid (CSF) phosphorylated tau (p-tau),Phosphorylated Tau Protein Measurement,0.96079,1,True,True,True,True
+adni,amed,Participant ID,patient id,0.94072,1,True,True,True,True
+adni,amed,Visit code,Visit Number,0.94615,1,True,True,True,True
+adni,amed,Age,Age,0.96646,1,True,True,True,True
+adni,amed,Participant Gender ( 1=Male;2=Female),Participant Gender,0.97043,1,True,True,True,True
+adni,amed,Education,Participant Education,0.96649,1,True,True,True,True
+adni,amed,Marital  status (1=Married; 2=Widowed; 3=Divorced; 4=Never married; 5=Unknown),Participant Marital Status,0.96747,1,True,True,True,True
+adni,amed,Height,participant height,0.96068,1,True,True,True,True
+adni,amed,weight,participant weight,0.96168,1,True,True,True,True
+adni,amed,Type of Participant residence (1=House (owned or rented); 2=Condo/Co-op (owned); 3=Apartment (rented); 4=Mobile Home; 5=Retirement Community; 6=Assisted Living; 7=Skilled Nursing Facility; 8=Other (specify),Type of Participant residence,0.96659,1,True,True,True,True
+adni,amed,"If yes, did/does biological mother have Alzheimer's Disease (0=No;1=Yes)?",family history: dimentia mother,0.9368,1,True,True,True,True
+adni,amed,"If yes, did/does biological father have Alzheimer's Disease? (0=No;1=Yes)",family history: dimentia father,0.94066,1,True,True,True,True
+adni,amed,history of drug abuse (1=Yes; 0=No),Does the participant have a history of alcohol or substance abuse or dependence within the past 2 years (DSM IV criteria)?,0.96082,1,True,True,True,True
+adni,amed,history of alchol abuse (1=Yes; 0=No),Does the participant have a history of alcohol or substance abuse or dependence within the past 2 years (DSM IV criteria)?,0.94562,1,True,True,True,True
+adni,amed,"Average FDG-PET (F-Fluorodeoxyglucose (FDG) PET) of angular, temporal, and posterior cingulate",Average FDG-PET score,0.94164,1,True,True,True,True
+adni,epad,Participant ID,Patient ID,0.94265,1,True,True,True,True
+adni,epad,Visit code,Visit Number,0.94615,1,True,True,True,True
+adni,epad,Participant Gender ( 1=Male;2=Female),What is the sex of the subject?,0.9534,3,False,True,True,True
+adni,epad,Age,What is the subject's age?,0.96157,1,True,True,True,True
+adni,epad,Education,Number of years of formal education,0.96281,1,True,True,True,True
+adni,epad,Marital  status (1=Married; 2=Widowed; 3=Divorced; 4=Never married; 5=Unknown),Marital status,0.96784,1,True,True,True,True
+adni,epad,Ethnicity (1=Hispanic or Latino; 2=Not Hispanic or Latino; 3=Unknown),What is the ethnicity of the subject?,0.95782,1,True,True,True,True
+adni,epad,Genotype - Allele 1,Genotype - Allele 1,0.97719,1,True,True,True,True
+adni,epad,Genotype - Allele 1,Genotype - Allele 2,0.969,2,False,True,True,True
+adni,amed,Participant diagnosis,Pre-visit Diagnosis,0.93297,4,False,False,True,True
+adni,epad,Participant diagnosis,Dementia diagnosed by the participant's physician?,0.93977,1,True,True,True,True
+adni,epad,Clinical Dementia Rating (CDR) scale (0.0=0.0;0.5=0.5;1.0=1.0;2.0=2.0;3.0=3.0),Global CDR Score,0.95667,2,False,True,True,True
+adni,epad,Clinical Dementia Rating (CDR) Memory (0.0=0.0;0.5=0.5;1.0=1.0;2.0=2.0;3.0=3.0),Memory,0.95044,6,False,False,False,True
+adni,epad,Clinical Dementia Rating (CDR) Orientation (0.0=0.0;0.5=0.5;1.0=1.0;2.0=2.0;3.0=3.0),Orientation,0.94643,4,False,False,True,True
+adni,epad,Clinical Dementia Rating (CDR) Judgment and problem solving (0.0=0.0;0.5=0.5;1.0=1.0;2.0=2.0;3.0=3.0),Judgement and Problem Solving,0.95247,4,False,False,True,True
+adni,epad,Clinical Dementia Rating (CDR) Community affairs,Community Affairs,0.95082,1,True,True,True,True
+adni,epad,Clinical Dementia Rating (CDR) Home and hobbies (0.0=0.0;0.5=0.5;1.0=1.0;2.0=2.0;3.0=3.0),Home and Hobbies,0.95419,2,False,True,True,True
+adni,epad,Clinical Dementia Rating (CDR) Personal care (0.0=0.0;0.5=0.5;1.0=1.0;2.0=2.0;3.0=3.0),Personal Care,0.95266,4,False,False,True,True
+adni,epad,Clinical Dementia Rating (CDR) Sum of Boxes.,CDR Sum of Boxes,0.9517,1,True,True,True,True
+adni,amed,Clinical Dementia Rating (CDR) scale (0.0=0.0;0.5=0.5;1.0=1.0;2.0=2.0;3.0=3.0),Global CDR,0.95294,1,True,True,True,True
+adni,amed,Clinical Dementia Rating (CDR) Memory (0.0=0.0;0.5=0.5;1.0=1.0;2.0=2.0;3.0=3.0),Score <!--Memory-->,0.95441,4,False,False,True,True
+adni,amed,Clinical Dementia Rating (CDR) Orientation (0.0=0.0;0.5=0.5;1.0=1.0;2.0=2.0;3.0=3.0),Score <!--Orientation-->,0.94607,4,False,False,True,True
+adni,amed,Clinical Dementia Rating (CDR) Judgment and problem solving (0.0=0.0;0.5=0.5;1.0=1.0;2.0=2.0;3.0=3.0),Score <!--Judgment and Problem Solving-->,0.95507,2,False,True,True,True
+adni,amed,Clinical Dementia Rating (CDR) Community affairs,Score <!--Community Affairs-->,0.94503,3,False,True,True,True
+adni,amed,Clinical Dementia Rating (CDR) Home and hobbies (0.0=0.0;0.5=0.5;1.0=1.0;2.0=2.0;3.0=3.0),Score <!--Home and Hobbies-->,0.95503,1,True,True,True,True
+adni,amed,Clinical Dementia Rating (CDR) Personal care (0.0=0.0;0.5=0.5;1.0=1.0;2.0=2.0;3.0=3.0),Score <!--Personal Care-->,0.9555,1,True,True,True,True
+adni,amed,Clinical Dementia Rating (CDR) Sum of Boxes.,Sum of Boxes,0.93744,1,True,True,True,True
+adni,nacc,Clinical Dementia Rating (CDR) scale (0.0=0.0;0.5=0.5;1.0=1.0;2.0=2.0;3.0=3.0),Global CDR®,0.95369,3,False,True,True,True
+adni,nacc,Clinical Dementia Rating (CDR) Memory (0.0=0.0;0.5=0.5;1.0=1.0;2.0=2.0;3.0=3.0),Memory,0.95044,57,False,False,False,False
+adni,nacc,Clinical Dementia Rating (CDR) Orientation (0.0=0.0;0.5=0.5;1.0=1.0;2.0=2.0;3.0=3.0),Orientation,0.94643,5,False,False,True,True
+adni,nacc,Clinical Dementia Rating (CDR) Judgment and problem solving (0.0=0.0;0.5=0.5;1.0=1.0;2.0=2.0;3.0=3.0),Judgment and problem-solving,0.95422,6,False,False,False,True
+adni,nacc,Clinical Dementia Rating (CDR) Community affairs,Community affairs,0.94839,3,False,True,True,True
+adni,nacc,Clinical Dementia Rating (CDR) Home and hobbies (0.0=0.0;0.5=0.5;1.0=1.0;2.0=2.0;3.0=3.0),Home and hobbies,0.95339,3,False,True,True,True
+adni,nacc,Clinical Dementia Rating (CDR) Personal care (0.0=0.0;0.5=0.5;1.0=1.0;2.0=2.0;3.0=3.0),Personal care,0.9506,7,False,False,False,True
+adni,epad,Are you basically satisfied with your life? (1=Yes(0); 0=No(1),Are you basically satisfied with your life?,0.96167,1,True,True,True,True
+adni,epad,Have you dropped many of your activities and interests?,Have you dropped many of your activities and interests?,0.96113,1,True,True,True,True
+adni,epad,Do you feel that your life is empty?,Do you feel that your life is empty?,0.97196,1,True,True,True,True
+adni,epad,Do you often get bored?,Do you often get bored?,0.96574,1,True,True,True,True
+adni,epad,Are you in good spirits most of the time?,Are you in good spirits most of the time?,0.97185,1,True,True,True,True
+adni,epad,Are you afraid that something bad is going to happen to you?,Are you afraid that something bad is going to happen to you?,0.97181,1,True,True,True,True
+adni,epad,Do you feel happy most of the time?,Do you feel happy most of the time?,0.97359,1,True,True,True,True
+adni,epad,Do you often feel helpless?,Do you often feel helpless?,0.96625,1,True,True,True,True
+adni,epad,"Do you prefer to stay at home, rather than going out and doing new things?","Do you prefer to stay at home, rather than going out and doing new things?",0.97217,1,True,True,True,True
+adni,epad,Do you feel you have more problems with memory than most?,Do you feel you have more problems with memory than most?,0.97341,1,True,True,True,True
+adni,epad,Do you think its wonderful to be alive now?,Do you think it is wonderful to be alive now?,0.96595,1,True,True,True,True
+adni,epad,Do you feel pretty worthless the way you are now?,Do you feel pretty worthless the way you are now?,0.9697,1,True,True,True,True
+adni,epad,Do you feel full of energy?,Do you feel full of energy?,0.96873,1,True,True,True,True
+adni,epad,Do you feel that your situation is hopeless?,Do you feel that your situation is hopeless?,0.97069,1,True,True,True,True
+adni,epad,Do you think that most people are better off than you are?,Do you think that most people are better off than you are?,0.97288,1,True,True,True,True
+adni,epad,Geriatric Depression Scale (GDS),Geriatric Depression Scale (GDS) Total Score,0.97044,1,True,True,True,True
+adni,nacc,Are you basically satisfied with your life? (1=Yes(0); 0=No(1),Are you basically satisfied with your life?,0.96167,1,True,True,True,True
+adni,nacc,Have you dropped many of your activities and interests?,Have you dropped many of your activities and interests?,0.96113,1,True,True,True,True
+adni,nacc,Do you feel that your life is empty?,Do you feel that your life is empty?,0.97196,1,True,True,True,True
+adni,nacc,Do you often get bored?,Do you often get bored?,0.96574,1,True,True,True,True
+adni,nacc,Are you in good spirits most of the time?,Are you in good spirits most of the time?,0.97185,1,True,True,True,True
+adni,nacc,Are you afraid that something bad is going to happen to you?,Are you afraid that something bad is going to happen to you?,0.97181,1,True,True,True,True
+adni,nacc,Do you feel happy most of the time?,Do you feel happy most of the time?,0.97359,1,True,True,True,True
+adni,nacc,Do you often feel helpless?,Do you often feel helpless?,0.96625,1,True,True,True,True
+adni,nacc,"Do you prefer to stay at home, rather than going out and doing new things?","Do you prefer to stay at home, rather than going out and doing new things?",0.97217,1,True,True,True,True
+adni,nacc,Do you feel you have more problems with memory than most?,Do you feel you have more problems with memory than most?,0.97341,1,True,True,True,True
+adni,nacc,Do you think its wonderful to be alive now?,Do you think it is wonderful to be alive now?,0.96595,1,True,True,True,True
+adni,nacc,Do you feel pretty worthless the way you are now?,Do you feel pretty worthless the way you are now?,0.9697,1,True,True,True,True
+adni,nacc,Do you feel full of energy?,Do you feel full of energy?,0.96873,1,True,True,True,True
+adni,nacc,Do you feel that your situation is hopeless?,Do you feel that your situation is hopeless?,0.97069,1,True,True,True,True
+adni,nacc,Do you think that most people are better off than you are?,Do you think that most people are better off than you are?,0.97288,1,True,True,True,True
+adni,nacc,Geriatric Depression Scale (GDS),Total GDS Score,0.94866,1,True,True,True,True
+adni,amed,Are you basically satisfied with your life? (1=Yes(0); 0=No(1),1. Are you basically satisfied with your life?,0.96618,1,True,True,True,True
+adni,amed,Have you dropped many of your activities and interests?,2. Have you dropped many of your activities and interests?,0.95797,1,True,True,True,True
+adni,amed,Do you feel that your life is empty?,3. Do you feel that your life is empty?,0.96791,1,True,True,True,True
+adni,amed,Do you often get bored?,4. Do you often get bored?,0.96137,1,True,True,True,True
+adni,amed,Are you in good spirits most of the time?,5. Are you in good spirits most of the time?,0.96965,1,True,True,True,True
+adni,amed,Are you afraid that something bad is going to happen to you?,6. Are you afraid that something bad is going to happen to you?,0.96619,1,True,True,True,True
+adni,amed,Do you feel happy most of the time?,7. Do you feel happy most of the time?,0.96902,1,True,True,True,True
+adni,amed,Do you often feel helpless?,8. Do you often feel helpless?,0.95801,1,True,True,True,True
+adni,amed,"Do you prefer to stay at home, rather than going out and doing new things?","9. Do you prefer to stay at home, rather than going out and doing new things?",0.96788,1,True,True,True,True
+adni,amed,Do you feel you have more problems with memory than most?,10. Do you feel you have more problems with memory than most?,0.9681,1,True,True,True,True
+adni,amed,Do you think its wonderful to be alive now?,11. Do you think its wonderful to be alive now?,0.9604,1,True,True,True,True
+adni,amed,Do you feel pretty worthless the way you are now?,12. Do you feel pretty worthless the way you are now?,0.96509,1,True,True,True,True
+adni,amed,Do you feel full of energy?,13. Do you feel full of energy?,0.96076,1,True,True,True,True
+adni,amed,Do you feel that your situation is hopeless?,14. Do you feel that your situation is hopeless?,0.96349,1,True,True,True,True
+adni,amed,Do you think that most people are better off than you are?,15. Do you think that most people are better off than you are?,0.96583,1,True,True,True,True
+adni,amed,Geriatric Depression Scale (GDS),Total Score,0.93374,15,False,False,False,False
+adni,amed,ADAS 11 (Alzheimer's Disease Assessment Scale 11-item),ADAS Total 11,0.96399,1,True,True,True,True
+adni,amed,ADAS 13 (Alzheimer's Disease Assessment Scale 13-item),ADAS Total 13,0.96459,1,True,True,True,True
+adni,nacc,"Functional Activities Questionnaire (FAQ) Writing checks, paying bills, balancing checkbook.","In the past four weeks, did the subject have any difficulty or need help with: Writing checks, paying bills, or balancing a checkbook",0.96164,1,True,True,True,True
+adni,nacc,"Functional Activities Questionnaire (FAQ) Assembling tax records, business affairs, or papers.","In the past four weeks, did the subject have any difficulty or need help with: Assembling tax records, business affairs, or other paper",0.95301,1,True,True,True,True
+adni,nacc,"Functional Activities Questionnaire (FAQ) Shopping alone for clothes, household necessities, or groceries.","In the past four weeks, did the subject have any difficulty or need help with: Shopping alone for clothes, household necessities, or groceries",0.95006,1,True,True,True,True
+adni,nacc,"Functional Activities Questionnaire (FAQ) Playing a game of skill, working on a hobby.","In the past four weeks, did the subject have any difficulty or need help with: Playing a game of skill such as bridge or chess, working on a hobby",0.95618,1,True,True,True,True
+adni,nacc,"Functional Activities Questionnaire (FAQ) Heating water, making a cup of coffee, turning off stove after use.","In the past four weeks, did the subject have any difficulty or need help with: Heating water, making a cup of coffee, turning off the stove",0.96397,1,True,True,True,True
+adni,nacc,Functional Activities Questionnaire (FAQ) Preparing a balanced meal.,"In the past four weeks, did the subject have any difficulty or need help with: Preparing a balanced meal",0.94729,1,True,True,True,True
+adni,nacc,Functional Activities Questionnaire (FAQ) Keeping track of current events.,"In the past four weeks, did the subject have any difficulty or need help with: Keeping track of current events",0.94668,1,True,True,True,True
+adni,nacc,"Functional Activities Questionnaire (FAQ) Paying attention to, understanding, discussing TV, book, magazine.","In the past four weeks, did the subject have any difficulty or need help with: Paying attention to and understanding a TV program, book, or magazine",0.95882,1,True,True,True,True
+adni,nacc,"Functional Activities Questionnaire (FAQ) Remembering appointments, family occasions, holidays, medications.","In the past four weeks, did the subject have any difficulty or need help with: Remembering appointments, family occasions, holidays, medications",0.95669,1,True,True,True,True
+adni,nacc,"Functional Activities Questionnaire (FAQ) Traveling out of neighborhood, driving, arranging to take buses.","In the past four weeks, did the subject have any difficulty or need help with: Traveling out of the neighborhood, driving, or arranging to take public transportation",0.96013,1,True,True,True,True
+adni,amed,"Functional Activities Questionnaire (FAQ) Writing checks, paying bills, balancing checkbook.","1. Writing checks, paying bills, or balancing checkbook.",0.96525,1,True,True,True,True
+adni,amed,"Functional Activities Questionnaire (FAQ) Assembling tax records, business affairs, or papers.","2. Assembling tax records, business affairs, or other papers.",0.96018,1,True,True,True,True
+adni,amed,"Functional Activities Questionnaire (FAQ) Shopping alone for clothes, household necessities, or groceries.","3. Shopping alone for clothes, household necessities, or groceries.",0.96007,1,True,True,True,True
+adni,amed,"Functional Activities Questionnaire (FAQ) Playing a game of skill, working on a hobby.","4. Playing a game of skill such as bridge or chess, working on a hobby.",0.96164,1,True,True,True,True
+adni,amed,"Functional Activities Questionnaire (FAQ) Heating water, making a cup of coffee, turning off stove after use.","5. Heating water, making a cup of coffee, turing off the stove.",0.966,1,True,True,True,True
+adni,amed,Functional Activities Questionnaire (FAQ) Preparing a balanced meal.,6. Preparing a balanced meal.,0.95032,1,True,True,True,True
+adni,amed,Functional Activities Questionnaire (FAQ) Keeping track of current events.,7. Keeping track of current events.,0.94875,1,True,True,True,True
+adni,amed,"Functional Activities Questionnaire (FAQ) Paying attention to, understanding, discussing TV, book, magazine.","8. Paying attention to and understanding a TV program, book, or magazine.",0.96219,1,True,True,True,True
+adni,amed,"Functional Activities Questionnaire (FAQ) Remembering appointments, family occasions, holidays, medications.","9. Remembering appointments, family occasions, holidays, medications.",0.96238,1,True,True,True,True
+adni,amed,"Functional Activities Questionnaire (FAQ) Traveling out of neighborhood, driving, arranging to take buses.","10. Traveling out of the neighborhood, driving, or arranging to take public transportation.",0.96005,1,True,True,True,True
+adni,amed,Functional Activities Questionnaire (FAQ) Total Score.,Total Score,0.95386,1,True,True,True,True
+adni,nacc,Boston Naming Test (BNT) score,Boston Naming Test (30) ??Total score,0.95174,1,True,True,True,True
+adni,nacc,Verbal fluency tests (Semantic) Animal,Animals ??Total number of animals named in 60 seconds,0.93239,1,True,True,True,True
+adni,nacc,Verbal fluency tests (Semantic) Vegetable or Fruits,Vegetable ??Total number of vegetables named in 60 seconds,0.93332,1,True,True,True,True
+adni,amed,Clock Drawing Test score,Total Score,0.94488,1,True,True,True,True
+adni,nacc,Modified Hachinski Ischemic Scale-NACC Version (MHIS-NACC) Abrupt onset (re: cognitive status).,Abrupt onset (re: cognitive status),0.93739,1,True,True,True,True
+adni,nacc,Modified Hachinski Ischemic Scale-NACC Version (MHIS-NACC) Stepwise deterioration (re: cognitive status).,Stepwise deterioration (re: cognitive status),0.9348,1,True,True,True,True
+adni,nacc,Modified Hachinski Ischemic Scale-NACC Version (MHIS-NACC) Somatic complaints.,Somatic complaints,0.92153,2,False,True,True,True
+adni,nacc,Modified Hachinski Ischemic Scale-NACC Version (MHIS-NACC) Emotional incontinence.,Emotional incontinence,0.93561,2,False,True,True,True
+adni,nacc,Modified Hachinski Ischemic Scale-NACC Version (MHIS-NACC) History or presence of hypertension.,History or presence of hypertension,0.93561,2,False,True,True,True
+adni,nacc,Modified Hachinski Ischemic Scale-NACC Version (MHIS-NACC) History of stroke.,History of stroke,0.9232,2,False,True,True,True
+adni,nacc,Modified Hachinski Ischemic Scale-NACC Version (MHIS-NACC) Focal neurological symptoms.,Focal neurological symptoms,0.93294,2,False,True,True,True
+adni,nacc,Modified Hachinski Ischemic Scale-NACC Version (MHIS-NACC) Focal neurological signs.,Focal neurological signs,0.93305,2,False,True,True,True
+adni,nacc,Modified Hachinski Ischemic Scale-NACC Version (MHIS-NACC) Sum all circled answers for a total score.,Hachinski ischemic score,0.94129,1,True,True,True,True
+adni,amed,Modified Hachinski Ischemic Scale-NACC Version (MHIS-NACC) Abrupt onset (re: cognitive status).,Abrupt Onset of Dementia,0.9231,1,True,True,True,True
+adni,amed,Modified Hachinski Ischemic Scale-NACC Version (MHIS-NACC) Stepwise deterioration (re: cognitive status).,Stepwise Deterioration of Dementia,0.92018,1,True,True,True,True
+adni,amed,Modified Hachinski Ischemic Scale-NACC Version (MHIS-NACC) Somatic complaints.,Somatic Complaints,0.92233,1,True,True,True,True
+adni,amed,Modified Hachinski Ischemic Scale-NACC Version (MHIS-NACC) Emotional incontinence.,Emotional Incontinence,0.93377,1,True,True,True,True
+adni,amed,Modified Hachinski Ischemic Scale-NACC Version (MHIS-NACC) History or presence of hypertension.,History of Hypertension,0.93051,1,True,True,True,True
+adni,amed,Modified Hachinski Ischemic Scale-NACC Version (MHIS-NACC) History of stroke.,History of Stroke,0.92141,1,True,True,True,True
+adni,amed,Modified Hachinski Ischemic Scale-NACC Version (MHIS-NACC) Focal neurological symptoms.,Focal Neurologic Symptoms,0.93138,1,True,True,True,True
+adni,amed,Modified Hachinski Ischemic Scale-NACC Version (MHIS-NACC) Focal neurological signs.,Focal Neurologic Signs,0.93083,1,True,True,True,True
+adni,nacc,Trail Making Test (TMT) A,Trail Making Test Part A ??Total number of seconds to complete,0.95874,1,True,True,True,True
+adni,nacc,Trail Making Test (TMT) B,Trail Making Test Part B ??Total number of seconds to complete,0.95977,1,True,True,True,True
+adni,nacc,Digit Span Test (Forward),Digit span forward trials correct,0.9613,1,True,True,True,True
+adni,nacc,Digit Span Test (Backward),Digit span backward trials correct,0.95947,1,True,True,True,True
+adni,amed,Trail Making Test (TMT) A,Trail Making Test (TMT) A,0.97066,1,True,True,True,True
+adni,amed,Trail Making Test (TMT) B,Trail Making Test (TMT) B,0.97289,1,True,True,True,True
+adni,nacc,Depression,Active depression in the last two years,0.95398,1,True,True,True,True
+adni,nacc,Stroke,Stroke,0.96325,1,True,True,True,True
+adni,amed,Depression,Clinically relevant depression based on clinical judgement or GDS?,0.95448,1,True,True,True,True
+adni,amed,Stroke,Did subject have a stroke?,0.94382,2,False,True,True,True
+adni,epad,Depression,Medical History Term,0.9457,2,False,True,True,True
+adni,epad,Stroke,Medical History Term,0.93827,2,False,True,True,True
+adni,epad,Parkinson Disease,High Level Group Term,0.93855,9,False,False,False,True
+adni,nacc,Parkinson Disease,Parkinson 's disease (PD),0.96488,1,True,True,True,True
+adni,nacc,bipolar or Schizophrenia,Bipolar disorder,0.95807,1,True,True,True,True
+adni,nacc,bipolar or Schizophrenia,Schizophrenia,0.95749,2,False,True,True,True
+adni,nacc,Thyroid,Thyroid disease,0.96609,1,True,True,True,True
+adni,nacc,Vision,"Without corrective lenses, is the subject 's vision functionally normal?",0.95032,1,True,True,True,True
+adni,nacc,Heart Condition,Congestive heart failure,0.94886,1,True,True,True,True
+adni,nacc,Heart Rate,Subject resting heart rate (pulse),0.96166,1,True,True,True,True
+adni,epad,Heart Condition,Heart - Abnormal Findings,0.95438,2,False,True,True,True
+adni,epad,Heart Rate,Heart - Results,0.95578,1,True,True,True,True
+adni,epad,Abdominal Discomfort,Abdomen - Results,0.94183,1,True,True,True,True
+adni,epad,Coughing,5e. Cough or snore loudly,0.95762,1,True,True,True,True
+adni,epad,Musculoskeletal Pain,Musculoskeletal - Results,0.96538,1,True,True,True,True
+adni,nacc,Insomnia,Hyposomnia/insomnia history reported at Initial Visit,0.95689,1,True,True,True,True
+adni,nacc,Psychiatric,Other psychiatric disorder,0.96324,1,True,True,True,True
+adni,nacc,Cardiovascular,Other cardiovascular disease,0.96555,1,True,True,True,True
+adni,epad,CSF PTAU (Cerebrospinal fluid (CSF) phosphorylated tau (p-tau),amount of phosphorylated Tau protein present in a sample,0.95413,1,True,True,True,True
+adni,epad,"CSF TAU (Is a quantification of total tau protein, a biomarker for Alzheimer's diseas)","Is a quantification of total tau protein, a biomarker for Alzheimer's disease.",0.95311,1,True,True,True,True
+adni,epad,A-beta 1-42 in CSF,The determination of the amount of the 1-42 amino acid beta amyloid protein isoform present in a sample.,0.93773,1,True,True,True,True
+adni,nacc,Volume (Cortical Parcellation) of Left Entorhinal,Left entorhinal gray matter volume (cc),0.94676,1,True,True,True,True
+adni,nacc,Volume (Cortical Parcellation) of Right Entorhinal,Right entorhinal gray matter volume (cc),0.94823,1,True,True,True,True
+adni,nacc,Volume (Cortical Parcellation) of Left Fusiform,Left fusiform gray matter volume (cc),0.94509,1,True,True,True,True
+adni,nacc,Volume (Cortical Parcellation) of right Fusiform,Right fusiform gray matter volume (cc),0.94838,1,True,True,True,True
+adni,nacc,Volume (Cortical Parcellation) of Left MiddleTemporal,Left middle temporal gray matter volume (cc),0.94779,1,True,True,True,True
+adni,nacc,Volume (Cortical Parcellation) of Right MiddleTemporal,Right middle temporal gray matter volume (cc),0.94912,1,True,True,True,True
+adni,nacc,Volume (Cortical Parcellation) of Right Pericalcarine,Right pericalcarine gray matter volume (cc),0.94288,2,False,True,True,True
+adni,nacc,Volume (Cortical Parcellation) of Right Precentral,Right precentral gray matter volume (cc),0.95064,1,True,True,True,True
+adni,nacc,Volume (Cortical Parcellation) of Right Rostral Middle Frontal,Right rostral middle frontal gray matter volume (cc),0.94729,1,True,True,True,True
+adni,nacc,Volume (Cortical Parcellation) of Right Superior Parietal,Right superior parietal gray matter volume (cc),0.94376,1,True,True,True,True
+adni,nacc,Volume (Cortical Parcellation) of Right Supramarginal,Right supramarginal gray matter volume (cc),0.95029,1,True,True,True,True
+adni,nacc,Volume (Cortical Parcellation) of RightInsula,Right insula gray matter volume (cc),0.94597,2,False,True,True,True
+adni,nacc,Volume (Cortical Parcellation) of Left Inferior Temporal,Left inferior temporal gray matter volume (cc),0.93955,1,True,True,True,True
+adni,nacc,Volume (Cortical Parcellation) of Left Medial Orbitofrontal,Left medial orbitofrontal gray matter volume (cc),0.94505,1,True,True,True,True
+adni,nacc,Volume (Cortical Parcellation) of Left Perical carine,Left pericalcarine gray matter volume (cc),0.93865,2,False,True,True,True
+adni,nacc,Volume (Cortical Parcellation) of Left Precentral,Left precentral gray matter volume (cc),0.94822,1,True,True,True,True
+adni,nacc,Volume (Cortical Parcellation) of Left Rostral Middle Frontal,Left rostral middle frontal gray matter volume (cc),0.94615,1,True,True,True,True
+adni,nacc,Volume (Cortical Parcellation) of Left Supramarginal,Left supramarginal gray matter volume (cc),0.94914,1,True,True,True,True
+adni,nacc,Volume (Cortical Parcellation) of Right Inferior Temporal,Right inferior temporal gray matter volume (cc),0.94215,1,True,True,True,True
+adni,nacc,Volume (Cortical Parcellation) of Right Medial Orbitofrontal,Right medial orbitofrontal gray matter volume (cc),0.94579,1,True,True,True,True
+adni,nacc,Volume (Cortical Parcellation) of Left Superior Parietal,Left superior parietal gray matter volume (cc),0.94165,1,True,True,True,True
+adni,nacc,Volume (Cortical Parcellation) of Right Postcentral,Right postcentral gray matter volume (cc),0.95459,1,True,True,True,True
+adni,nacc,Volume (Cortical Parcellation) of Right Superior Frontat,Right superior frontal gray matter volume (cc),0.9391,1,True,True,True,True
+adni,nacc,Right Superior Temporal Volume,Right superior temporal gray matter volume (cc),0.95445,1,True,True,True,True
+adni,nacc,Volume (Cortical Parcellation) Left Insula,Left insula gray matter volume (cc),0.94871,1,True,True,True,True
+adni,nacc,Volume (Cortical Parcellation) of  Left Inferior Parietal,Left inferior parietal gray matter volume (cc),0.94521,1,True,True,True,True
+adni,nacc,Volume (Cortical Parcellation) of Left Lateral Occipital,Left lateral occipital gray matter volume (cc),0.94416,1,True,True,True,True
+adni,nacc,Volume (Cortical Parcellation)  Left Lingual,Left lingual gray matter volume (cc),0.94539,1,True,True,True,True
+adni,nacc,Volume (Cortical Parcellation) of Left Paracentral,Left paracentral gray matter volume (cc),0.95108,1,True,True,True,True
+adni,nacc,Volume (Cortical Parcellation) of Left Postcentral,Left postcentral gray matter volume (cc),0.95172,1,True,True,True,True
+adni,nacc,Volume (Cortical Parcellation) of Left Superior Frontal,Left superior frontal gray matter volume (cc),0.94113,1,True,True,True,True
+adni,nacc,Volume (Cortical Parcellation) of Left Superior Temporal,Left superior temporal gray matter volume (cc),0.93725,1,True,True,True,True
+adni,nacc,Volume (Cortical Parcellation) of Right Inferior Parietal,Right inferior parietal gray matter volume (cc),0.94524,1,True,True,True,True
+adni,nacc,Volume (Cortical Parcellation) of Right Lateral Occipital,Right lateral occipital gray matter volume (cc),0.94586,1,True,True,True,True
+adni,nacc,Volume (Cortical Parcellation) of  Right Lingual,Right lingual gray matter volume (cc),0.94323,1,True,True,True,True
+adni,nacc,Volume (Cortical Parcellation) of  Left Pars Opercularis,Left pars opercularis gray matter volume (cc),0.9445,2,False,True,True,True
+adni,nacc,Volume (Cortical Parcellation) of  Right Pars Opercularis,Right pars opercularis gray matter volume (cc),0.94583,2,False,True,True,True
+adni,nacc,Volume (Cortical Parcellation) of  Left Pars Orbitalis,Left pars orbitalis gray matter volume (cc),0.94585,3,False,True,True,True
+adni,nacc,Volume (Cortical Parcellation) of  Right Pars Orbitalis,Right pars orbitalis gray matter volume (cc),0.94623,3,False,True,True,True
+adni,nacc,Volume (Cortical Parcellation) of  Left Pars Triangularis,Left pars triangularis gray matter volume (cc),0.94485,2,False,True,True,True
+adni,nacc,Volume (Cortical Parcellation) of  Right Pars Triangularis,Right pars triangularis gray matter volume (cc),0.94501,2,False,True,True,True
+adni,nacc,Volume (Cortical Parcellation) of Left Posterior Cingulate,Left posterior cingulate gray matter volume (cc),0.95447,1,True,True,True,True
+adni,nacc,Volume (Cortical Parcellation) of Right Posterior Cingulate,Right posterior cingulate gray matter volume (cc),0.95738,1,True,True,True,True
+adni,nacc,Volume (Cortical Parcellation) of Left Rostral Anterior Cingulate,Left rostral anterior cingulate gray matter volume (cc),0.95101,1,True,True,True,True
+adni,nacc,Volume (Cortical Parcellation) of Right Rostral Anterior Cingulate,Right rostral anterior cingulate gray matter volume (cc),0.95465,1,True,True,True,True
+adni,nacc,Volume (WM Parcellation) of Csf,Total brain cerebrospinal fluid volume (cc),0.93232,1,True,True,True,True
+adni,nacc,Cortical Thickness Average of Left Caudal Anterior Cingulate,Left caudal anterior cingulate mean cortical thickness (mm),0.96715,1,True,True,True,True
+adni,nacc,Cortical Thickness Average of Right Caudal Anterior Cingulate,Right caudal anterior cingulate mean cortical thickness (mm),0.96803,1,True,True,True,True
+adni,nacc,Cortical Thickness Average of Left Caudal Middle Frontal,Left caudal middle frontal mean cortical thickness (mm),0.96414,1,True,True,True,True
+adni,nacc,Cortical Thickness Average of Left Cuneus,Left cuneus mean cortical thickness (mm),0.96143,1,True,True,True,True
+adni,nacc,Cortical Thickness Average of Right Cuneus,Right cuneus mean cortical thickness (mm),0.96315,1,True,True,True,True
+adni,nacc,Cortical Thickness Average of Left Entorightinal,Left entorhinal mean cortical thickness (mm),0.9474,1,True,True,True,True
+adni,nacc,Cortical Thickness Average of  Right Entorightinal,Right entorhinal mean cortical thickness (mm),0.95225,1,True,True,True,True
+adni,nacc,Cortical Thickness Average of  Left Fusiform,Left fusiform mean cortical thickness (mm),0.95952,1,True,True,True,True
+adni,nacc,Cortical Thickness Average of Right Fusiform,Right fusiform mean cortical thickness (mm),0.95757,1,True,True,True,True
+adni,nacc,Cortical Thickness Average of Left Inferiorparietal,Left inferior parietal mean cortical thickness (mm),0.95702,1,True,True,True,True
+adni,nacc,Cortical Thickness Average of Right Inferiorparietal,Right inferior parietal mean cortical thickness (mm),0.95747,1,True,True,True,True
+adni,nacc,Cortical Thickness Average of Left Inferiortemporal,Left inferior temporal mean cortical thickness (mm),0.95534,1,True,True,True,True
+adni,nacc,Cortical Thickness Average of Right Inferiortemporal,Right inferior temporal mean cortical thickness (mm),0.95541,1,True,True,True,True
+adni,nacc,Cortical Thickness Average of Left Insula,Left insula mean cortical thickness (mm),0.95969,1,True,True,True,True
+adni,nacc,Cortical Thickness Average of Right Insula,Right insula mean cortical thickness (mm),0.95971,1,True,True,True,True
+adni,nacc,Cortical Thickness Average of Left Isthmus Cingulate,Left isthmus cingulate mean cortical thickness (mm),0.96187,1,True,True,True,True
+adni,nacc,Cortical Thickness Average of Right Isthmus Cingulate,Right isthmus cingulate mean cortical thickness (mm),0.96281,1,True,True,True,True
+adni,nacc,Cortical Thickness Average of Left Lateraloccipital,Left lateral occipital mean cortical thickness (mm),0.96277,1,True,True,True,True
+adni,nacc,Cortical Thickness Average of Right Lateraloccipital,Right lateral occipital mean cortical thickness (mm),0.96423,1,True,True,True,True
+adni,nacc,Cortical Thickness Average of Left Lateralorbitofrontal,Left lateral orbitofrontal mean cortical thickness (mm),0.95817,1,True,True,True,True
+adni,nacc,Cortical Thickness Average of Right Lateralorbitofrontal,Right lateral orbitofrontal mean cortical thickness (mm),0.96038,1,True,True,True,True
+adni,nacc,Cortical Thickness Average of Left Lingual,Left lingual mean cortical thickness (mm),0.95446,1,True,True,True,True
+adni,nacc,Cortical Thickness Average of Right Lingual,Right lingual mean cortical thickness (mm),0.95496,1,True,True,True,True
+adni,nacc,Cortical Thickness Average of Left Medial Orbitofrontal,Left medial orbitofrontal mean cortical thickness (mm),0.96111,1,True,True,True,True
+adni,nacc,Cortical Thickness Average of Right Medial Orbitofrontal,Right medial orbitofrontal mean cortical thickness (mm),0.96067,1,True,True,True,True
+adni,nacc,Cortical Thickness Average of Left Middle Temporal,Left middle temporal mean cortical thickness (mm),0.95925,1,True,True,True,True
+adni,nacc,Cortical Thickness Average of Right Middle Temporal,Right middle temporal mean cortical thickness (mm),0.95793,1,True,True,True,True
+adni,nacc,Cortical Thickness Average of Left Paracentral,Left paracentral mean cortical thickness (mm),0.9611,1,True,True,True,True
+adni,nacc,Cortical Thickness Average of Right Paracentral,Right paracentral mean cortical thickness (mm),0.96299,1,True,True,True,True
+adni,nacc,Cortical Thickness Average of Left Parahippocampal,Left parahippocampal mean cortical thickness (mm),0.96179,1,True,True,True,True
+adni,nacc,Cortical Thickness Average of Right Parahippocampal,Right parahippocampal mean cortical thickness (mm),0.96287,1,True,True,True,True
+adni,nacc,Cortical Thickness Average of Left Pars Opercularis,Left pars opercularis mean cortical thickness (mm),0.95415,1,True,True,True,True
+adni,nacc,Cortical Thickness Average of Right Pars Opercularis,Right pars opercularis mean cortical thickness (mm),0.95673,1,True,True,True,True
+adni,nacc,Cortical Thickness Average of Left Parsorbitalis,Left pars orbitalis mean cortical thickness (mm),0.95446,1,True,True,True,True
+adni,nacc,Cortical Thickness Average of Right Parsorbitalis,Right pars orbitalis mean cortical thickness (mm),0.95687,1,True,True,True,True
+adni,nacc,Cortical Thickness Average of Left Pars Triangularis,Left pars triangularis mean cortical thickness (mm),0.95397,1,True,True,True,True
+adni,nacc,Cortical Thickness Average of Right Pars Triangularis,Right pars triangularis mean cortical thickness (mm),0.95641,1,True,True,True,True
+adni,nacc,Cortical Thickness Average of Left Pericalcarine,Left pericalcarine mean cortical thickness (mm),0.96175,1,True,True,True,True
+adni,nacc,Cortical Thickness Average of Right Pericalcarine,Right pericalcarine mean cortical thickness (mm),0.96349,1,True,True,True,True
+adni,nacc,Cortical Thickness Average of Left Postcentral,Left postcentral mean cortical thickness (mm),0.96425,1,True,True,True,True
+adni,nacc,Cortical Thickness Average of Right Postcentral,Right postcentral mean cortical thickness (mm),0.96535,1,True,True,True,True
+adni,nacc,Cortical Thickness Average of Left Posterior Cingulate,Left posterior cingulate mean cortical thickness (mm),0.96624,1,True,True,True,True
+adni,nacc,Cortical Thickness Average of Right Posterior Cingulate,Right posterior cingulate mean cortical thickness (mm),0.96743,1,True,True,True,True
+adni,nacc,Cortical Thickness Average of Left Precentral,Left precentral mean cortical thickness (mm),0.96229,1,True,True,True,True
+adni,nacc,Cortical Thickness Average of Right Precentral,Right precentral mean cortical thickness (mm),0.96253,1,True,True,True,True
+adni,nacc,Cortical Thickness Average of Left Precuneus,Left precuneus mean cortical thickness (mm),0.96029,1,True,True,True,True
+adni,nacc,Cortical Thickness Average of Right Precuneus,Right precuneus mean cortical thickness (mm),0.96108,1,True,True,True,True
+adni,nacc,Cortical Thickness Average of Left Rostral Anterior Cingulate,Left rostral anterior cingulate mean cortical thickness (mm),0.96531,1,True,True,True,True
+adni,nacc,Cortical Thickness Average of Right Rostral Anterior Cingulate,Right rostral anterior cingulate mean cortical thickness (mm),0.96651,1,True,True,True,True
+adni,nacc,Cortical Thickness Average of Left Rostral Middle Frontal,Left rostral middle frontal mean cortical thickness (mm),0.96207,1,True,True,True,True
+adni,nacc,Cortical Thickness Average of Right Rostral Middle Frontal,Right rostral middle frontal mean cortical thickness (mm),0.9608,1,True,True,True,True
+adni,nacc,Cortical Thickness Average of Left Superior Frontal,Left superior frontal mean cortical thickness (mm),0.95536,1,True,True,True,True
+adni,nacc,Cortical Thickness Average of Right Superiorfrontal,Right superior frontal mean cortical thickness (mm),0.95799,1,True,True,True,True
+adni,nacc,Cortical Thickness Average of Left Superiorparietal,Left superior parietal mean cortical thickness (mm),0.95468,1,True,True,True,True
+adni,nacc,Cortical Thickness Average of Right Superiorparietal,Right superior parietal mean cortical thickness (mm),0.95588,1,True,True,True,True
+adni,nacc,Cortical Thickness Average of Left Superior Temporal,Left superior temporal mean cortical thickness (mm),0.95184,1,True,True,True,True
+adni,nacc,Cortical Thickness Average of Right Superior Temporal,Right superior temporal mean cortical thickness (mm),0.95264,1,True,True,True,True
+adni,nacc,Cortical Thickness Average of Left Supramarginal,Left supramarginal mean cortical thickness (mm),0.95954,1,True,True,True,True
+adni,nacc,Cortical Thickness Average of Right Supramarginal,Right supramarginal mean cortical thickness (mm),0.96039,1,True,True,True,True
+adni,nacc,Cortical Thickness Average of Left Transverse Temporal,Left transverse temporal mean cortical thickness (mm),0.9578,1,True,True,True,True
+adni,nacc,Cortical Thickness Average of Right Transverse Temporal,Right transverse temporal mean cortical thickness (mm),0.95714,1,True,True,True,True
+adni,nacc,Volume (Cortical Parcellation) of Left Precuneus,Left precuneus gray matter volume (cc),0.9493,1,True,True,True,True
+adni,nacc,Volume (Cortical Parcellation) o Right Precuneus,Right precuneus gray matter volume (cc),0.95059,1,True,True,True,True
+adni,nacc,Volume (Cortical Parcellation) o Left Transverse Temporal,Left transverse temporal gray matter volume (cc),0.94535,1,True,True,True,True
+adni,nacc,Volume (Cortical Parcellation) o Right Transverse Temporal,Right transverse temporal gray matter volume (cc),0.94547,1,True,True,True,True
+adni,nacc,Volume (WM Parcellation) of Left Lateral Ventricle,Segmented left lateral ventricle volume (cc),0.93724,1,True,True,True,True
+adni,nacc,Volume (WM Parcellation) of Right Lateral Ventricle,Segmented right lateral ventricle volume (cc),0.94028,1,True,True,True,True
+adni,nacc,Volume (WM Parcellation) of Third Ventricle,Segmented total third ventricle volume (cc),0.94158,1,True,True,True,True
+adni,nacc,Volume (WM Parcellation) of Left Hippocampus,Segmented left hippocampus volume (cc),0.93836,1,True,True,True,True
+adni,nacc,Volume (WM Parcellation) of Right Hippocampus,Segmented right hippocampus volume (cc),0.94168,1,True,True,True,True
+adni,epad,Smoking(1=Yes; 0=No),Smoking,0.955,1,True,True,True,True
+adni,nacc,Smoking(1=Yes; 0=No),Smoked cigarettes in last 30 days,0.94866,2,False,True,True,True
+adni,nacc,Smoking(1=Yes; 0=No),Average number of packs smoked per day,0.94726,3,False,True,True,True
+adni,nacc,"If no longer smoking, provide period of time since stopped smoking (years)","If the subject quit smoking, age at which he/she last smoked (i.e., quit)",0.96191,1,True,True,True,True
+aachen-hf,viennahf-register,HbA1c,HBA1c,0.96012,1,True,True,True,True
+aachen-hf,viennahf-register,creatinine,Creatinine,0.9654,1,True,True,True,True
+aachen-hf,viennahf-register,urea,Urea,0.95565,1,True,True,True,True
+aachen-hf,viennahf-register,triglyceride,triglyceride,0.96635,1,True,True,True,True
+aachen-hf,viennahf-register,patient identification number,patient identification number,0.96035,1,True,True,True,True
+aachen-hf,viennahf-register,mineralocorticoid receptor antagonist (MRA),Mineralocorticoid receptor antagonists(MRAs),0.96613,1,True,True,True,True
+aachen-hf,viennahf-register,height,height,0.96478,1,True,True,True,True
+aachen-hf,viennahf-register,HDL-cholesterol,HDL-Cholesterol,0.97221,1,True,True,True,True
+aachen-hf,viennahf-register,age at visit,age at visit,0.96555,1,True,True,True,True
+aachen-hf,viennahf-register,estimated glomerular filtration rate (CKD-EPI),estimated glomerular fraction rate,0.95034,1,True,True,True,True
+aachen-hf,viennahf-register,date of visit,date of visit,0.96456,1,True,True,True,True
+aachen-hf,viennahf-register,weight,weight,0.96461,1,True,True,True,True
+aachen-hf,viennahf-register,body mass index,body mass index,0.96674,1,True,True,True,True
+aachen-hf,viennahf-register,Angiotensin II receptor blockers,Angiotensin II Receptor Blockers (ARBs),0.96876,1,True,True,True,True
+aachen-hf,viennahf-register,sacubitril/valsartan,Angiotensin Receptor-Neprilysin Inhibitor (ARNi),0.93877,3,False,True,True,True
+aachen-hf,viennahf-register,LDL-cholesterol,HDL-Cholesterol,0.96533,2,False,True,True,True
+aachen-hf,viennahf-register,Betablocker substance,Betablocker,0.95726,1,True,True,True,True
+aachen-hf,viennahf-register,Beta blockers,Betablocker,0.94882,4,False,False,True,True
+aachen-hf,viennahf-register,sodium glucose cotransporter 2 inhibitors,SGLT2i,0.94569,1,True,True,True,True
+aachen-hf,viennahf-register,Alanine aminotransferase,Alanine Aminotransferase(ALAT),0.96497,1,True,True,True,True
+aachen-hf,viennahf-register,Angiotensin-converting enzyme inhibitors,ACE inhibitors (ACEI),0.96011,1,True,True,True,True
+aachen-hf,viennahf-register,Aspartate aminotransferase,aspartaataminotransferase(ASAT),0.96153,1,True,True,True,True
+aachen-hf,viennahf-register,height,weight,0.95398,3,False,True,True,True
+aachen-hf,viennahf-register,gamma-glutamyl transferase (GGT),gamma glutaryl transferase,0.9654,1,True,True,True,True
+aachen-hf,viennahf-register,prealbumin,Albumin,0.94839,1,True,True,True,True
+aachen-hf,viennahf-register,History of chronic kidney disease,creatinin kinase,0.93759,15,False,False,False,False
+aachen-hf,viennahf-register,eosinophiles,eosinophils absolute,0.946,1,True,True,True,True
+aachen-hf,viennahf-register,LDL-cholesterol,LDL-Cholsterine,0.96813,1,True,True,True,True
+aachen-hf,viennahf-register,History of diabetes,type of diabetes,0.95392,1,True,True,True,True
+aachen-hf,viennahf-register,sacubitril/valsartan,ARNi daily dosis in % of target dosis,0.9262,30,False,False,False,False
+aachen-hf,viennahf-register,History of myocardial infarction,date of past myocardial infarction,0.96239,2,False,True,True,True
+aachen-hf,viennahf-register,History of chronic obstructive pulmonary disorder,COPD ( chronic obstructive pulmonary disease),0.95213,1,True,True,True,True
+aachen-hf,viennahf-register,diuretics,Loop diuretics,0.96352,2,False,True,True,True
+aachen-hf,viennahf-register,sodium glucose cotransporter 2 inhibitors,SGLT2i daily dosis in % of target dosis,0.94111,3,False,True,True,True
+aachen-hf,viennahf-register,creatinine,creatinin kinase,0.95359,2,False,True,True,True
+aachen-hf,viennahf-register,original dosage of ARNI,ARNi daily dosis in % of target dosis,0.95046,1,True,True,True,True
+aachen-hf,viennahf-register,Angiotensin II receptor blockers,ARB daily dosis in % of target dosis,0.93959,24,False,False,False,False
+aachen-hf,viennahf-register,original dosage of SGLT2 inhibitors,SGLT2i daily dosis in % of target dosis,0.9563,1,True,True,True,True
+aachen-hf,viennahf-register,mineralocorticoid receptor antagonist (MRA),MRA daily dosis in % of target dosis,0.94785,4,False,False,True,True
+aachen-hf,viennahf-register,high sensitivity C reactive protein,ultrasensitive C reactive protein(CRP),0.95943,1,True,True,True,True
+aachen-hf,viennahf-register,smoking status,Smoking status (active/former/never),0.96121,1,True,True,True,True
+aachen-hf,viennahf-register,History of myocardial infarction,presence of past myocardial infarction,0.96321,1,True,True,True,True
+aachen-hf,viennahf-register,date of visit,date of stroke,0.95151,3,False,True,True,True
+aachen-hf,viennahf-register,History of Coronary artery bypass graft surgery,CABG - coronary artery bypass graft,0.95801,1,True,True,True,True
+aachen-hf,viennahf-register,History of stroke,date of stroke,0.95682,1,True,True,True,True
+aachen-hf,viennahf-register,lymphocytes,Lymphocytes absolute,0.96469,2,False,True,True,True
+aachen-hf,viennahf-register,lymphocytes,Lymphocytes relative,0.96578,1,True,True,True,True
+aachen-hf,viennahf-register,History of chronic kidney disease,chronic kidney disease (yes/no),0.95984,1,True,True,True,True
+aachen-hf,viennahf-register,diuretics,diuretics substance,0.96531,1,True,True,True,True
+aachen-hf,viennahf-register,normalisation of loop diuretics,Loop diuretics,0.92789,1,True,True,True,True

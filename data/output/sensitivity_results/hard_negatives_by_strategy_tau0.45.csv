@@ -1,0 +1,4 @@
+model,n_hard_negatives,retained_tau_only_pct,retained_adaptive_pct,retained_top2_pct,retained_top10_pct
+sapbert,61,36.1,6.6,16.4,54.1
+biolord,61,24.6,11.5,26.2,59.0
+openai,61,21.3,11.5,26.2,57.4

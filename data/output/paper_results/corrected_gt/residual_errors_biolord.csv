@@ -1,0 +1,11 @@
+correct class,predicted class,Gemini-3.1-Flash-Lite,GPT-OSS-120B,DeepSeek-V4-Flash
+partial match,not applicable,10,8,30
+not applicable,partial match,6,25,9
+identical match,partial match,2,5,2
+compatible match,not applicable,2,2,4
+compatible match,partial match,3,2,1
+partial match,compatible match,1,1,3
+identical match,not applicable,1,1,2
+partial match,identical match,1,0,3
+compatible match,identical match,1,1,1
+not applicable,identical match,1,0,1

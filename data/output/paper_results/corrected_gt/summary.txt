@@ -1,0 +1,72 @@
+eval_dir=data/output/cross_mapping/evaluation_article_rerun/eval_article_corrected_gt
+gt=data/ground_truth_pairs_corrected.xlsx
+dicts=/Users/komalgilani/phd_projects/CohortVarLinker/data/cross_mapping_used_in_article.zip
+
+== Table ablation_best
+  G+E+L (full): 0.9539 (biolord+gemini-3.1-flash-lite)
+  G+E: 0.8024 (biolord+no_llm)
+  E+L: 0.7804 (openai+gemini-3.1-flash-lite)
+  E: 0.4623 (biolord+no_llm)
+  G (baseline): 0.7806 (graph only)
+  E+L range 76.3-78.0; E+L best - G = -0.1 pp; G+E best - G = 2.1 pp; full - best two-component = 15.2 pp
+== Table candidate_recall (BioLORD)
+  \texttt{G}: non-annotated 922, missed 16
+  \texttt{E}: non-annotated 1205, missed 95
+  \texttt{G+E}: non-annotated 1890, missed 4
+== Table embedding_llm_performance
+  range 90.7-95.4; best ('biolord', 'gemini-3.1-flash-lite') 95.4 / 95.9
+  retriever effect per LLM: gemini-3.1-flash-lite 0.5, gpt-oss-120b 3.5, deepseek-v4-flash 1.0
+  classifier effect per retriever: biolord 3.7, openai 4.2, sapbert 4.2
+  retriever ranking per LLM: gemini-3.1-flash-lite: biolord > openai > sapbert; gpt-oss-120b: biolord > openai > sapbert; deepseek-v4-flash: biolord > openai > sapbert
+== Table macro_f1_by_target_cohort
+  gemini-3.1-flash-lite retriever spread per cohort: aachen-hf 0.1, gissi-hf 0.7, viennahf-register 1.3, biostat-chf 0.0
+  gpt-oss-120b retriever spread per cohort: aachen-hf 2.5, gissi-hf 1.4, viennahf-register 4.9, biostat-chf 5.4
+  deepseek-v4-flash retriever spread per cohort: aachen-hf 0.2, gissi-hf 0.9, viennahf-register 0.5, biostat-chf 2.8
+  best aachen-hf: 96.0 (biolord+gpt-oss-120b); range 93.5-96.0
+  best gissi-hf: 95.2 (biolord+gemini-3.1-flash-lite); range 90.9-95.2
+  best viennahf-register: 98.3 (biolord+gemini-3.1-flash-lite); range 89.6-98.3
+  best biostat-chf: 95.5 (biolord+gpt-oss-120b); range 87.8-95.5
+== Table graph_evidence (BioLORD)
+  withheld range 91.3-92.2
+== Table domain_ablation (BioLORD; macro-F1 over all pairs per domain | accuracy | errors | evaluator mean of per-cohort macro-F1)
+  condition_occurrence (n=133): gemini-3.1-flash-lite 96.8 | 97.7 | 3 | 88.3; gpt-oss-120b 96.2 | 96.2 | 5 | 94.8; deepseek-v4-flash 95.9 | 96.2 | 5 | 86.5
+  drug_exposure (n=120): gemini-3.1-flash-lite 93.7 | 95.0 | 6 | 96.4; gpt-oss-120b 91.1 | 90.8 | 11 | 93.8; deepseek-v4-flash 85.8 | 85.8 | 17 | 85.4
+  measurement (n=320): gemini-3.1-flash-lite 95.5 | 96.9 | 10 | 88.8; gpt-oss-120b 92.9 | 94.7 | 17 | 90.5; deepseek-v4-flash 90.5 | 93.4 | 21 | 85.9
+  observation (n=129): gemini-3.1-flash-lite 95.5 | 94.6 | 7 | 94.8; gpt-oss-120b 94.1 | 92.2 | 10 | 93.6; deepseek-v4-flash 92.7 | 92.2 | 10 | 91.5
+  person (n=15): gemini-3.1-flash-lite 100.0 | 100.0 | 0 | 100.0; gpt-oss-120b 100.0 | 100.0 | 0 | 100.0; deepseek-v4-flash 100.0 | 100.0 | 0 | 100.0
+  procedure_occurrence (n=11): gemini-3.1-flash-lite 100.0 | 100.0 | 0 | 100.0; gpt-oss-120b 100.0 | 100.0 | 0 | 100.0; deepseek-v4-flash 88.9 | 90.9 | 1 | 96.0
+  death (n=8): gemini-3.1-flash-lite 53.6 | 75.0 | 2 | 66.7; gpt-oss-120b 53.6 | 75.0 | 2 | 66.7; deepseek-v4-flash 53.6 | 75.0 | 2 | 66.7
+== Table heterogeneity_accuracy (biolord+gemini-3.1-flash-lite); errors in evaluator file: 28, matched to benchmark pairs: 28; pairs without dictionary entry: 2
+  All pairs: 244/254 | 204/214 | 193/197 | 67/71 | 708/736 (96.2)
+  Abbreviation target label: 6/6 | 1/1 | 15/15 | 7/7 | 29/29 (100.0)
+  Cross-vocabulary: 67/71 | 31/36 | 30/31 | 11/11 | 139/149 (93.3)
+  Study-specific code: 2/2 | 2/3 | 4/4 | 0/0 | 8/9
+  missing unit (continuous on both sides, unit empty on either side): 7 pairs, 1 in measurement/person domains: viennahf-register:numberhosp_all->hospcount; aachen-hf:numberhosp_hf->fu_hosp_hf; viennahf-register:fu_hosp->totalhospduration; viennahf-register:lvesvi_bl->groesse; biostat-chf:dosebbbl->ace_ft_bs; biostat-chf:doseacebl->bb_ft_bs; biostat-chf:dosespirobl->bb_ft_bs
+  continuous measurement-domain variables without a unit, per cohort dictionary:
+    time-chf: 83/480 (17.3%)
+    aachen-hf: 3/35 (8.6%)
+    gissi-hf: 0/340 (0.0%)
+    viennahf-register: 4/100 (4.0%)
+    biostat-chf: 4/69 (5.8%)
+== Residual errors (BioLORD, full pipeline)
+  total: Gemini-3.1-Flash-Lite 28, GPT-OSS-120B 45, DeepSeek-V4-Flash 56
+  PM<->NA: Gemini-3.1-Flash-Lite 16 (57.1%), GPT-OSS-120B 33 (73.3%), DeepSeek-V4-Flash 39 (69.6%)
+  NA->PM: Gemini-3.1-Flash-Lite 6, GPT-OSS-120B 25, DeepSeek-V4-Flash 9
+  PM->NA: Gemini-3.1-Flash-Lite 10, GPT-OSS-120B 8, DeepSeek-V4-Flash 30
+  IM->PM: Gemini-3.1-Flash-Lite 2, GPT-OSS-120B 5, DeepSeek-V4-Flash 2
+  IM->NA: Gemini-3.1-Flash-Lite 1, GPT-OSS-120B 1, DeepSeek-V4-Flash 2
+  NA->IM: Gemini-3.1-Flash-Lite 1, GPT-OSS-120B 0, DeepSeek-V4-Flash 1
+  compatible misassigned: Gemini-3.1-Flash-Lite 6, GPT-OSS-120B 5, DeepSeek-V4-Flash 6
+== Heterogeneity text (variables per cohort dictionary)
+  time-chf (n=1425): labels <=2 words 9 (0.6%); abbreviation-only labels 0 (0.0%); study-specific code 45 (3.2%)
+  aachen-hf (n=98): labels <=2 words 29 (29.6%); abbreviation-only labels 1 (1.0%); study-specific code 2 (2.0%)
+  gissi-hf (n=1713): labels <=2 words 28 (1.6%); abbreviation-only labels 0 (0.0%); study-specific code 6 (0.4%)
+  viennahf-register (n=397): labels <=2 words 116 (29.2%); abbreviation-only labels 16 (4.0%); study-specific code 9 (2.3%)
+  biostat-chf (n=272): labels <=2 words 103 (37.9%); abbreviation-only labels 12 (4.4%); study-specific code 30 (11.0%)
+== Heterogeneity text (candidate pairs, biolord+gemini-3.1-flash-lite, full pipeline)
+  candidate pairs 2712; cross-vocabulary 732 (27.0%), of which classified as a match 226; ATC<->RxNorm among them 275 (matches 167)
+  cross-vocabulary pairs by prefix: atc/rxnorm 149, loinc/snomed 143, rxnorm/atc 126, snomed/loinc 86, snomed/omop 70, atc/snomed 30, loinc/omop 20, cdisc/loinc 18
+  candidate pairs with a continuous variable without a unit on either side: 98; verdicts: Not Applicable 76, Partial Match 19, Identical Match 2, Compatible Match 1
+  example: @6mwt_distance [ucum:m] -> mwt6_score1 [nan] '6 minute walk test distance': Identical Match
+  example: @6mwt_distance [ucum:m] -> mwt6_ny21 [nan] 'did the patient complete the 6mwt': Partial Match
+  example: @6mwt_distance [ucum:m] -> mwt6_ny11 [nan] '6 mwt performed': Partial Match

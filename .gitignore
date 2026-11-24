@@ -193,6 +193,11 @@ data/studies_metadata.xlsx
 /docs
 /data/oxigraph
 /data/oxigraph_backup_0.4.0
-/analysis/adaptive_retrieval
+/analysis/retriever/cutoff_ablation/
 /tests
 /tests
+
+/data/output/embed_cache/
+/data/cross_mapping_used_in_article
+/extra
+/data/output/paper_results/original_gt

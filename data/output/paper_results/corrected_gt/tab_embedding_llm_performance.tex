@@ -1,0 +1,17 @@
+\begin{tabular}{llcc}
+\toprule
+\textbf{Retriever} & \textbf{LLM} & $\mathbf{F_{1,m}}$ & $\mathbf{F_{1,w}}$ \\
+\midrule
+BioLORD & Gemini-3.1-Flash-Lite & \textbf{95.4} & \textbf{95.9} \\
+text-embedding-3-large & Gemini-3.1-Flash-Lite & 95.1 & 95.5 \\
+SapBERT & Gemini-3.1-Flash-Lite & 94.9 & 95.4 \\
+\midrule
+BioLORD & GPT-OSS-120B & 94.5 & 94.2 \\
+text-embedding-3-large & GPT-OSS-120B & 92.0 & 92.3 \\
+SapBERT & GPT-OSS-120B & 91.0 & 91.4 \\
+\midrule
+BioLORD & DeepSeek-V4-Flash & 91.7 & 92.1 \\
+text-embedding-3-large & DeepSeek-V4-Flash & 90.9 & 91.4 \\
+SapBERT & DeepSeek-V4-Flash & 90.7 & 91.3 \\
+\bottomrule
+\end{tabular}

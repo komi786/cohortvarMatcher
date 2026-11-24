@@ -1,0 +1,130 @@
+model,source,negative_target,neg_score,gold_target,gold_score
+sapbert,LDL-cholesterol,re-calculated LDL-C in mg/dl  at visit 2,0.535,RE-CALIBRATED LDL CHOL. in mg/dl,0.744
+sapbert,LDL-cholesterol,Recalculated LDL Cholesterol at visit 4,0.547,RE-CALIBRATED LDL CHOL. in mg/dl,0.744
+sapbert,Genotype - Allele 1,Genotype - Allele 2,0.745,Genotype - Allele 1,1.0
+sapbert,LDL-cholesterol,HDL-Cholesterol,0.745,LDL-Cholsterine,0.75
+sapbert,height,weight,0.542,height,1.0
+sapbert,weight,height,0.542,weight,1.0
+sapbert,History of chronic kidney disease,creatinin kinase,0.273,chronic kidney disease (yes/no),0.867
+sapbert,creatinine,creatinin kinase,0.572,Creatinine,1.0
+sapbert,date of visit,date of birth,0.651,date of visit,1.0
+sapbert,date of visit,date of stroke,0.573,date of visit,1.0
+sapbert,date of visit,number of visit,0.719,date of visit,1.0
+sapbert,date of visit,date of death,0.601,date of visit,1.0
+sapbert,date of visit,date of CABG,0.413,date of visit,1.0
+sapbert,normalisation of loop diuretics,implantation of CardioMems,0.315,Loop diuretics,0.648
+sapbert,Volume (Cortical Parcellation) of  Right Pars Orbitalis,Left middle temporal gray matter volume (cc),0.305,Right pars orbitalis gray matter volume (cc),0.858
+sapbert,Volume (Cortical Parcellation) of  Left Pars Triangularis,Right middle temporal gray matter volume (cc),0.387,Left pars triangularis gray matter volume (cc),0.909
+sapbert,Volume (Cortical Parcellation) of  Right Pars Triangularis,Right pericalcarine gray matter volume (cc),0.522,Right pars triangularis gray matter volume (cc),0.893
+sapbert,Volume (Cortical Parcellation) of Left Posterior Cingulate,Right precentral gray matter volume (cc),0.449,Left posterior cingulate gray matter volume (cc),0.91
+sapbert,Volume (Cortical Parcellation) of Right Posterior Cingulate,Right rostral middle frontal gray matter volume (cc),0.529,Right posterior cingulate gray matter volume (cc),0.918
+sapbert,Volume (Cortical Parcellation) of Left Rostral Anterior Cingulate,Right superior parietal gray matter volume (cc),0.431,Left rostral anterior cingulate gray matter volume (cc),0.914
+sapbert,Volume (Cortical Parcellation) of Right Rostral Anterior Cingulate,Right supramarginal gray matter volume (cc),0.564,Right rostral anterior cingulate gray matter volume (cc),0.926
+sapbert,Volume (WM Parcellation) of Csf,Right insula gray matter volume (cc),0.298,Total brain cerebrospinal fluid volume (cc),0.758
+sapbert,Cortical Thickness Average of Left Caudal Anterior Cingulate,Left inferior temporal gray matter volume (cc),0.485,Left caudal anterior cingulate mean cortical thickness (mm),0.828
+sapbert,Cortical Thickness Average of Right Caudal Anterior Cingulate,Left medial orbitofrontal gray matter volume (cc),0.161,Right caudal anterior cingulate mean cortical thickness (mm),0.851
+sapbert,Cortical Thickness Average of Left Caudal Middle Frontal,Left pericalcarine gray matter volume (cc),0.504,Left caudal middle frontal mean cortical thickness (mm),0.86
+sapbert,Cortical Thickness Average of Left Cuneus,Left precentral gray matter volume (cc),0.353,Left cuneus mean cortical thickness (mm),0.806
+sapbert,Cortical Thickness Average of Right Cuneus,Left rostral middle frontal gray matter volume (cc),0.316,Right cuneus mean cortical thickness (mm),0.832
+sapbert,Cortical Thickness Average of Left Entorightinal,Left supramarginal gray matter volume (cc),0.459,Left entorhinal mean cortical thickness (mm),0.73
+sapbert,Cortical Thickness Average of  Right Entorightinal,Right inferior temporal gray matter volume (cc),0.572,Right entorhinal mean cortical thickness (mm),0.742
+sapbert,Cortical Thickness Average of  Left Fusiform,Right medial orbitofrontal gray matter volume (cc),0.238,Left fusiform mean cortical thickness (mm),0.815
+sapbert,Cortical Thickness Average of Right Fusiform,Left superior parietal gray matter volume (cc),0.144,Right fusiform mean cortical thickness (mm),0.823
+sapbert,Cortical Thickness Average of Left Inferiorparietal,Right postcentral gray matter volume (cc),0.335,Left inferior parietal mean cortical thickness (mm),0.749
+sapbert,Cortical Thickness Average of Right Inferiorparietal,Right superior frontal gray matter volume (cc),0.372,Right inferior parietal mean cortical thickness (mm),0.767
+sapbert,Cortical Thickness Average of Left Inferiortemporal,Right superior temporal gray matter volume (cc),0.359,Left inferior temporal mean cortical thickness (mm),0.818
+sapbert,Are you in good spirits most of the time?,Do you feel happy most of the time?,0.724,5. Are you in good spirits most of the time?,0.821
+sapbert,Are you afraid that something bad is going to happen to you?,Do you often feel helpless?,0.392,6. Are you afraid that something bad is going to happen to you?,0.811
+sapbert,Do you feel happy most of the time?,"Do you prefer to stay at home, rather than going out and doing new things?",0.461,7. Do you feel happy most of the time?,0.81
+sapbert,Do you often feel helpless?,Do you feel you have more problems with memory than most?,0.459,8. Do you often feel helpless?,0.754
+sapbert,"Do you prefer to stay at home, rather than going out and doing new things?",Do you think it is wonderful to be alive now?,0.491,"9. Do you prefer to stay at home, rather than going out and doing new things?",0.739
+sapbert,Do you feel you have more problems with memory than most?,Do you feel pretty worthless the way you are now?,0.34,10. Do you feel you have more problems with memory than most?,0.787
+sapbert,Do you think its wonderful to be alive now?,Do you feel full of energy?,0.567,11. Do you think its wonderful to be alive now?,0.734
+sapbert,Do you feel pretty worthless the way you are now?,Do you feel that your situation is hopeless?,0.549,12. Do you feel pretty worthless the way you are now?,0.852
+sapbert,Do you feel full of energy?,Do you think that most people are better off than you are?,0.547,13. Do you feel full of energy?,0.733
+biolord,LDL-cholesterol,re-calculated LDL-C in mg/dl  at visit 2,0.367,RE-CALIBRATED LDL CHOL. in mg/dl,0.814
+biolord,LDL-cholesterol,Recalculated LDL Cholesterol at visit 4,0.376,RE-CALIBRATED LDL CHOL. in mg/dl,0.814
+biolord,Genotype - Allele 1,Genotype - Allele 2,0.518,Genotype - Allele 1,1.0
+biolord,LDL-cholesterol,HDL-Cholesterol,0.86,LDL-Cholsterine,0.843
+biolord,height,weight,0.433,height,1.0
+biolord,weight,height,0.433,weight,1.0
+biolord,History of chronic kidney disease,creatinin kinase,0.324,chronic kidney disease (yes/no),0.716
+biolord,creatinine,creatinin kinase,0.686,Creatinine,1.0
+biolord,date of visit,date of birth,0.381,date of visit,1.0
+biolord,date of visit,date of stroke,0.341,date of visit,1.0
+biolord,date of visit,number of visit,0.601,date of visit,1.0
+biolord,date of visit,date of death,0.422,date of visit,1.0
+biolord,date of visit,date of CABG,0.421,date of visit,1.0
+biolord,normalisation of loop diuretics,implantation of CardioMems,0.152,Loop diuretics,0.761
+biolord,Volume (Cortical Parcellation) of  Right Pars Orbitalis,Left middle temporal gray matter volume (cc),0.425,Right pars orbitalis gray matter volume (cc),0.786
+biolord,Volume (Cortical Parcellation) of  Left Pars Triangularis,Right middle temporal gray matter volume (cc),0.404,Left pars triangularis gray matter volume (cc),0.824
+biolord,Volume (Cortical Parcellation) of  Right Pars Triangularis,Right pericalcarine gray matter volume (cc),0.574,Right pars triangularis gray matter volume (cc),0.802
+biolord,Volume (Cortical Parcellation) of Left Posterior Cingulate,Right precentral gray matter volume (cc),0.566,Left posterior cingulate gray matter volume (cc),0.859
+biolord,Volume (Cortical Parcellation) of Right Posterior Cingulate,Right rostral middle frontal gray matter volume (cc),0.669,Right posterior cingulate gray matter volume (cc),0.851
+biolord,Volume (Cortical Parcellation) of Left Rostral Anterior Cingulate,Right superior parietal gray matter volume (cc),0.495,Left rostral anterior cingulate gray matter volume (cc),0.829
+biolord,Volume (Cortical Parcellation) of Right Rostral Anterior Cingulate,Right supramarginal gray matter volume (cc),0.633,Right rostral anterior cingulate gray matter volume (cc),0.843
+biolord,Volume (WM Parcellation) of Csf,Right insula gray matter volume (cc),0.526,Total brain cerebrospinal fluid volume (cc),0.805
+biolord,Cortical Thickness Average of Left Caudal Anterior Cingulate,Left inferior temporal gray matter volume (cc),0.397,Left caudal anterior cingulate mean cortical thickness (mm),0.891
+biolord,Cortical Thickness Average of Right Caudal Anterior Cingulate,Left medial orbitofrontal gray matter volume (cc),0.322,Right caudal anterior cingulate mean cortical thickness (mm),0.905
+biolord,Cortical Thickness Average of Left Caudal Middle Frontal,Left pericalcarine gray matter volume (cc),0.431,Left caudal middle frontal mean cortical thickness (mm),0.891
+biolord,Cortical Thickness Average of Left Cuneus,Left precentral gray matter volume (cc),0.521,Left cuneus mean cortical thickness (mm),0.898
+biolord,Cortical Thickness Average of Right Cuneus,Left rostral middle frontal gray matter volume (cc),0.518,Right cuneus mean cortical thickness (mm),0.915
+biolord,Cortical Thickness Average of Left Entorightinal,Left supramarginal gray matter volume (cc),0.57,Left entorhinal mean cortical thickness (mm),0.819
+biolord,Cortical Thickness Average of  Right Entorightinal,Right inferior temporal gray matter volume (cc),0.479,Right entorhinal mean cortical thickness (mm),0.83
+biolord,Cortical Thickness Average of  Left Fusiform,Right medial orbitofrontal gray matter volume (cc),0.362,Left fusiform mean cortical thickness (mm),0.854
+biolord,Cortical Thickness Average of Right Fusiform,Left superior parietal gray matter volume (cc),0.254,Right fusiform mean cortical thickness (mm),0.873
+biolord,Cortical Thickness Average of Left Inferiorparietal,Right postcentral gray matter volume (cc),0.408,Left inferior parietal mean cortical thickness (mm),0.87
+biolord,Cortical Thickness Average of Right Inferiorparietal,Right superior frontal gray matter volume (cc),0.539,Right inferior parietal mean cortical thickness (mm),0.871
+biolord,Cortical Thickness Average of Left Inferiortemporal,Right superior temporal gray matter volume (cc),0.468,Left inferior temporal mean cortical thickness (mm),0.853
+biolord,Are you in good spirits most of the time?,Do you feel happy most of the time?,0.877,5. Are you in good spirits most of the time?,0.814
+biolord,Are you afraid that something bad is going to happen to you?,Do you often feel helpless?,0.454,6. Are you afraid that something bad is going to happen to you?,0.804
+biolord,Do you feel happy most of the time?,"Do you prefer to stay at home, rather than going out and doing new things?",0.325,7. Do you feel happy most of the time?,0.765
+biolord,Do you often feel helpless?,Do you feel you have more problems with memory than most?,0.476,8. Do you often feel helpless?,0.809
+biolord,"Do you prefer to stay at home, rather than going out and doing new things?",Do you think it is wonderful to be alive now?,0.281,"9. Do you prefer to stay at home, rather than going out and doing new things?",0.76
+biolord,Do you feel you have more problems with memory than most?,Do you feel pretty worthless the way you are now?,0.441,10. Do you feel you have more problems with memory than most?,0.852
+biolord,Do you think its wonderful to be alive now?,Do you feel full of energy?,0.596,11. Do you think its wonderful to be alive now?,0.713
+biolord,Do you feel pretty worthless the way you are now?,Do you feel that your situation is hopeless?,0.755,12. Do you feel pretty worthless the way you are now?,0.75
+biolord,Do you feel full of energy?,Do you think that most people are better off than you are?,0.235,13. Do you feel full of energy?,0.803
+openai,LDL-cholesterol,re-calculated LDL-C in mg/dl  at visit 2,0.509,RE-CALIBRATED LDL CHOL. in mg/dl,0.6
+openai,LDL-cholesterol,Recalculated LDL Cholesterol at visit 4,0.518,RE-CALIBRATED LDL CHOL. in mg/dl,0.6
+openai,Genotype - Allele 1,Genotype - Allele 2,0.894,Genotype - Allele 1,1.0
+openai,LDL-cholesterol,HDL-Cholesterol,0.698,LDL-Cholsterine,0.803
+openai,height,weight,0.43,height,1.0
+openai,weight,height,0.43,weight,1.0
+openai,History of chronic kidney disease,creatinin kinase,0.262,chronic kidney disease (yes/no),0.611
+openai,creatinine,creatinin kinase,0.725,Creatinine,0.876
+openai,date of visit,date of birth,0.561,date of visit,1.0
+openai,date of visit,date of stroke,0.443,date of visit,1.0
+openai,date of visit,number of visit,0.666,date of visit,1.0
+openai,date of visit,date of death,0.527,date of visit,1.0
+openai,date of visit,date of CABG,0.409,date of visit,1.0
+openai,normalisation of loop diuretics,implantation of CardioMems,0.258,Loop diuretics,0.709
+openai,Volume (Cortical Parcellation) of  Right Pars Orbitalis,Left middle temporal gray matter volume (cc),0.576,Right pars orbitalis gray matter volume (cc),0.745
+openai,Volume (Cortical Parcellation) of  Left Pars Triangularis,Right middle temporal gray matter volume (cc),0.607,Left pars triangularis gray matter volume (cc),0.779
+openai,Volume (Cortical Parcellation) of  Right Pars Triangularis,Right pericalcarine gray matter volume (cc),0.612,Right pars triangularis gray matter volume (cc),0.764
+openai,Volume (Cortical Parcellation) of Left Posterior Cingulate,Right precentral gray matter volume (cc),0.576,Left posterior cingulate gray matter volume (cc),0.727
+openai,Volume (Cortical Parcellation) of Right Posterior Cingulate,Right rostral middle frontal gray matter volume (cc),0.627,Right posterior cingulate gray matter volume (cc),0.741
+openai,Volume (Cortical Parcellation) of Left Rostral Anterior Cingulate,Right superior parietal gray matter volume (cc),0.619,Left rostral anterior cingulate gray matter volume (cc),0.753
+openai,Volume (Cortical Parcellation) of Right Rostral Anterior Cingulate,Right supramarginal gray matter volume (cc),0.625,Right rostral anterior cingulate gray matter volume (cc),0.76
+openai,Volume (WM Parcellation) of Csf,Right insula gray matter volume (cc),0.495,Total brain cerebrospinal fluid volume (cc),0.641
+openai,Cortical Thickness Average of Left Caudal Anterior Cingulate,Left inferior temporal gray matter volume (cc),0.539,Left caudal anterior cingulate mean cortical thickness (mm),0.837
+openai,Cortical Thickness Average of Right Caudal Anterior Cingulate,Left medial orbitofrontal gray matter volume (cc),0.528,Right caudal anterior cingulate mean cortical thickness (mm),0.84
+openai,Cortical Thickness Average of Left Caudal Middle Frontal,Left pericalcarine gray matter volume (cc),0.555,Left caudal middle frontal mean cortical thickness (mm),0.812
+openai,Cortical Thickness Average of Left Cuneus,Left precentral gray matter volume (cc),0.534,Left cuneus mean cortical thickness (mm),0.843
+openai,Cortical Thickness Average of Right Cuneus,Left rostral middle frontal gray matter volume (cc),0.507,Right cuneus mean cortical thickness (mm),0.821
+openai,Cortical Thickness Average of Left Entorightinal,Left supramarginal gray matter volume (cc),0.527,Left entorhinal mean cortical thickness (mm),0.751
+openai,Cortical Thickness Average of  Right Entorightinal,Right inferior temporal gray matter volume (cc),0.561,Right entorhinal mean cortical thickness (mm),0.762
+openai,Cortical Thickness Average of  Left Fusiform,Right medial orbitofrontal gray matter volume (cc),0.524,Left fusiform mean cortical thickness (mm),0.804
+openai,Cortical Thickness Average of Right Fusiform,Left superior parietal gray matter volume (cc),0.513,Right fusiform mean cortical thickness (mm),0.797
+openai,Cortical Thickness Average of Left Inferiorparietal,Right postcentral gray matter volume (cc),0.532,Left inferior parietal mean cortical thickness (mm),0.795
+openai,Cortical Thickness Average of Right Inferiorparietal,Right superior frontal gray matter volume (cc),0.538,Right inferior parietal mean cortical thickness (mm),0.797
+openai,Cortical Thickness Average of Left Inferiortemporal,Right superior temporal gray matter volume (cc),0.59,Left inferior temporal mean cortical thickness (mm),0.788
+openai,Are you in good spirits most of the time?,Do you feel happy most of the time?,0.755,5. Are you in good spirits most of the time?,0.856
+openai,Are you afraid that something bad is going to happen to you?,Do you often feel helpless?,0.384,6. Are you afraid that something bad is going to happen to you?,0.853
+openai,Do you feel happy most of the time?,"Do you prefer to stay at home, rather than going out and doing new things?",0.32,7. Do you feel happy most of the time?,0.85
+openai,Do you often feel helpless?,Do you feel you have more problems with memory than most?,0.379,8. Do you often feel helpless?,0.854
+openai,"Do you prefer to stay at home, rather than going out and doing new things?",Do you think it is wonderful to be alive now?,0.226,"9. Do you prefer to stay at home, rather than going out and doing new things?",0.872
+openai,Do you feel you have more problems with memory than most?,Do you feel pretty worthless the way you are now?,0.33,10. Do you feel you have more problems with memory than most?,0.872
+openai,Do you think its wonderful to be alive now?,Do you feel full of energy?,0.337,11. Do you think its wonderful to be alive now?,0.898
+openai,Do you feel pretty worthless the way you are now?,Do you feel that your situation is hopeless?,0.587,12. Do you feel pretty worthless the way you are now?,0.886
+openai,Do you feel full of energy?,Do you think that most people are better off than you are?,0.27,13. Do you feel full of energy?,0.85

@@ -1,0 +1,493 @@
+source_study,target_study,text1,text2,cosine,rank,r@1,r@3,r@5,r@10
+aric,fhs,Atrial fibrillation,ATRIAL FIBRILLATION,0.81065,1,True,True,True,True
+aric,fhs,Atrial fibrillation,D205-026-ATRIAL-FIBRILLATION,0.65928,4,False,False,True,True
+aric,fhs,Atrial fibrillation,ATRIAL FIBRILLATION ON ECG,0.69278,3,False,True,True,True
+aric,fhs,Atrial fibrillation,ECG-ATRIAL FIBRILLATION,0.71909,2,False,True,True,True
+aric,fhs,Atrial fibrillation,ECG-RHYTHM,0.40832,6,False,False,False,True
+aric,fhs,Atrial fibrillation,ECG - RHYTHM,0.42154,5,False,False,True,True
+aric,fhs,Incident AF,ATRIAL FIBRILLATION,0.51746,1,True,True,True,True
+aric,fhs,Incident AF,D205-026-ATRIAL-FIBRILLATION,0.49719,3,False,True,True,True
+aric,fhs,Incident AF,ATRIAL FIBRILLATION ON ECG,0.47279,4,False,False,True,True
+aric,fhs,Incident AF,ECG-ATRIAL FIBRILLATION,0.49981,2,False,True,True,True
+aric,fhs,Incident AF,ECG-RHYTHM,0.3433,10,False,False,False,True
+aric,fhs,Incident AF,ECG - RHYTHM,0.35381,8,False,False,False,True
+aric,fhs,AGE AT VISIT 1,"Age (years), Exam 1",0.58874,1,True,True,True,True
+aric,fhs,Age at Visit 2,"Age (years), Exam 2",0.63642,1,True,True,True,True
+aric,fhs,Age at Visit 3,"Age (years), Exam 3",0.64393,1,True,True,True,True
+aric,fhs,Age at Visit 4,"Age (years), Exam 4",0.6422,1,True,True,True,True
+aric,fhs,Corrected Visit 5 age,"Age (years), Exam 5",0.54666,1,True,True,True,True
+aric,fhs,DRINK ALCOHOLIC BEVERAGE Q90,Total Alcohol Consumption,0.42275,2,False,True,True,True
+aric,fhs,DRINK ALCOHOLIC BEVERAGE Q90,BEER:(servings/week),0.42265,3,False,True,True,True
+aric,fhs,DRINK ALCOHOLIC BEVERAGE Q90,RED WINE:(servings/week),0.35916,4,False,False,True,True
+aric,fhs,DRINK ALCOHOLIC BEVERAGE Q90,WHITE WINE:(servings/week),0.35477,5,False,False,True,True
+aric,fhs,DRINK ALCOHOLIC BEVERAGE Q90,LIQUOR:(servings/week),0.43957,1,True,True,True,True
+aric,fhs,NO OF GLASSES WINE CONSUMED P WK Q96,Total Alcohol Consumption,0.46944,5,False,False,True,True
+aric,fhs,NO OF CANS OF BEER CONSUMED P WK Q97,Total Alcohol Consumption,0.48738,3,False,True,True,True
+aric,fhs,NO OF HARD LIQUOR DRINKS PER WK Q98,Total Alcohol Consumption,0.46444,5,False,False,True,True
+aric,fhs,EVER CONSUMED ALCOHOLIC BEVERAGES Q14,Total Alcohol Consumption,0.49715,2,False,True,True,True
+aric,fhs,EVER CONSUMED ALCOHOLIC BEVERAGES Q14,BEER:(servings/week),0.45448,3,False,True,True,True
+aric,fhs,EVER CONSUMED ALCOHOLIC BEVERAGES Q14,RED WINE:(servings/week),0.38888,7,False,False,False,True
+aric,fhs,EVER CONSUMED ALCOHOLIC BEVERAGES Q14,WHITE WINE:(servings/week),0.39681,5,False,False,True,True
+aric,fhs,EVER CONSUMED ALCOHOLIC BEVERAGES Q14,LIQUOR:(servings/week),0.50761,1,True,True,True,True
+aric,fhs,DRINK ALCOHOL NOW Q15,Total Alcohol Consumption,0.39704,2,False,True,True,True
+aric,fhs,DRINK ALCOHOL NOW Q15,BEER:(servings/week),0.3865,3,False,True,True,True
+aric,fhs,DRINK ALCOHOL NOW Q15,RED WINE:(servings/week),0.36249,4,False,False,True,True
+aric,fhs,DRINK ALCOHOL NOW Q15,WHITE WINE:(servings/week),0.35914,5,False,False,True,True
+aric,fhs,DRINK ALCOHOL NOW Q15,LIQUOR:(servings/week),0.4496,1,True,True,True,True
+aric,fhs,USUAL # OF GLASSES WINE/WK Q17A,Total Alcohol Consumption,0.45768,5,False,False,True,True
+aric,fhs,USUAL # OF BEERS PER WEEK Q18A,Total Alcohol Consumption,0.46426,5,False,False,True,True
+aric,fhs,USUAL # OF HARD LIQUOR DRINKS/WK Q19A,Total Alcohol Consumption,0.50929,5,False,False,True,True
+aric,fhs,Cholesterol lowering medication w/in 2wks: Using 2004 Med Code -V1,ANTI-CHOLESTEROL AGENTS,0.53975,13,False,False,False,False
+aric,fhs,Cholesterol lowering medication w/in 2wks: Using 2004 Med Code -V1,D202-016-ANTI-CHOLESTEROL,0.52767,16,False,False,False,False
+aric,fhs,Cholesterol lowering medication w/in 2wks: Using 2004 Med Code -V1,ANTI CHOLESTEROL DRUGS,0.53845,14,False,False,False,False
+aric,fhs,Cholesterol lowering medication w/in 2wks: Using 2004 Med Code -V1,ANTI CHOLESTEROL DRUGS-RESINS,0.54058,12,False,False,False,False
+aric,fhs,Cholesterol lowering medication w/in 2wks: Using 2004 Med Code -V1,ANTI CHOLESTEROL DRUGS-NIACIN,0.52291,17,False,False,False,False
+aric,fhs,Cholesterol lowering medication w/in 2wks: Using 2004 Med Code -V1,ANTI CHOLESTEROL DRUGS-FIBRATES,0.51139,18,False,False,False,False
+aric,fhs,Cholesterol lowering medication w/in 2wks: Using 2004 Med Code -V1,ANTI CHOLESTEROL DRUGS-STATINS,0.53594,15,False,False,False,False
+aric,fhs,Cholesterol lowering medication w/in 2wks: Using 2004 Med Code -V1,ANTI CHOLESTEROL DRUGS-OTHER,0.56816,6,False,False,False,True
+aric,fhs,Cholesterol lowering medication w/in 2wks: Using 2004 Med Code -V1,MEDS - ANTI-CHOL -RESINS,0.56088,9,False,False,False,True
+aric,fhs,Cholesterol lowering medication w/in 2wks: Using 2004 Med Code -V1,MEDS - ANTI-CHOL -NIACIN/NICOTINIC ACID,0.5557,10,False,False,False,True
+aric,fhs,Cholesterol lowering medication w/in 2wks: Using 2004 Med Code -V1,MEDS - ANTI-CHOL -FIBRATES,0.57453,5,False,False,True,True
+aric,fhs,Cholesterol lowering medication w/in 2wks: Using 2004 Med Code -V1,MEDS - ANTI-CHOL -STATINS,0.58863,2,False,True,True,True
+aric,fhs,Cholesterol lowering medication w/in 2wks: Using 2004 Med Code -V1,MEDS - ANTI-CHOL -OTHER,0.57477,4,False,False,True,True
+aric,fhs,Cholesterol lowering medication w/in 2wks: Using 2004 Med Code -V1,MEDS - ANTI-CHOL - RESINS,0.56111,8,False,False,False,True
+aric,fhs,Cholesterol lowering medication w/in 2wks: Using 2004 Med Code -V1,MEDS - ANTI-CHOL - NIACIN/NICOTINIC ACID,0.55337,11,False,False,False,False
+aric,fhs,Cholesterol lowering medication w/in 2wks: Using 2004 Med Code -V1,MEDS - ANTI-CHOL - FIBRATES,0.56713,7,False,False,False,True
+aric,fhs,Cholesterol lowering medication w/in 2wks: Using 2004 Med Code -V1,MEDS - ANTI-CHOL - STATINS,0.58892,1,True,True,True,True
+aric,fhs,Cholesterol lowering medication w/in 2wks: Using 2004 Med Code -V1,MEDS - ANTI-CHOL - OTHER,0.57502,3,False,True,True,True
+aric,fhs,Medication taken for high blood cholesterol,ANTI-CHOLESTEROL AGENTS,0.5771,13,False,False,False,False
+aric,fhs,Medication taken for high blood cholesterol,D202-016-ANTI-CHOLESTEROL,0.46133,18,False,False,False,False
+aric,fhs,Medication taken for high blood cholesterol,ANTI CHOLESTEROL DRUGS,0.61336,5,False,False,True,True
+aric,fhs,Medication taken for high blood cholesterol,ANTI CHOLESTEROL DRUGS-RESINS,0.59955,8,False,False,False,True
+aric,fhs,Medication taken for high blood cholesterol,ANTI CHOLESTEROL DRUGS-NIACIN,0.56362,17,False,False,False,False
+aric,fhs,Medication taken for high blood cholesterol,ANTI CHOLESTEROL DRUGS-FIBRATES,0.58213,11,False,False,False,False
+aric,fhs,Medication taken for high blood cholesterol,ANTI CHOLESTEROL DRUGS-STATINS,0.58221,10,False,False,False,True
+aric,fhs,Medication taken for high blood cholesterol,ANTI CHOLESTEROL DRUGS-OTHER,0.59099,9,False,False,False,True
+aric,fhs,Medication taken for high blood cholesterol,MEDS - ANTI-CHOL -RESINS,0.60747,6,False,False,False,True
+aric,fhs,Medication taken for high blood cholesterol,MEDS - ANTI-CHOL -NIACIN/NICOTINIC ACID,0.56558,15,False,False,False,False
+aric,fhs,Medication taken for high blood cholesterol,MEDS - ANTI-CHOL -FIBRATES,0.62588,3,False,True,True,True
+aric,fhs,Medication taken for high blood cholesterol,MEDS - ANTI-CHOL -STATINS,0.62698,1,True,True,True,True
+aric,fhs,Medication taken for high blood cholesterol,MEDS - ANTI-CHOL -OTHER,0.57702,14,False,False,False,False
+aric,fhs,Medication taken for high blood cholesterol,MEDS - ANTI-CHOL - RESINS,0.60445,7,False,False,False,True
+aric,fhs,Medication taken for high blood cholesterol,MEDS - ANTI-CHOL - NIACIN/NICOTINIC ACID,0.56487,16,False,False,False,False
+aric,fhs,Medication taken for high blood cholesterol,MEDS - ANTI-CHOL - FIBRATES,0.61487,4,False,False,True,True
+aric,fhs,Medication taken for high blood cholesterol,MEDS - ANTI-CHOL - STATINS,0.62675,2,False,True,True,True
+aric,fhs,Medication taken for high blood cholesterol,MEDS - ANTI-CHOL - OTHER,0.58005,12,False,False,False,False
+aric,fhs,"Used Aspirin-containing analgesics (at Visit 1) in last 2 weeks (0=No, 1=Yes), based on 2004 Med Code",NUMBER OF ASPIRINS TAKEN REGULARLY,0.5364,3,False,True,True,True
+aric,fhs,"Used Aspirin-containing analgesics (at Visit 1) in last 2 weeks (0=No, 1=Yes), based on 2004 Med Code",ASPIRIN FREQUENCY,0.50253,5,False,False,True,True
+aric,fhs,"Used Aspirin-containing analgesics (at Visit 1) in last 2 weeks (0=No, 1=Yes), based on 2004 Med Code",Number aspirins taken regularly,0.51105,4,False,False,True,True
+aric,fhs,"Used Aspirin-containing analgesics (at Visit 1) in last 2 weeks (0=No, 1=Yes), based on 2004 Med Code",Aspirin Frequency per,0.49709,6,False,False,False,True
+aric,fhs,"Used Aspirin-containing analgesics (at Visit 1) in last 2 weeks (0=No, 1=Yes), based on 2004 Med Code","MEDS - ASPIR, # OF",0.55444,1,True,True,True,True
+aric,fhs,"Used Aspirin-containing analgesics (at Visit 1) in last 2 weeks (0=No, 1=Yes), based on 2004 Med Code","MEDS - ASPIR, PER DY/WK/MO/YR",0.54801,2,False,True,True,True
+aric,fhs,Aspirin taken in last 4 weeks,NUMBER OF ASPIRINS TAKEN REGULARLY,0.61128,2,False,True,True,True
+aric,fhs,Aspirin taken in last 4 weeks,ASPIRIN FREQUENCY,0.58508,4,False,False,True,True
+aric,fhs,Aspirin taken in last 4 weeks,Number aspirins taken regularly,0.6307,1,True,True,True,True
+aric,fhs,Aspirin taken in last 4 weeks,Aspirin Frequency per,0.59632,3,False,True,True,True
+aric,fhs,Aspirin taken in last 4 weeks,"MEDS - ASPIR, # OF",0.53029,6,False,False,False,True
+aric,fhs,Aspirin taken in last 4 weeks,"MEDS - ASPIR, PER DY/WK/MO/YR",0.57461,5,False,False,True,True
+aric,fhs,PREVALENT CORONARY HEART DISEASE,Cardiovascular Disease (CVD) status,0.47807,1,True,True,True,True
+aric,fhs,SYMPTOMATIC CORONARY HEART DISEASE,Cardiovascular Disease (CVD) status,0.4532,2,False,True,True,True
+aric,fhs,"ROSE INTERMITTENT CLAUDICATION, DEF. 3",Cardiovascular Disease (CVD) status,0.299,37,False,False,False,False
+aric,fhs,Prevalent HF at Visit 1,Cardiovascular Disease (CVD) status,0.42766,7,False,False,False,True
+aric,fhs,Stroke,Stroke/TIA status,0.6075,1,True,True,True,True
+aric,fhs,TIA,Stroke/TIA status,0.58719,1,True,True,True,True
+aric,fhs,BODY MASS INDEX IN KG/(M*M),"Body mass index (kg/m²), Exam 1",0.60648,2,False,True,True,True
+aric,fhs,V2 body mass index in kg/m2,"Body mass index (kg/m²), Exam 2",0.62719,1,True,True,True,True
+aric,fhs,Body Mass Index in kg/m**2,"Body mass index (kg/m²), Exam 1",0.63322,2,False,True,True,True
+aric,fhs,CAROTID BRUITS? Q10,CDI: LEFT CAROTID BRUIT,0.66241,1,True,True,True,True
+aric,fhs,CAROTID BRUITS? Q10,CDI: RIGHT CAROTID BRUIT,0.64967,2,False,True,True,True
+aric,fhs,CAROTID BRUITS? Q10,CAROTID BRUIT-LEFT,0.63679,5,False,False,True,True
+aric,fhs,CAROTID BRUITS? Q10,CAROTID BRUIT-RIGHT,0.64917,3,False,True,True,True
+aric,fhs,CAROTID BRUITS? Q10,CAROTID BRUIT - LEFT,0.6321,6,False,False,False,True
+aric,fhs,CAROTID BRUITS? Q10,CAROTID BRUIT - RIGHT,0.63957,4,False,False,True,True
+aric,fhs,CURRENT CIGARETTE SMOKER,"Current smoking status, Exam 1",0.64479,1,True,True,True,True
+aric,fhs,Current Smoker Flag,"Current smoking status, Exam 1",0.62875,1,True,True,True,True
+aric,fhs,Current Smoker,"Current smoking status, Exam 1",0.72077,1,True,True,True,True
+aric,fhs,Current Cigarette Smoker,"Current smoking status, Exam 1",0.69963,1,True,True,True,True
+aric,fhs,V5 Current Cigarette Smoker,"Current smoking status, Exam 5",0.73034,1,True,True,True,True
+aric,fhs,DIABETES w/ fasting glucose cutpt.<126,"Diabetes Mellitus Status, Exam 1",0.52026,1,True,True,True,True
+aric,fhs,Diabts22 using chmb07=126,"Diabetes Mellitus Status, Exam 1",0.3997,2,False,True,True,True
+aric,fhs,Diabetes Using Lower Cutpoint 126 mg/dL,"Diabetes Mellitus Status, Exam 1",0.46005,2,False,True,True,True
+aric,fhs,V5 Diabetes - Lower Cutpoint 126 mg/dL,"Diabetes Mellitus Status, Exam 5",0.53358,1,True,True,True,True
+aric,fhs,HIGHEST EDUCATION COMPLETED Q54,D201-099-YEARS-EDUCATION,0.43169,1,True,True,True,True
+aric,fhs,COMBINED FAMILY INCOME GROUP Q62,Current total family income/yr before tx,0.5377,1,True,True,True,True
+aric,fhs,HOUSEHOLD INCOME LAST YEAR Q6,Current total family income/yr before tx,0.52686,1,True,True,True,True
+aric,fhs,HEALTH CONDITION Q9,YOUR HEALTH NOW IN GENERAL,0.57952,3,False,True,True,True
+aric,fhs,Rate general health,"IN GENERAL, HOW IS YOUR HEALTH",0.58408,1,True,True,True,True
+aric,fhs,Rate general health,SF-12 - HOW YOUR HLTH,0.49877,2,False,True,True,True
+aric,fhs,RE-CALIBRATED HDL CHOL. in mg/dl,"HDL cholesterol (mg/dL), Exam 1",0.6195,1,True,True,True,True
+aric,fhs,HDL CHOLESTREROL (VALUE) Q3A,"HDL cholesterol (mg/dL), Exam 1",0.65495,1,True,True,True,True
+aric,fhs,HDL CHOLESTEROL (VALUE IN MG/DL) Q3A,"HDL cholesterol (mg/dL), Exam 1",0.68375,1,True,True,True,True
+aric,fhs,HDL CHOLESTEROL (VALUE) Q3A,"HDL cholesterol (mg/dL), Exam 1",0.6539,1,True,True,True,True
+aric,fhs,HDLC-Cholesterol (mg/dL),"HDL cholesterol (mg/dL), Exam 1",0.64969,1,True,True,True,True
+aric,fhs,STANDING HEIGHT TO NEAREST CM Q1,"Height (inches), Exam 1",0.56091,1,True,True,True,True
+aric,fhs,Standing height (cm),"Height (inches), Exam 1",0.53394,1,True,True,True,True
+aric,fhs,"HYPERTENSION LOWERING MED. USE, DEF. 1","Treated for hypertension, Exam 1",0.50451,8,False,False,False,True
+aric,fhs,Hypertension Meds (Self reported),"Treated for hypertension, Exam 1",0.61314,2,False,True,True,True
+aric,fhs,"V3 HYPERTENSION MEDICATIONS, DEF. 1","Treated for hypertension, Exam 3",0.54192,1,True,True,True,True
+aric,fhs,V4 Hypert Med in Past 2 Wks: Self-rptd,"Treated for hypertension, Exam 4",0.6155,1,True,True,True,True
+aric,fhs,Medication taken for high blodd pressure or hypertension,"Treated for hypertension, Exam 1",0.51261,2,False,True,True,True
+aric,fhs,ROSE ANGINA,Cardiovascular Disease (CVD) status,0.29209,45,False,False,False,False
+aric,fhs,Incident HF (from discharge codes),Cardiovascular Disease (CVD) status,0.39289,2,False,True,True,True
+aric,fhs,REPORT ROSE ANGINA IN AFU? Q1,Cardiovascular Disease (CVD) status,0.21603,58,False,False,False,False
+aric,fhs,"PAD V1, Def 2 (same for both genders)",Cardiovascular Disease (CVD) status,0.30382,6,False,False,False,True
+aric,fhs,Cardiac Procedures,Cardiovascular Disease (CVD) status,0.40353,1,True,True,True,True
+aric,fhs,LVH present by cornell definition,"Definite left ventricular hypertrophy, Exam 1",0.51195,1,True,True,True,True
+aric,fhs,SEX (from FTRA22),'Participant gender',0.44272,1,True,True,True,True
+aric,fhs,sodium (mg),SODIUM (mg),0.89162,1,True,True,True,True
+aric,fhs,sodium (mg),Sodium mg,0.88852,2,False,True,True,True
+aric,fhs,"Used Statin (at Visit 1) last 2weeks (0=No, 1=Yes) based on 2004 Med Code",ANTI CHOLESTEROL DRUGS-STATINS,0.43949,7,False,False,False,True
+aric,fhs,"Used Statin (at Visit 1) last 2weeks (0=No, 1=Yes) based on 2004 Med Code",MEDS - ANTI-CHOL -STATINS,0.49525,2,False,True,True,True
+aric,fhs,"Used Statin (at Visit 1) last 2weeks (0=No, 1=Yes) based on 2004 Med Code",MEDS - ANTI-CHOL - STATINS,0.4973,1,True,True,True,True
+aric,fhs,TOTAL CHOLESTEROL (MG-DL),"Total cholesterol (mg/dL), Exam 1",0.69693,1,True,True,True,True
+aric,fhs,CHOLESTEROL (VALUE) Q1A,"Total cholesterol (mg/dL), Exam 1",0.65444,1,True,True,True,True
+aric,fhs,CHOLESTEROL (VALUE IN MG/DL) Q1A,"Total cholesterol (mg/dL), Exam 1",0.70632,1,True,True,True,True
+aric,fhs,Total Cholesterol (mg/dL),"Total cholesterol (mg/dL), Exam 1",0.74587,1,True,True,True,True
+aric,fhs,TOTAL TRIGLYCERIDES (MG-DL),"Triglycerides (mg/dL), Exam 1",0.69445,1,True,True,True,True
+aric,fhs,TRIGLYCERIDE (VALUE) Q2A,"Triglycerides (mg/dL), Exam 1",0.63888,1,True,True,True,True
+aric,fhs,TRIGLYCERIDE (VALUE IN MG/DL) Q2A,"Triglycerides (mg/dL), Exam 1",0.67474,1,True,True,True,True
+aric,fhs,Total Triglycerides (mg/dL),"Triglycerides (mg/dL), Exam 1",0.72887,1,True,True,True,True
+aric,fhs,WEIGHT TO THE NEAREST LB Q4,"Weight (pounds), Exam 1",0.53739,1,True,True,True,True
+aric,fhs,WEIGHT TO NEAREST LB Q1,"Weight (pounds), Exam 1",0.56298,1,True,True,True,True
+aric,fhs,WEIGHT TO NEAREST LB Q2,"Weight (pounds), Exam 1",0.53173,1,True,True,True,True
+aric,fhs,Weight (kg),"Weight (pounds), Exam 1",0.55175,1,True,True,True,True
+aric,mesa,Atrial fibrillation,ATRIAL FIBRILLATION / FLUTTER BY NOVACODE,0.61618,2,False,True,True,True
+aric,mesa,Atrial fibrillation,Atrial Fibrillation Diagnosis (via ICD10 Code),0.57224,3,False,True,True,True
+aric,mesa,Atrial fibrillation,ECG ATRIAL FIBRILLATION / FLUTTER,0.66292,1,True,True,True,True
+aric,mesa,Incident AF,ATRIAL FIBRILLATION / FLUTTER BY NOVACODE,0.46632,1,True,True,True,True
+aric,mesa,Incident AF,Atrial Fibrillation Diagnosis (via ICD10 Code),0.45707,3,False,True,True,True
+aric,mesa,Incident AF,ECG ATRIAL FIBRILLATION / FLUTTER,0.46586,2,False,True,True,True
+aric,mesa,AGE AT VISIT 1,AGE,0.47847,5,False,False,True,True
+aric,mesa,Age at Visit 2,AGE AT EXAM 2,0.65329,1,True,True,True,True
+aric,mesa,Age at Visit 3,AGE AT EXAM3,0.62543,1,True,True,True,True
+aric,mesa,Age at Visit 4,Age at exam 4,0.7147,1,True,True,True,True
+aric,mesa,Corrected Visit 5 age,AGE AT EXAM 5,0.55107,1,True,True,True,True
+aric,mesa,DRINK ALCOHOLIC BEVERAGE Q90,# DRINKS PER WEEK (CURRENT AND FORMER DRINKERS),0.46376,1,True,True,True,True
+aric,mesa,NO OF GLASSES WINE CONSUMED P WK Q96,# DRINKS PER WEEK (CURRENT AND FORMER DRINKERS),0.59715,1,True,True,True,True
+aric,mesa,NO OF CANS OF BEER CONSUMED P WK Q97,# DRINKS PER WEEK (CURRENT AND FORMER DRINKERS),0.59685,1,True,True,True,True
+aric,mesa,NO OF HARD LIQUOR DRINKS PER WK Q98,# DRINKS PER WEEK (CURRENT AND FORMER DRINKERS),0.66104,1,True,True,True,True
+aric,mesa,EVER CONSUMED ALCOHOLIC BEVERAGES Q14,# DRINKS PER WEEK (CURRENT AND FORMER DRINKERS),0.55945,1,True,True,True,True
+aric,mesa,DRINK ALCOHOL NOW Q15,# DRINKS PER WEEK (CURRENT AND FORMER DRINKERS),0.45838,1,True,True,True,True
+aric,mesa,USUAL # OF GLASSES WINE/WK Q17A,# DRINKS PER WEEK (CURRENT AND FORMER DRINKERS),0.64175,1,True,True,True,True
+aric,mesa,USUAL # OF BEERS PER WEEK Q18A,# DRINKS PER WEEK (CURRENT AND FORMER DRINKERS),0.67662,1,True,True,True,True
+aric,mesa,USUAL # OF HARD LIQUOR DRINKS/WK Q19A,# DRINKS PER WEEK (CURRENT AND FORMER DRINKERS),0.71328,1,True,True,True,True
+aric,mesa,Cholesterol lowering medication w/in 2wks: Using 2004 Med Code -V1,HMG CoA reducatace inhibitors (statins),0.43447,10,False,False,False,True
+aric,mesa,Cholesterol lowering medication w/in 2wks: Using 2004 Med Code -V1,Bile-acid sequestrants,0.43031,12,False,False,False,False
+aric,mesa,Cholesterol lowering medication w/in 2wks: Using 2004 Med Code -V1,Fibrates,0.38508,25,False,False,False,False
+aric,mesa,Cholesterol lowering medication w/in 2wks: Using 2004 Med Code -V1,Miscellaneous lipid-lowering drugs,0.51211,3,False,True,True,True
+aric,mesa,Cholesterol lowering medication w/in 2wks: Using 2004 Med Code -V1,Niacin and nictotinic acid,0.36792,32,False,False,False,False
+aric,mesa,Cholesterol lowering medication w/in 2wks: Using 2004 Med Code -V1,Probucol,0.38549,24,False,False,False,False
+aric,mesa,Cholesterol lowering medication w/in 2wks: Using 2004 Med Code -V1,Any lipid-lowering medication,0.63051,1,True,True,True,True
+aric,mesa,Cholesterol lowering medication w/in 2wks: Using 2004 Med Code -V1,HMG COA REDUCATACE INHIBITORS (STATINS),0.45915,5,False,False,True,True
+aric,mesa,Cholesterol lowering medication w/in 2wks: Using 2004 Med Code -V1,BILE-ACID SEQUESTRANTS,0.42416,14,False,False,False,False
+aric,mesa,Cholesterol lowering medication w/in 2wks: Using 2004 Med Code -V1,FIBRATES,0.41032,17,False,False,False,False
+aric,mesa,Cholesterol lowering medication w/in 2wks: Using 2004 Med Code -V1,MISCELLANEOUS LIPID-LOWERING DRUGS,0.48781,4,False,False,True,True
+aric,mesa,Cholesterol lowering medication w/in 2wks: Using 2004 Med Code -V1,NIACIN AND NICTOTINIC ACID,0.37824,27,False,False,False,False
+aric,mesa,Cholesterol lowering medication w/in 2wks: Using 2004 Med Code -V1,PROBUCOL,0.37513,29,False,False,False,False
+aric,mesa,Cholesterol lowering medication w/in 2wks: Using 2004 Med Code -V1,ANY LIPID-LOWERING MEDICATION,0.59217,2,False,True,True,True
+aric,mesa,Medication taken for high blood cholesterol,HMG CoA reducatace inhibitors (statins),0.4917,10,False,False,False,True
+aric,mesa,Medication taken for high blood cholesterol,Bile-acid sequestrants,0.54315,5,False,False,True,True
+aric,mesa,Medication taken for high blood cholesterol,Fibrates,0.49251,9,False,False,False,True
+aric,mesa,Medication taken for high blood cholesterol,Miscellaneous lipid-lowering drugs,0.58782,3,False,True,True,True
+aric,mesa,Medication taken for high blood cholesterol,Niacin and nictotinic acid,0.42871,15,False,False,False,False
+aric,mesa,Medication taken for high blood cholesterol,Probucol,0.44134,14,False,False,False,False
+aric,mesa,Medication taken for high blood cholesterol,Any lipid-lowering medication,0.71187,1,True,True,True,True
+aric,mesa,Medication taken for high blood cholesterol,HMG COA REDUCATACE INHIBITORS (STATINS),0.48989,11,False,False,False,False
+aric,mesa,Medication taken for high blood cholesterol,BILE-ACID SEQUESTRANTS,0.50125,8,False,False,False,True
+aric,mesa,Medication taken for high blood cholesterol,FIBRATES,0.47895,12,False,False,False,False
+aric,mesa,Medication taken for high blood cholesterol,MISCELLANEOUS LIPID-LOWERING DRUGS,0.5434,4,False,False,True,True
+aric,mesa,Medication taken for high blood cholesterol,NIACIN AND NICTOTINIC ACID,0.38872,21,False,False,False,False
+aric,mesa,Medication taken for high blood cholesterol,PROBUCOL,0.41442,16,False,False,False,False
+aric,mesa,Medication taken for high blood cholesterol,ANY LIPID-LOWERING MEDICATION,0.63433,2,False,True,True,True
+aric,mesa,"Used Aspirin-containing analgesics (at Visit 1) in last 2 weeks (0=No, 1=Yes), based on 2004 Med Code",Aspirin from 280804 (anti-inflam agents),0.55489,1,True,True,True,True
+aric,mesa,"Used Aspirin-containing analgesics (at Visit 1) in last 2 weeks (0=No, 1=Yes), based on 2004 Med Code",ASPIRIN FROM 280804 (ANTI-INFLAM AGENTS),0.545,2,False,True,True,True
+aric,mesa,Aspirin taken in last 4 weeks,Aspirin from 280804 (anti-inflam agents),0.58032,1,True,True,True,True
+aric,mesa,Aspirin taken in last 4 weeks,ASPIRIN FROM 280804 (ANTI-INFLAM AGENTS),0.55695,2,False,True,True,True
+aric,mesa,PREVALENT CORONARY HEART DISEASE,Type of pre-baseline event,0.17456,64,False,False,False,False
+aric,mesa,SYMPTOMATIC CORONARY HEART DISEASE,Type of pre-baseline event,0.14688,64,False,False,False,False
+aric,mesa,"ROSE INTERMITTENT CLAUDICATION, DEF. 3",Type of pre-baseline event,0.1611,61,False,False,False,False
+aric,mesa,Prevalent HF at Visit 1,Type of pre-baseline event,0.27244,33,False,False,False,False
+aric,mesa,BODY MASS INDEX IN KG/(M*M),BODY MASS INDEX (kg)/(m^2),0.86631,1,True,True,True,True
+aric,mesa,BODY MASS INDEX IN KG/(M*M),BODY MASS INDEX (kg/m^2),0.83762,2,False,True,True,True
+aric,mesa,Body Mass Index in kg/m**2,BODY MASS INDEX (kg)/(m^2),0.78501,2,False,True,True,True
+aric,mesa,Body Mass Index in kg/m**2,BODY MASS INDEX (kg/m^2),0.81002,1,True,True,True,True
+aric,mesa,CREATININE (MG-DL) Q9,CREATININE (mg/dl),0.79468,1,True,True,True,True
+aric,mesa,CREATININE (MG-DL) Q9,Creatinine (mg/dl),0.73035,2,False,True,True,True
+aric,mesa,CREATININE (MG-DL) Q9,CREATININE,0.71198,3,False,True,True,True
+aric,mesa,CREATININE (mg per dL) DEC PT REQ Q8,CREATININE (mg/dl),0.73412,1,True,True,True,True
+aric,mesa,CREATININE (mg per dL) DEC PT REQ Q8,Creatinine (mg/dl),0.68051,3,False,True,True,True
+aric,mesa,CREATININE (mg per dL) DEC PT REQ Q8,CREATININE,0.68644,2,False,True,True,True
+aric,mesa,"Creatinine, Serum (mg/dL)",CREATININE (mg/dl),0.791,2,False,True,True,True
+aric,mesa,"Creatinine, Serum (mg/dL)",Creatinine (mg/dl),0.85297,1,True,True,True,True
+aric,mesa,"Creatinine, Serum (mg/dL)",CREATININE,0.58422,3,False,True,True,True
+aric,mesa,CURRENT CIGARETTE SMOKER,CIGARETTE SMOKING STATUS,0.79657,1,True,True,True,True
+aric,mesa,Current Smoker Flag,CIGARETTE SMOKING STATUS,0.64122,1,True,True,True,True
+aric,mesa,Current Smoker,CIGARETTE SMOKING STATUS,0.69411,1,True,True,True,True
+aric,mesa,Current Cigarette Smoker,CIGARETTE SMOKING STATUS,0.71161,1,True,True,True,True
+aric,mesa,V5 Current Cigarette Smoker,"CIGARETTE SMOKING STATUS, EXAM 5",0.68588,1,True,True,True,True
+aric,mesa,Dead by 2018 from DTH/NDI/AFU,Death,0.44028,1,True,True,True,True
+aric,mesa,DIABETES w/ fasting glucose cutpt.<126,Exam 1 Diabetes mellitus by 2003 ADA fasting criteria algorithm,0.56726,2,False,True,True,True
+aric,mesa,DIABETES w/ fasting glucose cutpt.<126,DIABETES 2003 ADA FASTING CRITERIA,0.61183,1,True,True,True,True
+aric,mesa,Diabts22 using chmb07=126,Exam 1 Diabetes mellitus by 2003 ADA fasting criteria algorithm,0.38986,1,True,True,True,True
+aric,mesa,Diabts22 using chmb07=126,DIABETES 2003 ADA FASTING CRITERIA,0.34748,2,False,True,True,True
+aric,mesa,Diabetes Using Lower Cutpoint 126 mg/dL,Exam 1 Diabetes mellitus by 2003 ADA fasting criteria algorithm,0.55965,1,True,True,True,True
+aric,mesa,Diabetes Using Lower Cutpoint 126 mg/dL,DIABETES 2003 ADA FASTING CRITERIA,0.55357,2,False,True,True,True
+aric,mesa,2ND AND 3RD DIASTOLIC BP AVERAGE Q22,SEATED DIASTOLIC BLOOD PRESSURE (mmHg),0.59065,1,True,True,True,True
+aric,mesa,2ND AND 3RD DIASTOLIC BP AVERAGE Q22,Seated Diastolic Blood Pressure (mmHg),0.52132,3,False,True,True,True
+aric,mesa,2ND AND 3RD DIASTOLIC BP AVERAGE Q22,Seated diastolic blood pressure (mmhg),0.51721,4,False,False,True,True
+aric,mesa,2ND AND 3RD DIASTOLIC BP AVERAGE Q23,SEATED DIASTOLIC BLOOD PRESSURE (mmHg),0.59146,1,True,True,True,True
+aric,mesa,2ND AND 3RD DIASTOLIC BP AVERAGE Q23,Seated Diastolic Blood Pressure (mmHg),0.52546,3,False,True,True,True
+aric,mesa,2ND AND 3RD DIASTOLIC BP AVERAGE Q23,Seated diastolic blood pressure (mmhg),0.52264,4,False,False,True,True
+aric,mesa,1ST AND 2ND DIASTOLIC BP AVERAGE Q20,SEATED DIASTOLIC BLOOD PRESSURE (mmHg),0.57943,1,True,True,True,True
+aric,mesa,1ST AND 2ND DIASTOLIC BP AVERAGE Q20,Seated Diastolic Blood Pressure (mmHg),0.50207,3,False,True,True,True
+aric,mesa,1ST AND 2ND DIASTOLIC BP AVERAGE Q20,Seated diastolic blood pressure (mmhg),0.49734,4,False,False,True,True
+aric,mesa,AVG: Diastolic (mmHg),SEATED DIASTOLIC BLOOD PRESSURE (mmHg),0.61458,2,False,True,True,True
+aric,mesa,AVG: Diastolic (mmHg),Seated Diastolic Blood Pressure (mmHg),0.62257,1,True,True,True,True
+aric,mesa,AVG: Diastolic (mmHg),Seated diastolic blood pressure (mmhg),0.60984,3,False,True,True,True
+aric,mesa,HIGHEST EDUCATION COMPLETED Q54,EDUCATION: HIGHEST LEVEL COMPLETED,0.83186,1,True,True,True,True
+aric,mesa,COMBINED FAMILY INCOME GROUP Q62,"TOTAL GROSS FAMILY INCOME, PAST 12 MONTHS",0.66938,1,True,True,True,True
+aric,mesa,HOUSEHOLD INCOME LAST YEAR Q6,"TOTAL GROSS FAMILY INCOME, PAST 12 MONTHS",0.68267,1,True,True,True,True
+aric,mesa,New Maternal History of Stroke,FAMILY HISTORY OF STROKE: PARENT,0.65321,1,True,True,True,True
+aric,mesa,New Paternal History of Stroke,FAMILY HISTORY OF STROKE: PARENT,0.68488,1,True,True,True,True
+aric,mesa,Rate general health,IN GENERAL YOUR HEALTH IS,0.49425,1,True,True,True,True
+aric,mesa,RE-CALIBRATED HDL CHOL. in mg/dl,HDL CHOLESTROL (mg/dl),0.70975,1,True,True,True,True
+aric,mesa,RE-CALIBRATED HDL CHOL. in mg/dl,HDL CHOLESTEROL (mg/dl),0.70767,2,False,True,True,True
+aric,mesa,RE-CALIBRATED HDL CHOL. in mg/dl,HDL Cholesterol (mg/dl),0.67385,3,False,True,True,True
+aric,mesa,HDL CHOLESTREROL (VALUE) Q3A,HDL CHOLESTROL (mg/dl),0.76029,2,False,True,True,True
+aric,mesa,HDL CHOLESTREROL (VALUE) Q3A,HDL CHOLESTEROL (mg/dl),0.76253,1,True,True,True,True
+aric,mesa,HDL CHOLESTREROL (VALUE) Q3A,HDL Cholesterol (mg/dl),0.68406,3,False,True,True,True
+aric,mesa,HDL CHOLESTEROL (VALUE IN MG/DL) Q3A,HDL CHOLESTROL (mg/dl),0.80121,2,False,True,True,True
+aric,mesa,HDL CHOLESTEROL (VALUE IN MG/DL) Q3A,HDL CHOLESTEROL (mg/dl),0.81492,1,True,True,True,True
+aric,mesa,HDL CHOLESTEROL (VALUE IN MG/DL) Q3A,HDL Cholesterol (mg/dl),0.74188,3,False,True,True,True
+aric,mesa,HDL CHOLESTEROL (VALUE) Q3A,HDL CHOLESTROL (mg/dl),0.74841,2,False,True,True,True
+aric,mesa,HDL CHOLESTEROL (VALUE) Q3A,HDL CHOLESTEROL (mg/dl),0.76225,1,True,True,True,True
+aric,mesa,HDL CHOLESTEROL (VALUE) Q3A,HDL Cholesterol (mg/dl),0.68185,3,False,True,True,True
+aric,mesa,HDLC-Cholesterol (mg/dL),HDL CHOLESTROL (mg/dl),0.7254,4,False,False,True,True
+aric,mesa,HDLC-Cholesterol (mg/dL),HDL CHOLESTEROL (mg/dl),0.73829,2,False,True,True,True
+aric,mesa,HDLC-Cholesterol (mg/dL),HDL Cholesterol (mg/dl),0.76987,1,True,True,True,True
+aric,mesa,STANDING HEIGHT TO NEAREST CM Q1,HEIGHT (cm),0.62708,1,True,True,True,True
+aric,mesa,Standing height (cm),HEIGHT (cm),0.79311,1,True,True,True,True
+aric,mesa,"HYPERTENSION LOWERING MED. USE, DEF. 1",Hypertension Medication,0.6219,2,False,True,True,True
+aric,mesa,"HYPERTENSION LOWERING MED. USE, DEF. 1",Any hypertension medication,0.59125,3,False,True,True,True
+aric,mesa,"HYPERTENSION LOWERING MED. USE, DEF. 1",ANY HYPERTENSION MEDICATION,0.67394,1,True,True,True,True
+aric,mesa,Hypertension Meds (Self reported),Hypertension Medication,0.73107,1,True,True,True,True
+aric,mesa,Hypertension Meds (Self reported),Any hypertension medication,0.70222,2,False,True,True,True
+aric,mesa,Hypertension Meds (Self reported),ANY HYPERTENSION MEDICATION,0.65333,3,False,True,True,True
+aric,mesa,Medication taken for high blodd pressure or hypertension,Hypertension Medication,0.74287,2,False,True,True,True
+aric,mesa,Medication taken for high blodd pressure or hypertension,Any hypertension medication,0.77714,1,True,True,True,True
+aric,mesa,Medication taken for high blodd pressure or hypertension,ANY HYPERTENSION MEDICATION,0.67917,3,False,True,True,True
+aric,mesa,ROSE ANGINA,Type of pre-baseline event,0.13845,64,False,False,False,False
+aric,mesa,Incident HF (from discharge codes),Type of pre-baseline event,0.26607,22,False,False,False,False
+aric,mesa,REPORT ROSE ANGINA IN AFU? Q1,Type of pre-baseline event,0.18956,26,False,False,False,False
+aric,mesa,"PAD V1, Def 2 (same for both genders)",Type of pre-baseline event,0.18313,31,False,False,False,False
+aric,mesa,Cardiac Procedures,Type of pre-baseline event,0.17758,49,False,False,False,False
+aric,mesa,MD DIAGNOSED MYOCARDIAL INFARCTION,Myocardial Infarction (MI),0.62286,1,True,True,True,True
+aric,mesa,HISTORY OF MYOCARDIAL INFARCTION,Myocardial Infarction (MI),0.61644,1,True,True,True,True
+aric,mesa,RE-CALIBRATED LDL CHOL. in mg/dl,LDL CHOLESTEROL (mg/dl),0.70329,1,True,True,True,True
+aric,mesa,RE-CALIBRATED LDL CHOL. in mg/dl,LDL Cholesterol (mg/dl),0.66192,3,False,True,True,True
+aric,mesa,Re-Calibrated LDL Cholesterol in mg/dL,LDL CHOLESTEROL (mg/dl),0.63798,2,False,True,True,True
+aric,mesa,Re-Calibrated LDL Cholesterol in mg/dL,LDL Cholesterol (mg/dl),0.66106,1,True,True,True,True
+aric,mesa,LDLCC-Cholesterol calculated (mg/dL),LDL CHOLESTEROL (mg/dl),0.70144,2,False,True,True,True
+aric,mesa,LDLCC-Cholesterol calculated (mg/dL),LDL Cholesterol (mg/dl),0.72679,1,True,True,True,True
+aric,mesa,LVH present by cornell definition,LEFT VENTRICULAR HYPERTROPHY BY NOVACODE,0.46789,2,False,True,True,True
+aric,mesa,LVH present by cornell definition,ECG LEFT VENTRICULAR HYPERTROPHY BY NOVACODE,0.50939,1,True,True,True,True
+aric,mesa,RACE (from FTRA23),RACE,0.81711,1,True,True,True,True
+aric,mesa,SEX (from FTRA22),gender,0.43042,1,True,True,True,True
+aric,mesa,"Used Statin (at Visit 1) last 2weeks (0=No, 1=Yes) based on 2004 Med Code",HMG CoA reducatace inhibitors (statins),0.3674,6,False,False,False,True
+aric,mesa,"Used Statin (at Visit 1) last 2weeks (0=No, 1=Yes) based on 2004 Med Code",HMG COA REDUCATACE INHIBITORS (STATINS),0.39533,3,False,True,True,True
+aric,mesa,2ND AND 3RD SYSTOLIC BP AVERAGE Q21,SEATED SYSTOLIC BLOOD PRESSURE (mmHg),0.58767,1,True,True,True,True
+aric,mesa,2ND AND 3RD SYSTOLIC BP AVERAGE Q21,Seated Systolic Blood Pressure (mmHg),0.52371,3,False,True,True,True
+aric,mesa,2ND AND 3RD SYSTOLIC BP AVERAGE Q21,Seated systolic blood pressure (mmhg),0.51478,4,False,False,True,True
+aric,mesa,2ND AND 3RD SYSTOLIC BP AVERAGE Q22,SEATED SYSTOLIC BLOOD PRESSURE (mmHg),0.5978,1,True,True,True,True
+aric,mesa,2ND AND 3RD SYSTOLIC BP AVERAGE Q22,Seated Systolic Blood Pressure (mmHg),0.53309,3,False,True,True,True
+aric,mesa,2ND AND 3RD SYSTOLIC BP AVERAGE Q22,Seated systolic blood pressure (mmhg),0.52399,4,False,False,True,True
+aric,mesa,AVG: Systolic (mmHg),SEATED SYSTOLIC BLOOD PRESSURE (mmHg),0.61954,1,True,True,True,True
+aric,mesa,AVG: Systolic (mmHg),Seated Systolic Blood Pressure (mmHg),0.61213,2,False,True,True,True
+aric,mesa,AVG: Systolic (mmHg),Seated systolic blood pressure (mmhg),0.60461,3,False,True,True,True
+aric,mesa,TOTAL CHOLESTEROL (MG-DL),TOTAL CHOLESTEROL (mg/dl),0.93834,1,True,True,True,True
+aric,mesa,TOTAL CHOLESTEROL (MG-DL),Total Cholesterol (mg/dl),0.85972,2,False,True,True,True
+aric,mesa,CHOLESTEROL (VALUE) Q1A,TOTAL CHOLESTEROL (mg/dl),0.69066,1,True,True,True,True
+aric,mesa,CHOLESTEROL (VALUE) Q1A,Total Cholesterol (mg/dl),0.61331,5,False,False,True,True
+aric,mesa,CHOLESTEROL (VALUE IN MG/DL) Q1A,TOTAL CHOLESTEROL (mg/dl),0.75169,2,False,True,True,True
+aric,mesa,CHOLESTEROL (VALUE IN MG/DL) Q1A,Total Cholesterol (mg/dl),0.68788,5,False,False,True,True
+aric,mesa,Total Cholesterol (mg/dL),TOTAL CHOLESTEROL (mg/dl),0.91204,2,False,True,True,True
+aric,mesa,Total Cholesterol (mg/dL),Total Cholesterol (mg/dl),0.97933,1,True,True,True,True
+aric,mesa,TOTAL TRIGLYCERIDES (MG-DL),TRIGLYCERIDES (mg/dl),0.87271,1,True,True,True,True
+aric,mesa,TOTAL TRIGLYCERIDES (MG-DL),Triglycerides (mg/dl),0.82522,2,False,True,True,True
+aric,mesa,TRIGLYCERIDE (VALUE) Q2A,TRIGLYCERIDES (mg/dl),0.7421,1,True,True,True,True
+aric,mesa,TRIGLYCERIDE (VALUE) Q2A,Triglycerides (mg/dl),0.66956,2,False,True,True,True
+aric,mesa,TRIGLYCERIDE (VALUE IN MG/DL) Q2A,TRIGLYCERIDES (mg/dl),0.79836,1,True,True,True,True
+aric,mesa,TRIGLYCERIDE (VALUE IN MG/DL) Q2A,Triglycerides (mg/dl),0.73198,2,False,True,True,True
+aric,mesa,Total Triglycerides (mg/dL),TRIGLYCERIDES (mg/dl),0.79391,2,False,True,True,True
+aric,mesa,Total Triglycerides (mg/dL),Triglycerides (mg/dl),0.86456,1,True,True,True,True
+aric,mesa,WEIGHT TO THE NEAREST LB Q4,WEIGHT (lbs),0.69748,1,True,True,True,True
+aric,mesa,WEIGHT TO NEAREST LB Q1,WEIGHT (lbs),0.68796,1,True,True,True,True
+aric,mesa,WEIGHT TO NEAREST LB Q2,WEIGHT (lbs),0.69324,1,True,True,True,True
+aric,mesa,Weight (kg),WEIGHT (lbs),0.70629,1,True,True,True,True
+mesa,fhs,ATRIAL FIBRILLATION / FLUTTER BY NOVACODE,ATRIAL FIBRILLATION,0.73202,1,True,True,True,True
+mesa,fhs,ATRIAL FIBRILLATION / FLUTTER BY NOVACODE,D205-026-ATRIAL-FIBRILLATION,0.68217,3,False,True,True,True
+mesa,fhs,ATRIAL FIBRILLATION / FLUTTER BY NOVACODE,ATRIAL FIBRILLATION ON ECG,0.65991,4,False,False,True,True
+mesa,fhs,ATRIAL FIBRILLATION / FLUTTER BY NOVACODE,ECG-ATRIAL FIBRILLATION,0.71153,2,False,True,True,True
+mesa,fhs,ATRIAL FIBRILLATION / FLUTTER BY NOVACODE,ECG-RHYTHM,0.52973,5,False,False,True,True
+mesa,fhs,ATRIAL FIBRILLATION / FLUTTER BY NOVACODE,ECG - RHYTHM,0.52497,6,False,False,False,True
+mesa,fhs,Atrial Fibrillation Diagnosis (via ICD10 Code),ATRIAL FIBRILLATION,0.54259,3,False,True,True,True
+mesa,fhs,Atrial Fibrillation Diagnosis (via ICD10 Code),D205-026-ATRIAL-FIBRILLATION,0.57992,1,True,True,True,True
+mesa,fhs,Atrial Fibrillation Diagnosis (via ICD10 Code),ATRIAL FIBRILLATION ON ECG,0.53811,4,False,False,True,True
+mesa,fhs,Atrial Fibrillation Diagnosis (via ICD10 Code),ECG-ATRIAL FIBRILLATION,0.56442,2,False,True,True,True
+mesa,fhs,Atrial Fibrillation Diagnosis (via ICD10 Code),ECG-RHYTHM,0.43827,6,False,False,False,True
+mesa,fhs,Atrial Fibrillation Diagnosis (via ICD10 Code),ECG - RHYTHM,0.4385,5,False,False,True,True
+mesa,fhs,ECG ATRIAL FIBRILLATION / FLUTTER,ATRIAL FIBRILLATION,0.77743,3,False,True,True,True
+mesa,fhs,ECG ATRIAL FIBRILLATION / FLUTTER,D205-026-ATRIAL-FIBRILLATION,0.6784,4,False,False,True,True
+mesa,fhs,ECG ATRIAL FIBRILLATION / FLUTTER,ATRIAL FIBRILLATION ON ECG,0.79938,2,False,True,True,True
+mesa,fhs,ECG ATRIAL FIBRILLATION / FLUTTER,ECG-ATRIAL FIBRILLATION,0.85605,1,True,True,True,True
+mesa,fhs,ECG ATRIAL FIBRILLATION / FLUTTER,ECG-RHYTHM,0.64985,6,False,False,False,True
+mesa,fhs,ECG ATRIAL FIBRILLATION / FLUTTER,ECG - RHYTHM,0.665,5,False,False,True,True
+mesa,fhs,AGE,"Age (years), Exam 1",0.46229,5,False,False,True,True
+mesa,fhs,AGE AT EXAM 2,"Age (years), Exam 2",0.80394,1,True,True,True,True
+mesa,fhs,AGE AT EXAM3,"Age (years), Exam 3",0.8008,1,True,True,True,True
+mesa,fhs,Age at exam 4,"Age (years), Exam 4",0.85692,1,True,True,True,True
+mesa,fhs,AGE AT EXAM 5,"Age (years), Exam 5",0.82228,1,True,True,True,True
+mesa,fhs,# DRINKS PER WEEK (CURRENT AND FORMER DRINKERS),Total Alcohol Consumption,0.51931,5,False,False,True,True
+mesa,fhs,# DRINKS PER WEEK (CURRENT AND FORMER DRINKERS),BEER:(servings/week),0.64414,2,False,True,True,True
+mesa,fhs,# DRINKS PER WEEK (CURRENT AND FORMER DRINKERS),RED WINE:(servings/week),0.56293,3,False,True,True,True
+mesa,fhs,# DRINKS PER WEEK (CURRENT AND FORMER DRINKERS),WHITE WINE:(servings/week),0.56073,4,False,False,True,True
+mesa,fhs,# DRINKS PER WEEK (CURRENT AND FORMER DRINKERS),LIQUOR:(servings/week),0.67293,1,True,True,True,True
+mesa,fhs,HMG CoA reducatace inhibitors (statins),ANTI-CHOLESTEROL AGENTS,0.48396,7,False,False,False,True
+mesa,fhs,HMG CoA reducatace inhibitors (statins),D202-016-ANTI-CHOLESTEROL,0.33263,18,False,False,False,False
+mesa,fhs,HMG CoA reducatace inhibitors (statins),ANTI CHOLESTEROL DRUGS,0.50102,5,False,False,True,True
+mesa,fhs,Bile-acid sequestrants,ANTI-CHOLESTEROL AGENTS,0.55539,5,False,False,True,True
+mesa,fhs,Bile-acid sequestrants,D202-016-ANTI-CHOLESTEROL,0.34891,18,False,False,False,False
+mesa,fhs,Bile-acid sequestrants,ANTI CHOLESTEROL DRUGS,0.51577,9,False,False,False,True
+mesa,fhs,Fibrates,ANTI-CHOLESTEROL AGENTS,0.48658,4,False,False,True,True
+mesa,fhs,Fibrates,D202-016-ANTI-CHOLESTEROL,0.34483,21,False,False,False,False
+mesa,fhs,Fibrates,ANTI CHOLESTEROL DRUGS,0.46968,7,False,False,False,True
+mesa,fhs,Miscellaneous lipid-lowering drugs,ANTI-CHOLESTEROL AGENTS,0.61621,2,False,True,True,True
+mesa,fhs,Miscellaneous lipid-lowering drugs,D202-016-ANTI-CHOLESTEROL,0.41206,18,False,False,False,False
+mesa,fhs,Miscellaneous lipid-lowering drugs,ANTI CHOLESTEROL DRUGS,0.5919,7,False,False,False,True
+mesa,fhs,Niacin and nictotinic acid,ANTI-CHOLESTEROL AGENTS,0.38028,8,False,False,False,True
+mesa,fhs,Niacin and nictotinic acid,D202-016-ANTI-CHOLESTEROL,0.31091,19,False,False,False,False
+mesa,fhs,Niacin and nictotinic acid,ANTI CHOLESTEROL DRUGS,0.36607,10,False,False,False,True
+mesa,fhs,Probucol,ANTI-CHOLESTEROL AGENTS,0.43122,5,False,False,True,True
+mesa,fhs,Probucol,D202-016-ANTI-CHOLESTEROL,0.36214,17,False,False,False,False
+mesa,fhs,Probucol,ANTI CHOLESTEROL DRUGS,0.40639,10,False,False,False,True
+mesa,fhs,Any lipid-lowering medication,ANTI-CHOLESTEROL AGENTS,0.57022,6,False,False,False,True
+mesa,fhs,Any lipid-lowering medication,D202-016-ANTI-CHOLESTEROL,0.44163,18,False,False,False,False
+mesa,fhs,Any lipid-lowering medication,ANTI CHOLESTEROL DRUGS,0.55978,11,False,False,False,False
+mesa,fhs,Any lipid-lowering medication,ANTI CHOLESTEROL DRUGS-RESINS,0.56579,8,False,False,False,True
+mesa,fhs,Any lipid-lowering medication,ANTI CHOLESTEROL DRUGS-NIACIN,0.51676,17,False,False,False,False
+mesa,fhs,Any lipid-lowering medication,ANTI CHOLESTEROL DRUGS-FIBRATES,0.55718,12,False,False,False,False
+mesa,fhs,Any lipid-lowering medication,ANTI CHOLESTEROL DRUGS-STATINS,0.56026,10,False,False,False,True
+mesa,fhs,Any lipid-lowering medication,ANTI CHOLESTEROL DRUGS-OTHER,0.57386,5,False,False,True,True
+mesa,fhs,Any lipid-lowering medication,MEDS - ANTI-CHOL -RESINS,0.56828,7,False,False,False,True
+mesa,fhs,Any lipid-lowering medication,MEDS - ANTI-CHOL -NIACIN/NICOTINIC ACID,0.52605,15,False,False,False,False
+mesa,fhs,Any lipid-lowering medication,MEDS - ANTI-CHOL -FIBRATES,0.59557,3,False,True,True,True
+mesa,fhs,Any lipid-lowering medication,MEDS - ANTI-CHOL -STATINS,0.59568,2,False,True,True,True
+mesa,fhs,Any lipid-lowering medication,MEDS - ANTI-CHOL -OTHER,0.53587,14,False,False,False,False
+mesa,fhs,Any lipid-lowering medication,MEDS - ANTI-CHOL - RESINS,0.56393,9,False,False,False,True
+mesa,fhs,Any lipid-lowering medication,MEDS - ANTI-CHOL - NIACIN/NICOTINIC ACID,0.52555,16,False,False,False,False
+mesa,fhs,Any lipid-lowering medication,MEDS - ANTI-CHOL - FIBRATES,0.59045,4,False,False,True,True
+mesa,fhs,Any lipid-lowering medication,MEDS - ANTI-CHOL - STATINS,0.59865,1,True,True,True,True
+mesa,fhs,Any lipid-lowering medication,MEDS - ANTI-CHOL - OTHER,0.53939,13,False,False,False,False
+mesa,fhs,HMG COA REDUCATACE INHIBITORS (STATINS),ANTI-CHOLESTEROL AGENTS,0.59903,5,False,False,True,True
+mesa,fhs,HMG COA REDUCATACE INHIBITORS (STATINS),D202-016-ANTI-CHOLESTEROL,0.40506,19,False,False,False,False
+mesa,fhs,HMG COA REDUCATACE INHIBITORS (STATINS),ANTI CHOLESTEROL DRUGS,0.61205,4,False,False,True,True
+mesa,fhs,BILE-ACID SEQUESTRANTS,ANTI-CHOLESTEROL AGENTS,0.64719,2,False,True,True,True
+mesa,fhs,BILE-ACID SEQUESTRANTS,D202-016-ANTI-CHOLESTEROL,0.41571,18,False,False,False,False
+mesa,fhs,BILE-ACID SEQUESTRANTS,ANTI CHOLESTEROL DRUGS,0.59731,8,False,False,False,True
+mesa,fhs,FIBRATES,ANTI-CHOLESTEROL AGENTS,0.61313,4,False,False,True,True
+mesa,fhs,FIBRATES,D202-016-ANTI-CHOLESTEROL,0.43061,22,False,False,False,False
+mesa,fhs,FIBRATES,ANTI CHOLESTEROL DRUGS,0.59307,6,False,False,False,True
+mesa,fhs,MISCELLANEOUS LIPID-LOWERING DRUGS,ANTI-CHOLESTEROL AGENTS,0.68729,2,False,True,True,True
+mesa,fhs,MISCELLANEOUS LIPID-LOWERING DRUGS,D202-016-ANTI-CHOLESTEROL,0.43905,18,False,False,False,False
+mesa,fhs,MISCELLANEOUS LIPID-LOWERING DRUGS,ANTI CHOLESTEROL DRUGS,0.6638,4,False,False,True,True
+mesa,fhs,NIACIN AND NICTOTINIC ACID,ANTI-CHOLESTEROL AGENTS,0.53427,4,False,False,True,True
+mesa,fhs,NIACIN AND NICTOTINIC ACID,D202-016-ANTI-CHOLESTEROL,0.42434,20,False,False,False,False
+mesa,fhs,NIACIN AND NICTOTINIC ACID,ANTI CHOLESTEROL DRUGS,0.51529,5,False,False,True,True
+mesa,fhs,PROBUCOL,ANTI-CHOLESTEROL AGENTS,0.51697,2,False,True,True,True
+mesa,fhs,PROBUCOL,D202-016-ANTI-CHOLESTEROL,0.44388,18,False,False,False,False
+mesa,fhs,PROBUCOL,ANTI CHOLESTEROL DRUGS,0.49656,8,False,False,False,True
+mesa,fhs,ANY LIPID-LOWERING MEDICATION,ANTI-CHOLESTEROL AGENTS,0.68408,2,False,True,True,True
+mesa,fhs,ANY LIPID-LOWERING MEDICATION,D202-016-ANTI-CHOLESTEROL,0.50059,18,False,False,False,False
+mesa,fhs,ANY LIPID-LOWERING MEDICATION,ANTI CHOLESTEROL DRUGS,0.6674,7,False,False,False,True
+mesa,fhs,ANY LIPID-LOWERING MEDICATION,ANTI CHOLESTEROL DRUGS-RESINS,0.64112,11,False,False,False,False
+mesa,fhs,ANY LIPID-LOWERING MEDICATION,ANTI CHOLESTEROL DRUGS-NIACIN,0.60119,17,False,False,False,False
+mesa,fhs,ANY LIPID-LOWERING MEDICATION,ANTI CHOLESTEROL DRUGS-FIBRATES,0.63138,12,False,False,False,False
+mesa,fhs,ANY LIPID-LOWERING MEDICATION,ANTI CHOLESTEROL DRUGS-STATINS,0.64651,9,False,False,False,True
+mesa,fhs,ANY LIPID-LOWERING MEDICATION,ANTI CHOLESTEROL DRUGS-OTHER,0.67674,6,False,False,False,True
+mesa,fhs,ANY LIPID-LOWERING MEDICATION,MEDS - ANTI-CHOL -RESINS,0.65104,8,False,False,False,True
+mesa,fhs,ANY LIPID-LOWERING MEDICATION,MEDS - ANTI-CHOL -NIACIN/NICOTINIC ACID,0.62924,13,False,False,False,False
+mesa,fhs,ANY LIPID-LOWERING MEDICATION,MEDS - ANTI-CHOL -FIBRATES,0.68225,4,False,False,True,True
+mesa,fhs,ANY LIPID-LOWERING MEDICATION,MEDS - ANTI-CHOL -STATINS,0.68243,3,False,True,True,True
+mesa,fhs,ANY LIPID-LOWERING MEDICATION,MEDS - ANTI-CHOL -OTHER,0.62229,16,False,False,False,False
+mesa,fhs,ANY LIPID-LOWERING MEDICATION,MEDS - ANTI-CHOL - RESINS,0.64148,10,False,False,False,True
+mesa,fhs,ANY LIPID-LOWERING MEDICATION,MEDS - ANTI-CHOL - NIACIN/NICOTINIC ACID,0.62576,14,False,False,False,False
+mesa,fhs,ANY LIPID-LOWERING MEDICATION,MEDS - ANTI-CHOL - FIBRATES,0.67894,5,False,False,True,True
+mesa,fhs,ANY LIPID-LOWERING MEDICATION,MEDS - ANTI-CHOL - STATINS,0.68474,1,True,True,True,True
+mesa,fhs,ANY LIPID-LOWERING MEDICATION,MEDS - ANTI-CHOL - OTHER,0.62409,15,False,False,False,False
+mesa,fhs,Aspirin from 280804 (anti-inflam agents),NUMBER OF ASPIRINS TAKEN REGULARLY,0.48911,6,False,False,False,True
+mesa,fhs,Aspirin from 280804 (anti-inflam agents),ASPIRIN FREQUENCY,0.49367,5,False,False,True,True
+mesa,fhs,Aspirin from 280804 (anti-inflam agents),Number aspirins taken regularly,0.52376,4,False,False,True,True
+mesa,fhs,Aspirin from 280804 (anti-inflam agents),Aspirin Frequency per,0.52703,3,False,True,True,True
+mesa,fhs,Aspirin from 280804 (anti-inflam agents),"MEDS - ASPIR, # OF",0.53708,1,True,True,True,True
+mesa,fhs,Aspirin from 280804 (anti-inflam agents),"MEDS - ASPIR, PER DY/WK/MO/YR",0.53542,2,False,True,True,True
+mesa,fhs,ASPIRIN FROM 280804 (ANTI-INFLAM AGENTS),NUMBER OF ASPIRINS TAKEN REGULARLY,0.57047,4,False,False,True,True
+mesa,fhs,ASPIRIN FROM 280804 (ANTI-INFLAM AGENTS),ASPIRIN FREQUENCY,0.57365,3,False,True,True,True
+mesa,fhs,ASPIRIN FROM 280804 (ANTI-INFLAM AGENTS),Number aspirins taken regularly,0.49242,6,False,False,False,True
+mesa,fhs,ASPIRIN FROM 280804 (ANTI-INFLAM AGENTS),Aspirin Frequency per,0.50836,5,False,False,True,True
+mesa,fhs,ASPIRIN FROM 280804 (ANTI-INFLAM AGENTS),"MEDS - ASPIR, # OF",0.59088,2,False,True,True,True
+mesa,fhs,ASPIRIN FROM 280804 (ANTI-INFLAM AGENTS),"MEDS - ASPIR, PER DY/WK/MO/YR",0.5965,1,True,True,True,True
+mesa,fhs,Type of pre-baseline event,Cardiovascular Disease (CVD) status,0.22658,8,False,False,False,True
+mesa,fhs,BODY MASS INDEX (kg)/(m^2),"Body mass index (kg/m²), Exam 1",0.65935,2,False,True,True,True
+mesa,fhs,BODY MASS INDEX (kg/m^2),"Body mass index (kg/m²), Exam 1",0.67386,2,False,True,True,True
+mesa,fhs,CIGARETTE SMOKING STATUS,"Current smoking status, Exam 1",0.70754,1,True,True,True,True
+mesa,fhs,"Cigarrette Smoking Status, Exam 2","Current smoking status, Exam 2",0.91943,1,True,True,True,True
+mesa,fhs,"Cigarrette Smoking Status, Exam 3","Current smoking status, Exam 3",0.91994,1,True,True,True,True
+mesa,fhs,"Cigarette Smoking Status, Exam 4","Current smoking status, Exam 4",0.93843,1,True,True,True,True
+mesa,fhs,"CIGARETTE SMOKING STATUS, EXAM 5","Current smoking status, Exam 5",0.87988,1,True,True,True,True
+mesa,fhs,Exam 1 Diabetes mellitus by 2003 ADA fasting criteria algorithm,"Diabetes Mellitus Status, Exam 1",0.63067,1,True,True,True,True
+mesa,fhs,Exam 2 Diabetes mellitus by 2003 ADA fasting criteria algorithm,"Diabetes Mellitus Status, Exam 2",0.61952,1,True,True,True,True
+mesa,fhs,Exam 3 Diabetes mellitus by 2003 ADA fasting criteria algorithm,"Diabetes Mellitus Status, Exam 3",0.6319,1,True,True,True,True
+mesa,fhs,Exam 4 Diabetes mellitus by 2003 ADA fasting criteria algorithm,"Diabetes Mellitus Status, Exam 4",0.63559,1,True,True,True,True
+mesa,fhs,DIABETES 2003 ADA FASTING CRITERIA,"Diabetes Mellitus Status, Exam 1",0.47757,3,False,True,True,True
+mesa,fhs,EDUCATION: HIGHEST LEVEL COMPLETED,D201-099-YEARS-EDUCATION,0.46088,1,True,True,True,True
+mesa,fhs,"TOTAL GROSS FAMILY INCOME, PAST 12 MONTHS",Current total family income/yr before tx,0.63502,1,True,True,True,True
+mesa,fhs,FAMILY HISTORY OF STROKE: PARENT,FATHER-HAVE STROKE BEFORE AGE 65,0.70957,1,True,True,True,True
+mesa,fhs,FAMILY HISTORY OF STROKE: PARENT,MOTHER-HAVE STROKE BEFORE AGE 65,0.68787,2,False,True,True,True
+mesa,fhs,IN GENERAL YOUR HEALTH IS,"IN GENERAL, HOW IS YOUR HEALTH",0.84295,1,True,True,True,True
+mesa,fhs,IN GENERAL YOUR HEALTH IS,SF-12 - HOW YOUR HLTH,0.49192,3,False,True,True,True
+mesa,fhs,HDL CHOLESTROL (mg/dl),"HDL cholesterol (mg/dL), Exam 1",0.70831,1,True,True,True,True
+mesa,fhs,HDL CHOLESTEROL (mg/dl),"HDL cholesterol (mg/dL), Exam 1",0.72138,1,True,True,True,True
+mesa,fhs,HDL Cholesterol (mg/dl),"HDL cholesterol (mg/dL), Exam 1",0.74958,1,True,True,True,True
+mesa,fhs,HEIGHT (cm),"Height (inches), Exam 1",0.52799,1,True,True,True,True
+mesa,fhs,Hypertension Medication,"Treated for hypertension, Exam 1",0.57053,2,False,True,True,True
+mesa,fhs,Any hypertension medication,"Treated for hypertension, Exam 1",0.55088,1,True,True,True,True
+mesa,fhs,ANY HYPERTENSION MEDICATION,"Treated for hypertension, Exam 1",0.50985,3,False,True,True,True
+mesa,fhs,Myocardial Infarction (MI),Cardiovascular Disease (CVD) status,0.38039,1,True,True,True,True
+mesa,fhs,Resuscitated Cardiac Arrest,Cardiovascular Disease (CVD) status,0.33964,2,False,True,True,True
+mesa,fhs,Angina Pectoris,Cardiovascular Disease (CVD) status,0.33929,1,True,True,True,True
+mesa,fhs,Congestive Heart Failure (CHF),Cardiovascular Disease (CVD) status,0.39619,1,True,True,True,True
+mesa,fhs,Peripheral Vascular Disease (PVD),Cardiovascular Disease (CVD) status,0.45489,1,True,True,True,True
+mesa,fhs,WHO ROSE Intermittent Claudication,Cardiovascular Disease (CVD) status,0.32317,7,False,False,False,True
+mesa,fhs,Coronary Bypass Graft (CBG),Cardiovascular Disease (CVD) status,0.3356,1,True,True,True,True
+mesa,fhs,"PTCA, Cor. Stent, or Cor. Atherectomy",Cardiovascular Disease (CVD) status,0.33179,13,False,False,False,False
+mesa,fhs,Coronary Revascularization,Cardiovascular Disease (CVD) status,0.36769,1,True,True,True,True
+mesa,fhs,Insulins,D202-23-INSULIN,0.57799,3,False,True,True,True
+mesa,fhs,Insulins,INSULIN,0.74133,1,True,True,True,True
+mesa,fhs,Insulins,MEDS - INSULIN,0.62479,2,False,True,True,True
+mesa,fhs,INSULINS,D202-23-INSULIN,0.64644,3,False,True,True,True
+mesa,fhs,INSULINS,INSULIN,0.86828,1,True,True,True,True
+mesa,fhs,INSULINS,MEDS - INSULIN,0.73846,2,False,True,True,True
+mesa,fhs,LEFT VENTRICULAR HYPERTROPHY BY NOVACODE,"Definite left ventricular hypertrophy, Exam 1",0.60806,1,True,True,True,True
+mesa,fhs,ECG LEFT VENTRICULAR HYPERTROPHY BY NOVACODE,"Definite left ventricular hypertrophy, Exam 1",0.58964,1,True,True,True,True
+mesa,fhs,gender,'Participant gender',0.50484,1,True,True,True,True
+mesa,fhs,HMG CoA reducatace inhibitors (statins),ANTI CHOLESTEROL DRUGS-STATINS,0.59724,1,True,True,True,True
+mesa,fhs,HMG CoA reducatace inhibitors (statins),MEDS - ANTI-CHOL -STATINS,0.55824,3,False,True,True,True
+mesa,fhs,HMG CoA reducatace inhibitors (statins),MEDS - ANTI-CHOL - STATINS,0.55963,2,False,True,True,True
+mesa,fhs,HMG COA REDUCATACE INHIBITORS (STATINS),ANTI CHOLESTEROL DRUGS-STATINS,0.70979,1,True,True,True,True
+mesa,fhs,HMG COA REDUCATACE INHIBITORS (STATINS),MEDS - ANTI-CHOL -STATINS,0.66552,3,False,True,True,True
+mesa,fhs,HMG COA REDUCATACE INHIBITORS (STATINS),MEDS - ANTI-CHOL - STATINS,0.66736,2,False,True,True,True
+mesa,fhs,TOTAL CHOLESTEROL (mg/dl),"Total cholesterol (mg/dL), Exam 1",0.72239,1,True,True,True,True
+mesa,fhs,Total Cholesterol (mg/dl),"Total cholesterol (mg/dL), Exam 1",0.73148,1,True,True,True,True
+mesa,fhs,TRIGLYCERIDES (mg/dl),"Triglycerides (mg/dL), Exam 1",0.70681,1,True,True,True,True
+mesa,fhs,Triglycerides (mg/dl),"Triglycerides (mg/dL), Exam 1",0.76557,1,True,True,True,True
+mesa,fhs,WEIGHT (lbs),"Weight (pounds), Exam 1",0.61971,1,True,True,True,True

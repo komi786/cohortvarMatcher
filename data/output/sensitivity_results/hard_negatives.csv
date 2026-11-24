@@ -1,0 +1,4 @@
+model,n_neg,neg_median,neg_ge_045,neg_ge_050,n_with_gold,neg_above_gold,auc_pos_vs_neg
+sapbert,61,0.431,47.5,37.7,43,0,0.91
+biolord,61,0.422,41.0,31.1,43,3,0.888
+openai,61,0.509,54.1,52.5,43,0,0.85

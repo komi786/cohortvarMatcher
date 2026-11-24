@@ -23,6 +23,12 @@ MODEL_MAP = {
     # "coder":"GanjinZero/UMLSBert_ENG",
     "medembed":"abhinand/MedEmbed-base-v0.1",
     "coder":"GanjinZero/coder_eng",
+    # BMRetriever (Xu et al., EMNLP 2024): biomedical retriever, decoder backbone,
+    # last-token (EOS) pooling, instruction on the query side, passage template.
+    "bmretriever-410m": "BMRetriever/BMRetriever-410M",
+    "bmretriever-1b":   "BMRetriever/BMRetriever-1B",
+    "bmretriever-2b":   "BMRetriever/BMRetriever-2B",
+    "bmretriever-7b":   "BMRetriever/BMRetriever-7B",
     # --- General-purpose models ---
     "qwen3-0.6b":    "Qwen/Qwen3-Embedding-0.6B", 
     "qwen3-8b" :  "accounts/fireworks/models/qwen3-embedding-8b", #"qwen3-embedding:8b" ,
@@ -55,7 +61,16 @@ POOLING_STRATEGY = {
     "minilm": "mean", "e5": "mean", "gte": "cls",
     "gemma": "mean", "kalm": "mean",
     "qwen3-0.6b": "last", "qwen3-8b": "last", "qwen2": "last", "linq": "last",
+    "bmretriever-410m": "last", "bmretriever-1b": "last",
+    "bmretriever-2b": "last", "bmretriever-7b": "last",
 }
+
+# Models trained with an EOS token appended to every input; the embedding is
+# the hidden state of that EOS token (BMRetriever model card).
+APPEND_EOS_MODELS = {"bmretriever-410m", "bmretriever-1b", "bmretriever-2b", "bmretriever-7b"}
+_BMR_QUERY = ("Given a clinical variable label, retrieve clinical variable labels "
+              "that describe the same concept\nQuery: ")
+_BMR_PASSAGE = "Represent this passage\npassage: "
 # TOGETHER_MODELS = {"gte"}
 
 # Embedding dimensions: MUST match Qdrant VectorParams(size=...) exactly.
@@ -98,12 +113,14 @@ INSTRUCTION_MODELS = {
     "linq":  "Instruct: Given a clinical variable description, retrieve semantically equivalent clinical variable descriptions\nQuery: ",
     "qwen2": "Instruct: Given a clinical variable description, retrieve semantically equivalent clinical variable descriptions\nQuery: ",
     "e5":    "query: ",
+    **{k: _BMR_QUERY for k in APPEND_EOS_MODELS},
 }
 
 # Models that use last-token pooling (decoders) vs CLS/mean pooling (encoders)
 DECODER_MODELS = {"linq", "qwen2"}
 PASSAGE_PREFIXES = {
     "e5": "passage: ",
+    **{k: _BMR_PASSAGE for k in APPEND_EOS_MODELS},
 }
 
 
@@ -118,9 +135,13 @@ class UnifiedEmbeddingModel:
         self._passage_prefix = PASSAGE_PREFIXES.get(backend_key, "")
         self._is_decoder = backend_key in DECODER_MODELS
         self._pooling = POOLING_STRATEGY.get(backend_key, "mean")
+        self._append_eos = backend_key in APPEND_EOS_MODELS
 
         cache = cache_dir or settings.MODEL_CACHE_DIR
         dtype = torch.float16 if self._is_decoder else torch.float32
+        if self._append_eos and backend_key in ("bmretriever-2b", "bmretriever-7b") \
+                and torch.cuda.is_available():
+            dtype = torch.float16   # 2B/7B in fp32 do not fit most GPUs
 
         # print(f"🔥 Loading embedding model: {model_name_or_path}...")
         self.tokenizer = AutoTokenizer.from_pretrained(
@@ -135,7 +156,7 @@ class UnifiedEmbeddingModel:
         else:
             self.model = AutoModel.from_pretrained(model_name_or_path, cache_dir=cache, trust_remote_code=True, dtype=dtype)
 
-        if self._is_decoder:
+        if self._is_decoder or self._append_eos:
             self.tokenizer.padding_side = "left"
         if self.tokenizer.pad_token is None:
             self.tokenizer.pad_token = self.tokenizer.eos_token
@@ -178,10 +199,18 @@ class UnifiedEmbeddingModel:
         all_embs = []
         for i in range(0, len(texts), batch_size):
             batch = texts[i:i + batch_size]
-            encoded = self.tokenizer(
-                batch, padding=True, truncation=True,
-                max_length=512, return_tensors="pt"
-            ).to(self.device)
+            if self._append_eos:
+                ids = self.tokenizer(batch, truncation=True, max_length=511,
+                                     padding=False, return_attention_mask=False)["input_ids"]
+                encoded = self.tokenizer.pad(
+                    {"input_ids": [x + [self.tokenizer.eos_token_id] for x in ids]},
+                    padding=True, return_attention_mask=True, return_tensors="pt"
+                ).to(self.device)
+            else:
+                encoded = self.tokenizer(
+                    batch, padding=True, truncation=True,
+                    max_length=512, return_tensors="pt"
+                ).to(self.device)
             out = self.model(**encoded)
             hidden = out.last_hidden_state if hasattr(out, 'last_hidden_state') else out[0]
             emb = self._pool(hidden, encoded["attention_mask"])

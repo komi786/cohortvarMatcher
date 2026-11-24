@@ -1,0 +1,7 @@
+model,text,n_pairs,tau90,tau90_ci,ret_0.45,ret_0.50,gold_median,R@1,mrr
+sapbert,NE (label),67,0.45,0.37-0.60,91.0,88.1,0.751,65.7,78.0
+sapbert,OEH (label + concept),67,0.52,0.44-0.57,95.5,92.5,0.7,68.7,82.1
+biolord,NE (label),67,0.44,0.31-0.57,89.6,88.1,0.786,67.2,78.5
+biolord,OEH (label + concept),67,0.56,0.50-0.60,98.5,97.0,0.733,68.7,81.6
+openai,NE (label),67,0.41,0.38-0.52,88.1,83.6,0.706,73.1,82.7
+openai,OEH (label + concept),67,0.48,0.46-0.55,97.0,88.1,0.676,67.2,81.0

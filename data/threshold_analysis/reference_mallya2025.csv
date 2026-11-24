@@ -1,0 +1,493 @@
+source_study,target_study,source_var_name,target_var_name,source_var_label,target_var_label,class_label,match_label,concept,concept_group,pair_kind,visit
+aric,fhs,,,Atrial fibrillation,ATRIAL FIBRILLATION,same concept,1,AFIB,Co-morbidities,indicator-indicator,1
+aric,fhs,,,Atrial fibrillation,D205-026-ATRIAL-FIBRILLATION,same concept,1,AFIB,Co-morbidities,indicator-indicator,1
+aric,fhs,,,Atrial fibrillation,ATRIAL FIBRILLATION ON ECG,same concept,1,AFIB,Co-morbidities,indicator-indicator,1
+aric,fhs,,,Atrial fibrillation,ECG-ATRIAL FIBRILLATION,same concept,1,AFIB,Co-morbidities,indicator-indicator,1
+aric,fhs,,,Atrial fibrillation,ECG-RHYTHM,same concept,1,AFIB,Co-morbidities,indicator-indicator,1
+aric,fhs,,,Atrial fibrillation,ECG - RHYTHM,same concept,1,AFIB,Co-morbidities,indicator-indicator,1
+aric,fhs,,,Incident AF,ATRIAL FIBRILLATION,same concept,1,AFIB,Co-morbidities,indicator-indicator,1
+aric,fhs,,,Incident AF,D205-026-ATRIAL-FIBRILLATION,same concept,1,AFIB,Co-morbidities,indicator-indicator,1
+aric,fhs,,,Incident AF,ATRIAL FIBRILLATION ON ECG,same concept,1,AFIB,Co-morbidities,indicator-indicator,1
+aric,fhs,,,Incident AF,ECG-ATRIAL FIBRILLATION,same concept,1,AFIB,Co-morbidities,indicator-indicator,1
+aric,fhs,,,Incident AF,ECG-RHYTHM,same concept,1,AFIB,Co-morbidities,indicator-indicator,1
+aric,fhs,,,Incident AF,ECG - RHYTHM,same concept,1,AFIB,Co-morbidities,indicator-indicator,1
+aric,fhs,,,AGE AT VISIT 1,"Age (years), Exam 1",same concept,1,AGE,Socio-demographics,indicator-indicator,1
+aric,fhs,,,Age at Visit 2,"Age (years), Exam 2",same concept,1,AGE,Socio-demographics,indicator-indicator,2
+aric,fhs,,,Age at Visit 3,"Age (years), Exam 3",same concept,1,AGE,Socio-demographics,indicator-indicator,3
+aric,fhs,,,Age at Visit 4,"Age (years), Exam 4",same concept,1,AGE,Socio-demographics,indicator-indicator,4
+aric,fhs,,,Corrected Visit 5 age,"Age (years), Exam 5",same concept,1,AGE,Socio-demographics,indicator-indicator,5
+aric,fhs,,,DRINK ALCOHOLIC BEVERAGE Q90,Total Alcohol Consumption,same concept,1,ALCOHOL,Diet,indicator-indicator,1
+aric,fhs,,,DRINK ALCOHOLIC BEVERAGE Q90,BEER:(servings/week),partial (item-aggregate),1,ALCOHOL,Diet,item-aggregate,1
+aric,fhs,,,DRINK ALCOHOLIC BEVERAGE Q90,RED WINE:(servings/week),partial (item-aggregate),1,ALCOHOL,Diet,item-aggregate,1
+aric,fhs,,,DRINK ALCOHOLIC BEVERAGE Q90,WHITE WINE:(servings/week),partial (item-aggregate),1,ALCOHOL,Diet,item-aggregate,1
+aric,fhs,,,DRINK ALCOHOLIC BEVERAGE Q90,LIQUOR:(servings/week),partial (item-aggregate),1,ALCOHOL,Diet,item-aggregate,1
+aric,fhs,,,NO OF GLASSES WINE CONSUMED P WK Q96,Total Alcohol Consumption,partial (item-aggregate),1,ALCOHOL,Diet,item-aggregate,1
+aric,fhs,,,NO OF CANS OF BEER CONSUMED P WK Q97,Total Alcohol Consumption,partial (item-aggregate),1,ALCOHOL,Diet,item-aggregate,1
+aric,fhs,,,NO OF HARD LIQUOR DRINKS PER WK Q98,Total Alcohol Consumption,partial (item-aggregate),1,ALCOHOL,Diet,item-aggregate,1
+aric,fhs,,,EVER CONSUMED ALCOHOLIC BEVERAGES Q14,Total Alcohol Consumption,same concept,1,ALCOHOL,Diet,indicator-indicator,1
+aric,fhs,,,EVER CONSUMED ALCOHOLIC BEVERAGES Q14,BEER:(servings/week),partial (item-aggregate),1,ALCOHOL,Diet,item-aggregate,1
+aric,fhs,,,EVER CONSUMED ALCOHOLIC BEVERAGES Q14,RED WINE:(servings/week),partial (item-aggregate),1,ALCOHOL,Diet,item-aggregate,1
+aric,fhs,,,EVER CONSUMED ALCOHOLIC BEVERAGES Q14,WHITE WINE:(servings/week),partial (item-aggregate),1,ALCOHOL,Diet,item-aggregate,1
+aric,fhs,,,EVER CONSUMED ALCOHOLIC BEVERAGES Q14,LIQUOR:(servings/week),partial (item-aggregate),1,ALCOHOL,Diet,item-aggregate,1
+aric,fhs,,,DRINK ALCOHOL NOW Q15,Total Alcohol Consumption,same concept,1,ALCOHOL,Diet,indicator-indicator,1
+aric,fhs,,,DRINK ALCOHOL NOW Q15,BEER:(servings/week),partial (item-aggregate),1,ALCOHOL,Diet,item-aggregate,1
+aric,fhs,,,DRINK ALCOHOL NOW Q15,RED WINE:(servings/week),partial (item-aggregate),1,ALCOHOL,Diet,item-aggregate,1
+aric,fhs,,,DRINK ALCOHOL NOW Q15,WHITE WINE:(servings/week),partial (item-aggregate),1,ALCOHOL,Diet,item-aggregate,1
+aric,fhs,,,DRINK ALCOHOL NOW Q15,LIQUOR:(servings/week),partial (item-aggregate),1,ALCOHOL,Diet,item-aggregate,1
+aric,fhs,,,USUAL # OF GLASSES WINE/WK Q17A,Total Alcohol Consumption,partial (item-aggregate),1,ALCOHOL,Diet,item-aggregate,1
+aric,fhs,,,USUAL # OF BEERS PER WEEK Q18A,Total Alcohol Consumption,partial (item-aggregate),1,ALCOHOL,Diet,item-aggregate,1
+aric,fhs,,,USUAL # OF HARD LIQUOR DRINKS/WK Q19A,Total Alcohol Consumption,partial (item-aggregate),1,ALCOHOL,Diet,item-aggregate,1
+aric,fhs,,,Cholesterol lowering medication w/in 2wks: Using 2004 Med Code -V1,ANTI-CHOLESTEROL AGENTS,same concept,1,ANYCHOLMED,Medications,indicator-indicator,1
+aric,fhs,,,Cholesterol lowering medication w/in 2wks: Using 2004 Med Code -V1,D202-016-ANTI-CHOLESTEROL,same concept,1,ANYCHOLMED,Medications,indicator-indicator,1
+aric,fhs,,,Cholesterol lowering medication w/in 2wks: Using 2004 Med Code -V1,ANTI CHOLESTEROL DRUGS,same concept,1,ANYCHOLMED,Medications,indicator-indicator,1
+aric,fhs,,,Cholesterol lowering medication w/in 2wks: Using 2004 Med Code -V1,ANTI CHOLESTEROL DRUGS-RESINS,partial (item-aggregate),1,ANYCHOLMED,Medications,item-aggregate,1
+aric,fhs,,,Cholesterol lowering medication w/in 2wks: Using 2004 Med Code -V1,ANTI CHOLESTEROL DRUGS-NIACIN,partial (item-aggregate),1,ANYCHOLMED,Medications,item-aggregate,1
+aric,fhs,,,Cholesterol lowering medication w/in 2wks: Using 2004 Med Code -V1,ANTI CHOLESTEROL DRUGS-FIBRATES,partial (item-aggregate),1,ANYCHOLMED,Medications,item-aggregate,1
+aric,fhs,,,Cholesterol lowering medication w/in 2wks: Using 2004 Med Code -V1,ANTI CHOLESTEROL DRUGS-STATINS,partial (item-aggregate),1,ANYCHOLMED,Medications,item-aggregate,1
+aric,fhs,,,Cholesterol lowering medication w/in 2wks: Using 2004 Med Code -V1,ANTI CHOLESTEROL DRUGS-OTHER,partial (item-aggregate),1,ANYCHOLMED,Medications,item-aggregate,1
+aric,fhs,,,Cholesterol lowering medication w/in 2wks: Using 2004 Med Code -V1,MEDS - ANTI-CHOL -RESINS,partial (item-aggregate),1,ANYCHOLMED,Medications,item-aggregate,1
+aric,fhs,,,Cholesterol lowering medication w/in 2wks: Using 2004 Med Code -V1,MEDS - ANTI-CHOL -NIACIN/NICOTINIC ACID,partial (item-aggregate),1,ANYCHOLMED,Medications,item-aggregate,1
+aric,fhs,,,Cholesterol lowering medication w/in 2wks: Using 2004 Med Code -V1,MEDS - ANTI-CHOL -FIBRATES,partial (item-aggregate),1,ANYCHOLMED,Medications,item-aggregate,1
+aric,fhs,,,Cholesterol lowering medication w/in 2wks: Using 2004 Med Code -V1,MEDS - ANTI-CHOL -STATINS,partial (item-aggregate),1,ANYCHOLMED,Medications,item-aggregate,1
+aric,fhs,,,Cholesterol lowering medication w/in 2wks: Using 2004 Med Code -V1,MEDS - ANTI-CHOL -OTHER,partial (item-aggregate),1,ANYCHOLMED,Medications,item-aggregate,1
+aric,fhs,,,Cholesterol lowering medication w/in 2wks: Using 2004 Med Code -V1,MEDS - ANTI-CHOL - RESINS,partial (item-aggregate),1,ANYCHOLMED,Medications,item-aggregate,1
+aric,fhs,,,Cholesterol lowering medication w/in 2wks: Using 2004 Med Code -V1,MEDS - ANTI-CHOL - NIACIN/NICOTINIC ACID,partial (item-aggregate),1,ANYCHOLMED,Medications,item-aggregate,1
+aric,fhs,,,Cholesterol lowering medication w/in 2wks: Using 2004 Med Code -V1,MEDS - ANTI-CHOL - FIBRATES,partial (item-aggregate),1,ANYCHOLMED,Medications,item-aggregate,1
+aric,fhs,,,Cholesterol lowering medication w/in 2wks: Using 2004 Med Code -V1,MEDS - ANTI-CHOL - STATINS,partial (item-aggregate),1,ANYCHOLMED,Medications,item-aggregate,1
+aric,fhs,,,Cholesterol lowering medication w/in 2wks: Using 2004 Med Code -V1,MEDS - ANTI-CHOL - OTHER,partial (item-aggregate),1,ANYCHOLMED,Medications,item-aggregate,1
+aric,fhs,,,Medication taken for high blood cholesterol,ANTI-CHOLESTEROL AGENTS,same concept,1,ANYCHOLMED,Medications,indicator-indicator,1
+aric,fhs,,,Medication taken for high blood cholesterol,D202-016-ANTI-CHOLESTEROL,same concept,1,ANYCHOLMED,Medications,indicator-indicator,1
+aric,fhs,,,Medication taken for high blood cholesterol,ANTI CHOLESTEROL DRUGS,same concept,1,ANYCHOLMED,Medications,indicator-indicator,1
+aric,fhs,,,Medication taken for high blood cholesterol,ANTI CHOLESTEROL DRUGS-RESINS,partial (item-aggregate),1,ANYCHOLMED,Medications,item-aggregate,1
+aric,fhs,,,Medication taken for high blood cholesterol,ANTI CHOLESTEROL DRUGS-NIACIN,partial (item-aggregate),1,ANYCHOLMED,Medications,item-aggregate,1
+aric,fhs,,,Medication taken for high blood cholesterol,ANTI CHOLESTEROL DRUGS-FIBRATES,partial (item-aggregate),1,ANYCHOLMED,Medications,item-aggregate,1
+aric,fhs,,,Medication taken for high blood cholesterol,ANTI CHOLESTEROL DRUGS-STATINS,partial (item-aggregate),1,ANYCHOLMED,Medications,item-aggregate,1
+aric,fhs,,,Medication taken for high blood cholesterol,ANTI CHOLESTEROL DRUGS-OTHER,partial (item-aggregate),1,ANYCHOLMED,Medications,item-aggregate,1
+aric,fhs,,,Medication taken for high blood cholesterol,MEDS - ANTI-CHOL -RESINS,partial (item-aggregate),1,ANYCHOLMED,Medications,item-aggregate,1
+aric,fhs,,,Medication taken for high blood cholesterol,MEDS - ANTI-CHOL -NIACIN/NICOTINIC ACID,partial (item-aggregate),1,ANYCHOLMED,Medications,item-aggregate,1
+aric,fhs,,,Medication taken for high blood cholesterol,MEDS - ANTI-CHOL -FIBRATES,partial (item-aggregate),1,ANYCHOLMED,Medications,item-aggregate,1
+aric,fhs,,,Medication taken for high blood cholesterol,MEDS - ANTI-CHOL -STATINS,partial (item-aggregate),1,ANYCHOLMED,Medications,item-aggregate,1
+aric,fhs,,,Medication taken for high blood cholesterol,MEDS - ANTI-CHOL -OTHER,partial (item-aggregate),1,ANYCHOLMED,Medications,item-aggregate,1
+aric,fhs,,,Medication taken for high blood cholesterol,MEDS - ANTI-CHOL - RESINS,partial (item-aggregate),1,ANYCHOLMED,Medications,item-aggregate,1
+aric,fhs,,,Medication taken for high blood cholesterol,MEDS - ANTI-CHOL - NIACIN/NICOTINIC ACID,partial (item-aggregate),1,ANYCHOLMED,Medications,item-aggregate,1
+aric,fhs,,,Medication taken for high blood cholesterol,MEDS - ANTI-CHOL - FIBRATES,partial (item-aggregate),1,ANYCHOLMED,Medications,item-aggregate,1
+aric,fhs,,,Medication taken for high blood cholesterol,MEDS - ANTI-CHOL - STATINS,partial (item-aggregate),1,ANYCHOLMED,Medications,item-aggregate,1
+aric,fhs,,,Medication taken for high blood cholesterol,MEDS - ANTI-CHOL - OTHER,partial (item-aggregate),1,ANYCHOLMED,Medications,item-aggregate,1
+aric,fhs,,,"Used Aspirin-containing analgesics (at Visit 1) in last 2 weeks (0=No, 1=Yes), based on 2004 Med Code",NUMBER OF ASPIRINS TAKEN REGULARLY,same concept,1,ASPIRIN,Medications,indicator-indicator,1
+aric,fhs,,,"Used Aspirin-containing analgesics (at Visit 1) in last 2 weeks (0=No, 1=Yes), based on 2004 Med Code",ASPIRIN FREQUENCY,same concept,1,ASPIRIN,Medications,indicator-indicator,1
+aric,fhs,,,"Used Aspirin-containing analgesics (at Visit 1) in last 2 weeks (0=No, 1=Yes), based on 2004 Med Code",Number aspirins taken regularly,same concept,1,ASPIRIN,Medications,indicator-indicator,1
+aric,fhs,,,"Used Aspirin-containing analgesics (at Visit 1) in last 2 weeks (0=No, 1=Yes), based on 2004 Med Code",Aspirin Frequency per,same concept,1,ASPIRIN,Medications,indicator-indicator,1
+aric,fhs,,,"Used Aspirin-containing analgesics (at Visit 1) in last 2 weeks (0=No, 1=Yes), based on 2004 Med Code","MEDS - ASPIR, # OF",same concept,1,ASPIRIN,Medications,indicator-indicator,1
+aric,fhs,,,"Used Aspirin-containing analgesics (at Visit 1) in last 2 weeks (0=No, 1=Yes), based on 2004 Med Code","MEDS - ASPIR, PER DY/WK/MO/YR",same concept,1,ASPIRIN,Medications,indicator-indicator,1
+aric,fhs,,,Aspirin taken in last 4 weeks,NUMBER OF ASPIRINS TAKEN REGULARLY,same concept,1,ASPIRIN,Medications,indicator-indicator,1
+aric,fhs,,,Aspirin taken in last 4 weeks,ASPIRIN FREQUENCY,same concept,1,ASPIRIN,Medications,indicator-indicator,1
+aric,fhs,,,Aspirin taken in last 4 weeks,Number aspirins taken regularly,same concept,1,ASPIRIN,Medications,indicator-indicator,1
+aric,fhs,,,Aspirin taken in last 4 weeks,Aspirin Frequency per,same concept,1,ASPIRIN,Medications,indicator-indicator,1
+aric,fhs,,,Aspirin taken in last 4 weeks,"MEDS - ASPIR, # OF",same concept,1,ASPIRIN,Medications,indicator-indicator,1
+aric,fhs,,,Aspirin taken in last 4 weeks,"MEDS - ASPIR, PER DY/WK/MO/YR",same concept,1,ASPIRIN,Medications,indicator-indicator,1
+aric,fhs,,,PREVALENT CORONARY HEART DISEASE,Cardiovascular Disease (CVD) status,partial (item-aggregate),1,BASE_CVD,Other,item-aggregate,1
+aric,fhs,,,SYMPTOMATIC CORONARY HEART DISEASE,Cardiovascular Disease (CVD) status,partial (item-aggregate),1,BASE_CVD,Other,item-aggregate,1
+aric,fhs,,,"ROSE INTERMITTENT CLAUDICATION, DEF. 3",Cardiovascular Disease (CVD) status,partial (item-aggregate),1,BASE_CVD,Other,item-aggregate,1
+aric,fhs,,,Prevalent HF at Visit 1,Cardiovascular Disease (CVD) status,partial (item-aggregate),1,BASE_CVD,Other,item-aggregate,1
+aric,fhs,,,Stroke,Stroke/TIA status,partial (item-aggregate),1,BASE_STROKE,Other,item-aggregate,1
+aric,fhs,,,TIA,Stroke/TIA status,partial (item-aggregate),1,BASE_STROKE,Other,item-aggregate,1
+aric,fhs,,,BODY MASS INDEX IN KG/(M*M),"Body mass index (kg/m²), Exam 1",same concept,1,BMI,Vitals,indicator-indicator,1
+aric,fhs,,,V2 body mass index in kg/m2,"Body mass index (kg/m²), Exam 2",same concept,1,BMI,Vitals,indicator-indicator,2
+aric,fhs,,,Body Mass Index in kg/m**2,"Body mass index (kg/m²), Exam 1",same concept,1,BMI,Vitals,indicator-indicator,1
+aric,fhs,,,CAROTID BRUITS? Q10,CDI: LEFT CAROTID BRUIT,partial (item-aggregate),1,CARSTEN,Co-morbidities,item-aggregate,1
+aric,fhs,,,CAROTID BRUITS? Q10,CDI: RIGHT CAROTID BRUIT,partial (item-aggregate),1,CARSTEN,Co-morbidities,item-aggregate,1
+aric,fhs,,,CAROTID BRUITS? Q10,CAROTID BRUIT-LEFT,partial (item-aggregate),1,CARSTEN,Co-morbidities,item-aggregate,1
+aric,fhs,,,CAROTID BRUITS? Q10,CAROTID BRUIT-RIGHT,partial (item-aggregate),1,CARSTEN,Co-morbidities,item-aggregate,1
+aric,fhs,,,CAROTID BRUITS? Q10,CAROTID BRUIT - LEFT,partial (item-aggregate),1,CARSTEN,Co-morbidities,item-aggregate,1
+aric,fhs,,,CAROTID BRUITS? Q10,CAROTID BRUIT - RIGHT,partial (item-aggregate),1,CARSTEN,Co-morbidities,item-aggregate,1
+aric,fhs,,,CURRENT CIGARETTE SMOKER,"Current smoking status, Exam 1",same concept,1,CURRSMK,Co-morbidities,indicator-indicator,1
+aric,fhs,,,Current Smoker Flag,"Current smoking status, Exam 1",same concept,1,CURRSMK,Co-morbidities,indicator-indicator,1
+aric,fhs,,,Current Smoker,"Current smoking status, Exam 1",same concept,1,CURRSMK,Co-morbidities,indicator-indicator,1
+aric,fhs,,,Current Cigarette Smoker,"Current smoking status, Exam 1",same concept,1,CURRSMK,Co-morbidities,indicator-indicator,1
+aric,fhs,,,V5 Current Cigarette Smoker,"Current smoking status, Exam 5",same concept,1,CURRSMK,Co-morbidities,indicator-indicator,5
+aric,fhs,,,DIABETES w/ fasting glucose cutpt.<126,"Diabetes Mellitus Status, Exam 1",same concept,1,DIAB,Co-morbidities,indicator-indicator,1
+aric,fhs,,,Diabts22 using chmb07=126,"Diabetes Mellitus Status, Exam 1",same concept,1,DIAB,Co-morbidities,indicator-indicator,1
+aric,fhs,,,Diabetes Using Lower Cutpoint 126 mg/dL,"Diabetes Mellitus Status, Exam 1",same concept,1,DIAB,Co-morbidities,indicator-indicator,1
+aric,fhs,,,V5 Diabetes - Lower Cutpoint 126 mg/dL,"Diabetes Mellitus Status, Exam 5",same concept,1,DIAB,Co-morbidities,indicator-indicator,5
+aric,fhs,,,HIGHEST EDUCATION COMPLETED Q54,D201-099-YEARS-EDUCATION,same concept,1,EDUCLEV,Socio-demographics,indicator-indicator,1
+aric,fhs,,,COMBINED FAMILY INCOME GROUP Q62,Current total family income/yr before tx,same concept,1,FAM_INCOME,Socio-demographics,indicator-indicator,1
+aric,fhs,,,HOUSEHOLD INCOME LAST YEAR Q6,Current total family income/yr before tx,same concept,1,FAM_INCOME,Socio-demographics,indicator-indicator,1
+aric,fhs,,,HEALTH CONDITION Q9,YOUR HEALTH NOW IN GENERAL,same concept,1,GENHLTH,Co-morbidities,indicator-indicator,1
+aric,fhs,,,Rate general health,"IN GENERAL, HOW IS YOUR HEALTH",same concept,1,GENHLTH2,Co-morbidities,indicator-indicator,1
+aric,fhs,,,Rate general health,SF-12 - HOW YOUR HLTH,same concept,1,GENHLTH2,Co-morbidities,indicator-indicator,1
+aric,fhs,,,RE-CALIBRATED HDL CHOL. in mg/dl,"HDL cholesterol (mg/dL), Exam 1",same concept,1,HDL,Labs,indicator-indicator,1
+aric,fhs,,,HDL CHOLESTREROL (VALUE) Q3A,"HDL cholesterol (mg/dL), Exam 1",same concept,1,HDL,Labs,indicator-indicator,1
+aric,fhs,,,HDL CHOLESTEROL (VALUE IN MG/DL) Q3A,"HDL cholesterol (mg/dL), Exam 1",same concept,1,HDL,Labs,indicator-indicator,1
+aric,fhs,,,HDL CHOLESTEROL (VALUE) Q3A,"HDL cholesterol (mg/dL), Exam 1",same concept,1,HDL,Labs,indicator-indicator,1
+aric,fhs,,,HDLC-Cholesterol (mg/dL),"HDL cholesterol (mg/dL), Exam 1",same concept,1,HDL,Labs,indicator-indicator,1
+aric,fhs,,,STANDING HEIGHT TO NEAREST CM Q1,"Height (inches), Exam 1",same concept,1,HGT_CM,Vitals,indicator-indicator,1
+aric,fhs,,,Standing height (cm),"Height (inches), Exam 1",same concept,1,HGT_CM,Vitals,indicator-indicator,1
+aric,fhs,,,"HYPERTENSION LOWERING MED. USE, DEF. 1","Treated for hypertension, Exam 1",same concept,1,HRX,Co-morbidities,indicator-indicator,1
+aric,fhs,,,Hypertension Meds (Self reported),"Treated for hypertension, Exam 1",same concept,1,HRX,Co-morbidities,indicator-indicator,1
+aric,fhs,,,"V3 HYPERTENSION MEDICATIONS, DEF. 1","Treated for hypertension, Exam 3",same concept,1,HRX,Co-morbidities,indicator-indicator,3
+aric,fhs,,,V4 Hypert Med in Past 2 Wks: Self-rptd,"Treated for hypertension, Exam 4",same concept,1,HRX,Co-morbidities,indicator-indicator,4
+aric,fhs,,,Medication taken for high blodd pressure or hypertension,"Treated for hypertension, Exam 1",same concept,1,HRX,Co-morbidities,indicator-indicator,1
+aric,fhs,,,ROSE ANGINA,Cardiovascular Disease (CVD) status,partial (item-aggregate),1,HXCVD,Co-morbidities,item-aggregate,1
+aric,fhs,,,Incident HF (from discharge codes),Cardiovascular Disease (CVD) status,partial (item-aggregate),1,HXCVD,Co-morbidities,item-aggregate,1
+aric,fhs,,,REPORT ROSE ANGINA IN AFU? Q1,Cardiovascular Disease (CVD) status,partial (item-aggregate),1,HXCVD,Co-morbidities,item-aggregate,1
+aric,fhs,,,"PAD V1, Def 2 (same for both genders)",Cardiovascular Disease (CVD) status,partial (item-aggregate),1,HXHRTD,Co-morbidities,item-aggregate,1
+aric,fhs,,,Cardiac Procedures,Cardiovascular Disease (CVD) status,partial (item-aggregate),1,HXHRTD,Co-morbidities,item-aggregate,1
+aric,fhs,,,LVH present by cornell definition,"Definite left ventricular hypertrophy, Exam 1",same concept,1,LVH,Co-morbidities,indicator-indicator,1
+aric,fhs,,,SEX (from FTRA22),'Participant gender',same concept,1,SEX_C,Socio-demographics,indicator-indicator,1
+aric,fhs,,,sodium (mg),SODIUM (mg),same concept,1,SODIUM,Diet,indicator-indicator,1
+aric,fhs,,,sodium (mg),Sodium mg,same concept,1,SODIUM,Diet,indicator-indicator,1
+aric,fhs,,,"Used Statin (at Visit 1) last 2weeks (0=No, 1=Yes) based on 2004 Med Code",ANTI CHOLESTEROL DRUGS-STATINS,same concept,1,STATIN,Medications,indicator-indicator,1
+aric,fhs,,,"Used Statin (at Visit 1) last 2weeks (0=No, 1=Yes) based on 2004 Med Code",MEDS - ANTI-CHOL -STATINS,same concept,1,STATIN,Medications,indicator-indicator,1
+aric,fhs,,,"Used Statin (at Visit 1) last 2weeks (0=No, 1=Yes) based on 2004 Med Code",MEDS - ANTI-CHOL - STATINS,same concept,1,STATIN,Medications,indicator-indicator,1
+aric,fhs,,,TOTAL CHOLESTEROL (MG-DL),"Total cholesterol (mg/dL), Exam 1",same concept,1,TC,Labs,indicator-indicator,1
+aric,fhs,,,CHOLESTEROL (VALUE) Q1A,"Total cholesterol (mg/dL), Exam 1",same concept,1,TC,Labs,indicator-indicator,1
+aric,fhs,,,CHOLESTEROL (VALUE IN MG/DL) Q1A,"Total cholesterol (mg/dL), Exam 1",same concept,1,TC,Labs,indicator-indicator,1
+aric,fhs,,,Total Cholesterol (mg/dL),"Total cholesterol (mg/dL), Exam 1",same concept,1,TC,Labs,indicator-indicator,1
+aric,fhs,,,TOTAL TRIGLYCERIDES (MG-DL),"Triglycerides (mg/dL), Exam 1",same concept,1,TRIG,Labs,indicator-indicator,1
+aric,fhs,,,TRIGLYCERIDE (VALUE) Q2A,"Triglycerides (mg/dL), Exam 1",same concept,1,TRIG,Labs,indicator-indicator,1
+aric,fhs,,,TRIGLYCERIDE (VALUE IN MG/DL) Q2A,"Triglycerides (mg/dL), Exam 1",same concept,1,TRIG,Labs,indicator-indicator,1
+aric,fhs,,,Total Triglycerides (mg/dL),"Triglycerides (mg/dL), Exam 1",same concept,1,TRIG,Labs,indicator-indicator,1
+aric,fhs,,,WEIGHT TO THE NEAREST LB Q4,"Weight (pounds), Exam 1",same concept,1,WGT,Vitals,indicator-indicator,1
+aric,fhs,,,WEIGHT TO NEAREST LB Q1,"Weight (pounds), Exam 1",same concept,1,WGT,Vitals,indicator-indicator,1
+aric,fhs,,,WEIGHT TO NEAREST LB Q2,"Weight (pounds), Exam 1",same concept,1,WGT,Vitals,indicator-indicator,1
+aric,fhs,,,Weight (kg),"Weight (pounds), Exam 1",same concept,1,WGT,Vitals,indicator-indicator,1
+aric,mesa,,,Atrial fibrillation,ATRIAL FIBRILLATION / FLUTTER BY NOVACODE,same concept,1,AFIB,Co-morbidities,indicator-indicator,1
+aric,mesa,,,Atrial fibrillation,Atrial Fibrillation Diagnosis (via ICD10 Code),same concept,1,AFIB,Co-morbidities,indicator-indicator,1
+aric,mesa,,,Atrial fibrillation,ECG ATRIAL FIBRILLATION / FLUTTER,same concept,1,AFIB,Co-morbidities,indicator-indicator,1
+aric,mesa,,,Incident AF,ATRIAL FIBRILLATION / FLUTTER BY NOVACODE,same concept,1,AFIB,Co-morbidities,indicator-indicator,1
+aric,mesa,,,Incident AF,Atrial Fibrillation Diagnosis (via ICD10 Code),same concept,1,AFIB,Co-morbidities,indicator-indicator,1
+aric,mesa,,,Incident AF,ECG ATRIAL FIBRILLATION / FLUTTER,same concept,1,AFIB,Co-morbidities,indicator-indicator,1
+aric,mesa,,,AGE AT VISIT 1,AGE,same concept,1,AGE,Socio-demographics,indicator-indicator,1
+aric,mesa,,,Age at Visit 2,AGE AT EXAM 2,same concept,1,AGE,Socio-demographics,indicator-indicator,2
+aric,mesa,,,Age at Visit 3,AGE AT EXAM3,same concept,1,AGE,Socio-demographics,indicator-indicator,3
+aric,mesa,,,Age at Visit 4,Age at exam 4,same concept,1,AGE,Socio-demographics,indicator-indicator,4
+aric,mesa,,,Corrected Visit 5 age,AGE AT EXAM 5,same concept,1,AGE,Socio-demographics,indicator-indicator,5
+aric,mesa,,,DRINK ALCOHOLIC BEVERAGE Q90,# DRINKS PER WEEK (CURRENT AND FORMER DRINKERS),same concept,1,ALCOHOL,Diet,indicator-indicator,1
+aric,mesa,,,NO OF GLASSES WINE CONSUMED P WK Q96,# DRINKS PER WEEK (CURRENT AND FORMER DRINKERS),partial (item-aggregate),1,ALCOHOL,Diet,item-aggregate,1
+aric,mesa,,,NO OF CANS OF BEER CONSUMED P WK Q97,# DRINKS PER WEEK (CURRENT AND FORMER DRINKERS),partial (item-aggregate),1,ALCOHOL,Diet,item-aggregate,1
+aric,mesa,,,NO OF HARD LIQUOR DRINKS PER WK Q98,# DRINKS PER WEEK (CURRENT AND FORMER DRINKERS),partial (item-aggregate),1,ALCOHOL,Diet,item-aggregate,1
+aric,mesa,,,EVER CONSUMED ALCOHOLIC BEVERAGES Q14,# DRINKS PER WEEK (CURRENT AND FORMER DRINKERS),same concept,1,ALCOHOL,Diet,indicator-indicator,1
+aric,mesa,,,DRINK ALCOHOL NOW Q15,# DRINKS PER WEEK (CURRENT AND FORMER DRINKERS),same concept,1,ALCOHOL,Diet,indicator-indicator,1
+aric,mesa,,,USUAL # OF GLASSES WINE/WK Q17A,# DRINKS PER WEEK (CURRENT AND FORMER DRINKERS),partial (item-aggregate),1,ALCOHOL,Diet,item-aggregate,1
+aric,mesa,,,USUAL # OF BEERS PER WEEK Q18A,# DRINKS PER WEEK (CURRENT AND FORMER DRINKERS),partial (item-aggregate),1,ALCOHOL,Diet,item-aggregate,1
+aric,mesa,,,USUAL # OF HARD LIQUOR DRINKS/WK Q19A,# DRINKS PER WEEK (CURRENT AND FORMER DRINKERS),partial (item-aggregate),1,ALCOHOL,Diet,item-aggregate,1
+aric,mesa,,,Cholesterol lowering medication w/in 2wks: Using 2004 Med Code -V1,HMG CoA reducatace inhibitors (statins),partial (item-aggregate),1,ANYCHOLMED,Medications,item-aggregate,1
+aric,mesa,,,Cholesterol lowering medication w/in 2wks: Using 2004 Med Code -V1,Bile-acid sequestrants,partial (item-aggregate),1,ANYCHOLMED,Medications,item-aggregate,1
+aric,mesa,,,Cholesterol lowering medication w/in 2wks: Using 2004 Med Code -V1,Fibrates,partial (item-aggregate),1,ANYCHOLMED,Medications,item-aggregate,1
+aric,mesa,,,Cholesterol lowering medication w/in 2wks: Using 2004 Med Code -V1,Miscellaneous lipid-lowering drugs,partial (item-aggregate),1,ANYCHOLMED,Medications,item-aggregate,1
+aric,mesa,,,Cholesterol lowering medication w/in 2wks: Using 2004 Med Code -V1,Niacin and nictotinic acid,partial (item-aggregate),1,ANYCHOLMED,Medications,item-aggregate,1
+aric,mesa,,,Cholesterol lowering medication w/in 2wks: Using 2004 Med Code -V1,Probucol,partial (item-aggregate),1,ANYCHOLMED,Medications,item-aggregate,1
+aric,mesa,,,Cholesterol lowering medication w/in 2wks: Using 2004 Med Code -V1,Any lipid-lowering medication,same concept,1,ANYCHOLMED,Medications,indicator-indicator,1
+aric,mesa,,,Cholesterol lowering medication w/in 2wks: Using 2004 Med Code -V1,HMG COA REDUCATACE INHIBITORS (STATINS),partial (item-aggregate),1,ANYCHOLMED,Medications,item-aggregate,1
+aric,mesa,,,Cholesterol lowering medication w/in 2wks: Using 2004 Med Code -V1,BILE-ACID SEQUESTRANTS,partial (item-aggregate),1,ANYCHOLMED,Medications,item-aggregate,1
+aric,mesa,,,Cholesterol lowering medication w/in 2wks: Using 2004 Med Code -V1,FIBRATES,partial (item-aggregate),1,ANYCHOLMED,Medications,item-aggregate,1
+aric,mesa,,,Cholesterol lowering medication w/in 2wks: Using 2004 Med Code -V1,MISCELLANEOUS LIPID-LOWERING DRUGS,partial (item-aggregate),1,ANYCHOLMED,Medications,item-aggregate,1
+aric,mesa,,,Cholesterol lowering medication w/in 2wks: Using 2004 Med Code -V1,NIACIN AND NICTOTINIC ACID,partial (item-aggregate),1,ANYCHOLMED,Medications,item-aggregate,1
+aric,mesa,,,Cholesterol lowering medication w/in 2wks: Using 2004 Med Code -V1,PROBUCOL,partial (item-aggregate),1,ANYCHOLMED,Medications,item-aggregate,1
+aric,mesa,,,Cholesterol lowering medication w/in 2wks: Using 2004 Med Code -V1,ANY LIPID-LOWERING MEDICATION,same concept,1,ANYCHOLMED,Medications,indicator-indicator,1
+aric,mesa,,,Medication taken for high blood cholesterol,HMG CoA reducatace inhibitors (statins),partial (item-aggregate),1,ANYCHOLMED,Medications,item-aggregate,1
+aric,mesa,,,Medication taken for high blood cholesterol,Bile-acid sequestrants,partial (item-aggregate),1,ANYCHOLMED,Medications,item-aggregate,1
+aric,mesa,,,Medication taken for high blood cholesterol,Fibrates,partial (item-aggregate),1,ANYCHOLMED,Medications,item-aggregate,1
+aric,mesa,,,Medication taken for high blood cholesterol,Miscellaneous lipid-lowering drugs,partial (item-aggregate),1,ANYCHOLMED,Medications,item-aggregate,1
+aric,mesa,,,Medication taken for high blood cholesterol,Niacin and nictotinic acid,partial (item-aggregate),1,ANYCHOLMED,Medications,item-aggregate,1
+aric,mesa,,,Medication taken for high blood cholesterol,Probucol,partial (item-aggregate),1,ANYCHOLMED,Medications,item-aggregate,1
+aric,mesa,,,Medication taken for high blood cholesterol,Any lipid-lowering medication,same concept,1,ANYCHOLMED,Medications,indicator-indicator,1
+aric,mesa,,,Medication taken for high blood cholesterol,HMG COA REDUCATACE INHIBITORS (STATINS),partial (item-aggregate),1,ANYCHOLMED,Medications,item-aggregate,1
+aric,mesa,,,Medication taken for high blood cholesterol,BILE-ACID SEQUESTRANTS,partial (item-aggregate),1,ANYCHOLMED,Medications,item-aggregate,1
+aric,mesa,,,Medication taken for high blood cholesterol,FIBRATES,partial (item-aggregate),1,ANYCHOLMED,Medications,item-aggregate,1
+aric,mesa,,,Medication taken for high blood cholesterol,MISCELLANEOUS LIPID-LOWERING DRUGS,partial (item-aggregate),1,ANYCHOLMED,Medications,item-aggregate,1
+aric,mesa,,,Medication taken for high blood cholesterol,NIACIN AND NICTOTINIC ACID,partial (item-aggregate),1,ANYCHOLMED,Medications,item-aggregate,1
+aric,mesa,,,Medication taken for high blood cholesterol,PROBUCOL,partial (item-aggregate),1,ANYCHOLMED,Medications,item-aggregate,1
+aric,mesa,,,Medication taken for high blood cholesterol,ANY LIPID-LOWERING MEDICATION,same concept,1,ANYCHOLMED,Medications,indicator-indicator,1
+aric,mesa,,,"Used Aspirin-containing analgesics (at Visit 1) in last 2 weeks (0=No, 1=Yes), based on 2004 Med Code",Aspirin from 280804 (anti-inflam agents),same concept,1,ASPIRIN,Medications,indicator-indicator,1
+aric,mesa,,,"Used Aspirin-containing analgesics (at Visit 1) in last 2 weeks (0=No, 1=Yes), based on 2004 Med Code",ASPIRIN FROM 280804 (ANTI-INFLAM AGENTS),same concept,1,ASPIRIN,Medications,indicator-indicator,1
+aric,mesa,,,Aspirin taken in last 4 weeks,Aspirin from 280804 (anti-inflam agents),same concept,1,ASPIRIN,Medications,indicator-indicator,1
+aric,mesa,,,Aspirin taken in last 4 weeks,ASPIRIN FROM 280804 (ANTI-INFLAM AGENTS),same concept,1,ASPIRIN,Medications,indicator-indicator,1
+aric,mesa,,,PREVALENT CORONARY HEART DISEASE,Type of pre-baseline event,partial (item-aggregate),1,BASE_CVD,Other,item-aggregate,1
+aric,mesa,,,SYMPTOMATIC CORONARY HEART DISEASE,Type of pre-baseline event,partial (item-aggregate),1,BASE_CVD,Other,item-aggregate,1
+aric,mesa,,,"ROSE INTERMITTENT CLAUDICATION, DEF. 3",Type of pre-baseline event,partial (item-aggregate),1,BASE_CVD,Other,item-aggregate,1
+aric,mesa,,,Prevalent HF at Visit 1,Type of pre-baseline event,partial (item-aggregate),1,BASE_CVD,Other,item-aggregate,1
+aric,mesa,,,BODY MASS INDEX IN KG/(M*M),BODY MASS INDEX (kg)/(m^2),same concept,1,BMI,Vitals,indicator-indicator,1
+aric,mesa,,,BODY MASS INDEX IN KG/(M*M),BODY MASS INDEX (kg/m^2),same concept,1,BMI,Vitals,indicator-indicator,1
+aric,mesa,,,Body Mass Index in kg/m**2,BODY MASS INDEX (kg)/(m^2),same concept,1,BMI,Vitals,indicator-indicator,1
+aric,mesa,,,Body Mass Index in kg/m**2,BODY MASS INDEX (kg/m^2),same concept,1,BMI,Vitals,indicator-indicator,1
+aric,mesa,,,CREATININE (MG-DL) Q9,CREATININE (mg/dl),same concept,1,CREAT,Labs,indicator-indicator,1
+aric,mesa,,,CREATININE (MG-DL) Q9,Creatinine (mg/dl),same concept,1,CREAT,Labs,indicator-indicator,1
+aric,mesa,,,CREATININE (MG-DL) Q9,CREATININE,same concept,1,CREAT,Labs,indicator-indicator,1
+aric,mesa,,,CREATININE (mg per dL) DEC PT REQ Q8,CREATININE (mg/dl),same concept,1,CREAT,Labs,indicator-indicator,1
+aric,mesa,,,CREATININE (mg per dL) DEC PT REQ Q8,Creatinine (mg/dl),same concept,1,CREAT,Labs,indicator-indicator,1
+aric,mesa,,,CREATININE (mg per dL) DEC PT REQ Q8,CREATININE,same concept,1,CREAT,Labs,indicator-indicator,1
+aric,mesa,,,"Creatinine, Serum (mg/dL)",CREATININE (mg/dl),same concept,1,CREAT,Labs,indicator-indicator,1
+aric,mesa,,,"Creatinine, Serum (mg/dL)",Creatinine (mg/dl),same concept,1,CREAT,Labs,indicator-indicator,1
+aric,mesa,,,"Creatinine, Serum (mg/dL)",CREATININE,same concept,1,CREAT,Labs,indicator-indicator,1
+aric,mesa,,,CURRENT CIGARETTE SMOKER,CIGARETTE SMOKING STATUS,same concept,1,CURRSMK,Co-morbidities,indicator-indicator,1
+aric,mesa,,,Current Smoker Flag,CIGARETTE SMOKING STATUS,same concept,1,CURRSMK,Co-morbidities,indicator-indicator,1
+aric,mesa,,,Current Smoker,CIGARETTE SMOKING STATUS,same concept,1,CURRSMK,Co-morbidities,indicator-indicator,1
+aric,mesa,,,Current Cigarette Smoker,CIGARETTE SMOKING STATUS,same concept,1,CURRSMK,Co-morbidities,indicator-indicator,1
+aric,mesa,,,V5 Current Cigarette Smoker,"CIGARETTE SMOKING STATUS, EXAM 5",same concept,1,CURRSMK,Co-morbidities,indicator-indicator,5
+aric,mesa,,,Dead by 2018 from DTH/NDI/AFU,Death,same concept,1,DEATH_IND,Other,indicator-indicator,1
+aric,mesa,,,DIABETES w/ fasting glucose cutpt.<126,Exam 1 Diabetes mellitus by 2003 ADA fasting criteria algorithm,same concept,1,DIAB,Co-morbidities,indicator-indicator,1
+aric,mesa,,,DIABETES w/ fasting glucose cutpt.<126,DIABETES 2003 ADA FASTING CRITERIA,same concept,1,DIAB,Co-morbidities,indicator-indicator,1
+aric,mesa,,,Diabts22 using chmb07=126,Exam 1 Diabetes mellitus by 2003 ADA fasting criteria algorithm,same concept,1,DIAB,Co-morbidities,indicator-indicator,1
+aric,mesa,,,Diabts22 using chmb07=126,DIABETES 2003 ADA FASTING CRITERIA,same concept,1,DIAB,Co-morbidities,indicator-indicator,1
+aric,mesa,,,Diabetes Using Lower Cutpoint 126 mg/dL,Exam 1 Diabetes mellitus by 2003 ADA fasting criteria algorithm,same concept,1,DIAB,Co-morbidities,indicator-indicator,1
+aric,mesa,,,Diabetes Using Lower Cutpoint 126 mg/dL,DIABETES 2003 ADA FASTING CRITERIA,same concept,1,DIAB,Co-morbidities,indicator-indicator,1
+aric,mesa,,,2ND AND 3RD DIASTOLIC BP AVERAGE Q22,SEATED DIASTOLIC BLOOD PRESSURE (mmHg),same concept,1,DIABP,Vitals,indicator-indicator,1
+aric,mesa,,,2ND AND 3RD DIASTOLIC BP AVERAGE Q22,Seated Diastolic Blood Pressure (mmHg),same concept,1,DIABP,Vitals,indicator-indicator,1
+aric,mesa,,,2ND AND 3RD DIASTOLIC BP AVERAGE Q22,Seated diastolic blood pressure (mmhg),same concept,1,DIABP,Vitals,indicator-indicator,1
+aric,mesa,,,2ND AND 3RD DIASTOLIC BP AVERAGE Q23,SEATED DIASTOLIC BLOOD PRESSURE (mmHg),same concept,1,DIABP,Vitals,indicator-indicator,1
+aric,mesa,,,2ND AND 3RD DIASTOLIC BP AVERAGE Q23,Seated Diastolic Blood Pressure (mmHg),same concept,1,DIABP,Vitals,indicator-indicator,1
+aric,mesa,,,2ND AND 3RD DIASTOLIC BP AVERAGE Q23,Seated diastolic blood pressure (mmhg),same concept,1,DIABP,Vitals,indicator-indicator,1
+aric,mesa,,,1ST AND 2ND DIASTOLIC BP AVERAGE Q20,SEATED DIASTOLIC BLOOD PRESSURE (mmHg),same concept,1,DIABP,Vitals,indicator-indicator,1
+aric,mesa,,,1ST AND 2ND DIASTOLIC BP AVERAGE Q20,Seated Diastolic Blood Pressure (mmHg),same concept,1,DIABP,Vitals,indicator-indicator,1
+aric,mesa,,,1ST AND 2ND DIASTOLIC BP AVERAGE Q20,Seated diastolic blood pressure (mmhg),same concept,1,DIABP,Vitals,indicator-indicator,1
+aric,mesa,,,AVG: Diastolic (mmHg),SEATED DIASTOLIC BLOOD PRESSURE (mmHg),same concept,1,DIABP,Vitals,indicator-indicator,1
+aric,mesa,,,AVG: Diastolic (mmHg),Seated Diastolic Blood Pressure (mmHg),same concept,1,DIABP,Vitals,indicator-indicator,1
+aric,mesa,,,AVG: Diastolic (mmHg),Seated diastolic blood pressure (mmhg),same concept,1,DIABP,Vitals,indicator-indicator,1
+aric,mesa,,,HIGHEST EDUCATION COMPLETED Q54,EDUCATION: HIGHEST LEVEL COMPLETED,same concept,1,EDUCLEV,Socio-demographics,indicator-indicator,1
+aric,mesa,,,COMBINED FAMILY INCOME GROUP Q62,"TOTAL GROSS FAMILY INCOME, PAST 12 MONTHS",same concept,1,FAM_INCOME,Socio-demographics,indicator-indicator,1
+aric,mesa,,,HOUSEHOLD INCOME LAST YEAR Q6,"TOTAL GROSS FAMILY INCOME, PAST 12 MONTHS",same concept,1,FAM_INCOME,Socio-demographics,indicator-indicator,1
+aric,mesa,,,New Maternal History of Stroke,FAMILY HISTORY OF STROKE: PARENT,partial (item-aggregate),1,FH_STROKE,Co-morbidities,item-aggregate,1
+aric,mesa,,,New Paternal History of Stroke,FAMILY HISTORY OF STROKE: PARENT,partial (item-aggregate),1,FH_STROKE,Co-morbidities,item-aggregate,1
+aric,mesa,,,Rate general health,IN GENERAL YOUR HEALTH IS,same concept,1,GENHLTH2,Co-morbidities,indicator-indicator,1
+aric,mesa,,,RE-CALIBRATED HDL CHOL. in mg/dl,HDL CHOLESTROL (mg/dl),same concept,1,HDL,Labs,indicator-indicator,1
+aric,mesa,,,RE-CALIBRATED HDL CHOL. in mg/dl,HDL CHOLESTEROL (mg/dl),same concept,1,HDL,Labs,indicator-indicator,1
+aric,mesa,,,RE-CALIBRATED HDL CHOL. in mg/dl,HDL Cholesterol (mg/dl),same concept,1,HDL,Labs,indicator-indicator,1
+aric,mesa,,,HDL CHOLESTREROL (VALUE) Q3A,HDL CHOLESTROL (mg/dl),same concept,1,HDL,Labs,indicator-indicator,1
+aric,mesa,,,HDL CHOLESTREROL (VALUE) Q3A,HDL CHOLESTEROL (mg/dl),same concept,1,HDL,Labs,indicator-indicator,1
+aric,mesa,,,HDL CHOLESTREROL (VALUE) Q3A,HDL Cholesterol (mg/dl),same concept,1,HDL,Labs,indicator-indicator,1
+aric,mesa,,,HDL CHOLESTEROL (VALUE IN MG/DL) Q3A,HDL CHOLESTROL (mg/dl),same concept,1,HDL,Labs,indicator-indicator,1
+aric,mesa,,,HDL CHOLESTEROL (VALUE IN MG/DL) Q3A,HDL CHOLESTEROL (mg/dl),same concept,1,HDL,Labs,indicator-indicator,1
+aric,mesa,,,HDL CHOLESTEROL (VALUE IN MG/DL) Q3A,HDL Cholesterol (mg/dl),same concept,1,HDL,Labs,indicator-indicator,1
+aric,mesa,,,HDL CHOLESTEROL (VALUE) Q3A,HDL CHOLESTROL (mg/dl),same concept,1,HDL,Labs,indicator-indicator,1
+aric,mesa,,,HDL CHOLESTEROL (VALUE) Q3A,HDL CHOLESTEROL (mg/dl),same concept,1,HDL,Labs,indicator-indicator,1
+aric,mesa,,,HDL CHOLESTEROL (VALUE) Q3A,HDL Cholesterol (mg/dl),same concept,1,HDL,Labs,indicator-indicator,1
+aric,mesa,,,HDLC-Cholesterol (mg/dL),HDL CHOLESTROL (mg/dl),same concept,1,HDL,Labs,indicator-indicator,1
+aric,mesa,,,HDLC-Cholesterol (mg/dL),HDL CHOLESTEROL (mg/dl),same concept,1,HDL,Labs,indicator-indicator,1
+aric,mesa,,,HDLC-Cholesterol (mg/dL),HDL Cholesterol (mg/dl),same concept,1,HDL,Labs,indicator-indicator,1
+aric,mesa,,,STANDING HEIGHT TO NEAREST CM Q1,HEIGHT (cm),same concept,1,HGT_CM,Vitals,indicator-indicator,1
+aric,mesa,,,Standing height (cm),HEIGHT (cm),same concept,1,HGT_CM,Vitals,indicator-indicator,1
+aric,mesa,,,"HYPERTENSION LOWERING MED. USE, DEF. 1",Hypertension Medication,same concept,1,HRX,Co-morbidities,indicator-indicator,1
+aric,mesa,,,"HYPERTENSION LOWERING MED. USE, DEF. 1",Any hypertension medication,same concept,1,HRX,Co-morbidities,indicator-indicator,1
+aric,mesa,,,"HYPERTENSION LOWERING MED. USE, DEF. 1",ANY HYPERTENSION MEDICATION,same concept,1,HRX,Co-morbidities,indicator-indicator,1
+aric,mesa,,,Hypertension Meds (Self reported),Hypertension Medication,same concept,1,HRX,Co-morbidities,indicator-indicator,1
+aric,mesa,,,Hypertension Meds (Self reported),Any hypertension medication,same concept,1,HRX,Co-morbidities,indicator-indicator,1
+aric,mesa,,,Hypertension Meds (Self reported),ANY HYPERTENSION MEDICATION,same concept,1,HRX,Co-morbidities,indicator-indicator,1
+aric,mesa,,,Medication taken for high blodd pressure or hypertension,Hypertension Medication,same concept,1,HRX,Co-morbidities,indicator-indicator,1
+aric,mesa,,,Medication taken for high blodd pressure or hypertension,Any hypertension medication,same concept,1,HRX,Co-morbidities,indicator-indicator,1
+aric,mesa,,,Medication taken for high blodd pressure or hypertension,ANY HYPERTENSION MEDICATION,same concept,1,HRX,Co-morbidities,indicator-indicator,1
+aric,mesa,,,ROSE ANGINA,Type of pre-baseline event,partial (item-aggregate),1,HXCVD,Co-morbidities,item-aggregate,1
+aric,mesa,,,Incident HF (from discharge codes),Type of pre-baseline event,partial (item-aggregate),1,HXCVD,Co-morbidities,item-aggregate,1
+aric,mesa,,,REPORT ROSE ANGINA IN AFU? Q1,Type of pre-baseline event,partial (item-aggregate),1,HXCVD,Co-morbidities,item-aggregate,1
+aric,mesa,,,"PAD V1, Def 2 (same for both genders)",Type of pre-baseline event,partial (item-aggregate),1,HXHRTD,Co-morbidities,item-aggregate,1
+aric,mesa,,,Cardiac Procedures,Type of pre-baseline event,partial (item-aggregate),1,HXHRTD,Co-morbidities,item-aggregate,1
+aric,mesa,,,MD DIAGNOSED MYOCARDIAL INFARCTION,Myocardial Infarction (MI),same concept,1,HXMI,Co-morbidities,indicator-indicator,1
+aric,mesa,,,HISTORY OF MYOCARDIAL INFARCTION,Myocardial Infarction (MI),same concept,1,HXMI,Co-morbidities,indicator-indicator,1
+aric,mesa,,,RE-CALIBRATED LDL CHOL. in mg/dl,LDL CHOLESTEROL (mg/dl),same concept,1,LDL,Labs,indicator-indicator,1
+aric,mesa,,,RE-CALIBRATED LDL CHOL. in mg/dl,LDL Cholesterol (mg/dl),same concept,1,LDL,Labs,indicator-indicator,1
+aric,mesa,,,Re-Calibrated LDL Cholesterol in mg/dL,LDL CHOLESTEROL (mg/dl),same concept,1,LDL,Labs,indicator-indicator,1
+aric,mesa,,,Re-Calibrated LDL Cholesterol in mg/dL,LDL Cholesterol (mg/dl),same concept,1,LDL,Labs,indicator-indicator,1
+aric,mesa,,,LDLCC-Cholesterol calculated (mg/dL),LDL CHOLESTEROL (mg/dl),same concept,1,LDL,Labs,indicator-indicator,1
+aric,mesa,,,LDLCC-Cholesterol calculated (mg/dL),LDL Cholesterol (mg/dl),same concept,1,LDL,Labs,indicator-indicator,1
+aric,mesa,,,LVH present by cornell definition,LEFT VENTRICULAR HYPERTROPHY BY NOVACODE,same concept,1,LVH,Co-morbidities,indicator-indicator,1
+aric,mesa,,,LVH present by cornell definition,ECG LEFT VENTRICULAR HYPERTROPHY BY NOVACODE,same concept,1,LVH,Co-morbidities,indicator-indicator,1
+aric,mesa,,,RACE (from FTRA23),RACE,same concept,1,RACE_C,Socio-demographics,indicator-indicator,1
+aric,mesa,,,SEX (from FTRA22),gender,same concept,1,SEX_C,Socio-demographics,indicator-indicator,1
+aric,mesa,,,"Used Statin (at Visit 1) last 2weeks (0=No, 1=Yes) based on 2004 Med Code",HMG CoA reducatace inhibitors (statins),same concept,1,STATIN,Medications,indicator-indicator,1
+aric,mesa,,,"Used Statin (at Visit 1) last 2weeks (0=No, 1=Yes) based on 2004 Med Code",HMG COA REDUCATACE INHIBITORS (STATINS),same concept,1,STATIN,Medications,indicator-indicator,1
+aric,mesa,,,2ND AND 3RD SYSTOLIC BP AVERAGE Q21,SEATED SYSTOLIC BLOOD PRESSURE (mmHg),same concept,1,SYSBP,Vitals,indicator-indicator,1
+aric,mesa,,,2ND AND 3RD SYSTOLIC BP AVERAGE Q21,Seated Systolic Blood Pressure (mmHg),same concept,1,SYSBP,Vitals,indicator-indicator,1
+aric,mesa,,,2ND AND 3RD SYSTOLIC BP AVERAGE Q21,Seated systolic blood pressure (mmhg),same concept,1,SYSBP,Vitals,indicator-indicator,1
+aric,mesa,,,2ND AND 3RD SYSTOLIC BP AVERAGE Q22,SEATED SYSTOLIC BLOOD PRESSURE (mmHg),same concept,1,SYSBP,Vitals,indicator-indicator,1
+aric,mesa,,,2ND AND 3RD SYSTOLIC BP AVERAGE Q22,Seated Systolic Blood Pressure (mmHg),same concept,1,SYSBP,Vitals,indicator-indicator,1
+aric,mesa,,,2ND AND 3RD SYSTOLIC BP AVERAGE Q22,Seated systolic blood pressure (mmhg),same concept,1,SYSBP,Vitals,indicator-indicator,1
+aric,mesa,,,AVG: Systolic (mmHg),SEATED SYSTOLIC BLOOD PRESSURE (mmHg),same concept,1,SYSBP,Vitals,indicator-indicator,1
+aric,mesa,,,AVG: Systolic (mmHg),Seated Systolic Blood Pressure (mmHg),same concept,1,SYSBP,Vitals,indicator-indicator,1
+aric,mesa,,,AVG: Systolic (mmHg),Seated systolic blood pressure (mmhg),same concept,1,SYSBP,Vitals,indicator-indicator,1
+aric,mesa,,,TOTAL CHOLESTEROL (MG-DL),TOTAL CHOLESTEROL (mg/dl),same concept,1,TC,Labs,indicator-indicator,1
+aric,mesa,,,TOTAL CHOLESTEROL (MG-DL),Total Cholesterol (mg/dl),same concept,1,TC,Labs,indicator-indicator,1
+aric,mesa,,,CHOLESTEROL (VALUE) Q1A,TOTAL CHOLESTEROL (mg/dl),same concept,1,TC,Labs,indicator-indicator,1
+aric,mesa,,,CHOLESTEROL (VALUE) Q1A,Total Cholesterol (mg/dl),same concept,1,TC,Labs,indicator-indicator,1
+aric,mesa,,,CHOLESTEROL (VALUE IN MG/DL) Q1A,TOTAL CHOLESTEROL (mg/dl),same concept,1,TC,Labs,indicator-indicator,1
+aric,mesa,,,CHOLESTEROL (VALUE IN MG/DL) Q1A,Total Cholesterol (mg/dl),same concept,1,TC,Labs,indicator-indicator,1
+aric,mesa,,,Total Cholesterol (mg/dL),TOTAL CHOLESTEROL (mg/dl),same concept,1,TC,Labs,indicator-indicator,1
+aric,mesa,,,Total Cholesterol (mg/dL),Total Cholesterol (mg/dl),same concept,1,TC,Labs,indicator-indicator,1
+aric,mesa,,,TOTAL TRIGLYCERIDES (MG-DL),TRIGLYCERIDES (mg/dl),same concept,1,TRIG,Labs,indicator-indicator,1
+aric,mesa,,,TOTAL TRIGLYCERIDES (MG-DL),Triglycerides (mg/dl),same concept,1,TRIG,Labs,indicator-indicator,1
+aric,mesa,,,TRIGLYCERIDE (VALUE) Q2A,TRIGLYCERIDES (mg/dl),same concept,1,TRIG,Labs,indicator-indicator,1
+aric,mesa,,,TRIGLYCERIDE (VALUE) Q2A,Triglycerides (mg/dl),same concept,1,TRIG,Labs,indicator-indicator,1
+aric,mesa,,,TRIGLYCERIDE (VALUE IN MG/DL) Q2A,TRIGLYCERIDES (mg/dl),same concept,1,TRIG,Labs,indicator-indicator,1
+aric,mesa,,,TRIGLYCERIDE (VALUE IN MG/DL) Q2A,Triglycerides (mg/dl),same concept,1,TRIG,Labs,indicator-indicator,1
+aric,mesa,,,Total Triglycerides (mg/dL),TRIGLYCERIDES (mg/dl),same concept,1,TRIG,Labs,indicator-indicator,1
+aric,mesa,,,Total Triglycerides (mg/dL),Triglycerides (mg/dl),same concept,1,TRIG,Labs,indicator-indicator,1
+aric,mesa,,,WEIGHT TO THE NEAREST LB Q4,WEIGHT (lbs),same concept,1,WGT,Vitals,indicator-indicator,1
+aric,mesa,,,WEIGHT TO NEAREST LB Q1,WEIGHT (lbs),same concept,1,WGT,Vitals,indicator-indicator,1
+aric,mesa,,,WEIGHT TO NEAREST LB Q2,WEIGHT (lbs),same concept,1,WGT,Vitals,indicator-indicator,1
+aric,mesa,,,Weight (kg),WEIGHT (lbs),same concept,1,WGT,Vitals,indicator-indicator,1
+mesa,fhs,,,ATRIAL FIBRILLATION / FLUTTER BY NOVACODE,ATRIAL FIBRILLATION,same concept,1,AFIB,Co-morbidities,indicator-indicator,1
+mesa,fhs,,,ATRIAL FIBRILLATION / FLUTTER BY NOVACODE,D205-026-ATRIAL-FIBRILLATION,same concept,1,AFIB,Co-morbidities,indicator-indicator,1
+mesa,fhs,,,ATRIAL FIBRILLATION / FLUTTER BY NOVACODE,ATRIAL FIBRILLATION ON ECG,same concept,1,AFIB,Co-morbidities,indicator-indicator,1
+mesa,fhs,,,ATRIAL FIBRILLATION / FLUTTER BY NOVACODE,ECG-ATRIAL FIBRILLATION,same concept,1,AFIB,Co-morbidities,indicator-indicator,1
+mesa,fhs,,,ATRIAL FIBRILLATION / FLUTTER BY NOVACODE,ECG-RHYTHM,same concept,1,AFIB,Co-morbidities,indicator-indicator,1
+mesa,fhs,,,ATRIAL FIBRILLATION / FLUTTER BY NOVACODE,ECG - RHYTHM,same concept,1,AFIB,Co-morbidities,indicator-indicator,1
+mesa,fhs,,,Atrial Fibrillation Diagnosis (via ICD10 Code),ATRIAL FIBRILLATION,same concept,1,AFIB,Co-morbidities,indicator-indicator,1
+mesa,fhs,,,Atrial Fibrillation Diagnosis (via ICD10 Code),D205-026-ATRIAL-FIBRILLATION,same concept,1,AFIB,Co-morbidities,indicator-indicator,1
+mesa,fhs,,,Atrial Fibrillation Diagnosis (via ICD10 Code),ATRIAL FIBRILLATION ON ECG,same concept,1,AFIB,Co-morbidities,indicator-indicator,1
+mesa,fhs,,,Atrial Fibrillation Diagnosis (via ICD10 Code),ECG-ATRIAL FIBRILLATION,same concept,1,AFIB,Co-morbidities,indicator-indicator,1
+mesa,fhs,,,Atrial Fibrillation Diagnosis (via ICD10 Code),ECG-RHYTHM,same concept,1,AFIB,Co-morbidities,indicator-indicator,1
+mesa,fhs,,,Atrial Fibrillation Diagnosis (via ICD10 Code),ECG - RHYTHM,same concept,1,AFIB,Co-morbidities,indicator-indicator,1
+mesa,fhs,,,ECG ATRIAL FIBRILLATION / FLUTTER,ATRIAL FIBRILLATION,same concept,1,AFIB,Co-morbidities,indicator-indicator,1
+mesa,fhs,,,ECG ATRIAL FIBRILLATION / FLUTTER,D205-026-ATRIAL-FIBRILLATION,same concept,1,AFIB,Co-morbidities,indicator-indicator,1
+mesa,fhs,,,ECG ATRIAL FIBRILLATION / FLUTTER,ATRIAL FIBRILLATION ON ECG,same concept,1,AFIB,Co-morbidities,indicator-indicator,1
+mesa,fhs,,,ECG ATRIAL FIBRILLATION / FLUTTER,ECG-ATRIAL FIBRILLATION,same concept,1,AFIB,Co-morbidities,indicator-indicator,1
+mesa,fhs,,,ECG ATRIAL FIBRILLATION / FLUTTER,ECG-RHYTHM,same concept,1,AFIB,Co-morbidities,indicator-indicator,1
+mesa,fhs,,,ECG ATRIAL FIBRILLATION / FLUTTER,ECG - RHYTHM,same concept,1,AFIB,Co-morbidities,indicator-indicator,1
+mesa,fhs,,,AGE,"Age (years), Exam 1",same concept,1,AGE,Socio-demographics,indicator-indicator,1
+mesa,fhs,,,AGE AT EXAM 2,"Age (years), Exam 2",same concept,1,AGE,Socio-demographics,indicator-indicator,2
+mesa,fhs,,,AGE AT EXAM3,"Age (years), Exam 3",same concept,1,AGE,Socio-demographics,indicator-indicator,3
+mesa,fhs,,,Age at exam 4,"Age (years), Exam 4",same concept,1,AGE,Socio-demographics,indicator-indicator,4
+mesa,fhs,,,AGE AT EXAM 5,"Age (years), Exam 5",same concept,1,AGE,Socio-demographics,indicator-indicator,5
+mesa,fhs,,,# DRINKS PER WEEK (CURRENT AND FORMER DRINKERS),Total Alcohol Consumption,same concept,1,ALCOHOL,Diet,indicator-indicator,1
+mesa,fhs,,,# DRINKS PER WEEK (CURRENT AND FORMER DRINKERS),BEER:(servings/week),partial (item-aggregate),1,ALCOHOL,Diet,item-aggregate,1
+mesa,fhs,,,# DRINKS PER WEEK (CURRENT AND FORMER DRINKERS),RED WINE:(servings/week),partial (item-aggregate),1,ALCOHOL,Diet,item-aggregate,1
+mesa,fhs,,,# DRINKS PER WEEK (CURRENT AND FORMER DRINKERS),WHITE WINE:(servings/week),partial (item-aggregate),1,ALCOHOL,Diet,item-aggregate,1
+mesa,fhs,,,# DRINKS PER WEEK (CURRENT AND FORMER DRINKERS),LIQUOR:(servings/week),partial (item-aggregate),1,ALCOHOL,Diet,item-aggregate,1
+mesa,fhs,,,HMG CoA reducatace inhibitors (statins),ANTI-CHOLESTEROL AGENTS,partial (item-aggregate),1,ANYCHOLMED,Medications,item-aggregate,1
+mesa,fhs,,,HMG CoA reducatace inhibitors (statins),D202-016-ANTI-CHOLESTEROL,partial (item-aggregate),1,ANYCHOLMED,Medications,item-aggregate,1
+mesa,fhs,,,HMG CoA reducatace inhibitors (statins),ANTI CHOLESTEROL DRUGS,partial (item-aggregate),1,ANYCHOLMED,Medications,item-aggregate,1
+mesa,fhs,,,Bile-acid sequestrants,ANTI-CHOLESTEROL AGENTS,partial (item-aggregate),1,ANYCHOLMED,Medications,item-aggregate,1
+mesa,fhs,,,Bile-acid sequestrants,D202-016-ANTI-CHOLESTEROL,partial (item-aggregate),1,ANYCHOLMED,Medications,item-aggregate,1
+mesa,fhs,,,Bile-acid sequestrants,ANTI CHOLESTEROL DRUGS,partial (item-aggregate),1,ANYCHOLMED,Medications,item-aggregate,1
+mesa,fhs,,,Fibrates,ANTI-CHOLESTEROL AGENTS,partial (item-aggregate),1,ANYCHOLMED,Medications,item-aggregate,1
+mesa,fhs,,,Fibrates,D202-016-ANTI-CHOLESTEROL,partial (item-aggregate),1,ANYCHOLMED,Medications,item-aggregate,1
+mesa,fhs,,,Fibrates,ANTI CHOLESTEROL DRUGS,partial (item-aggregate),1,ANYCHOLMED,Medications,item-aggregate,1
+mesa,fhs,,,Miscellaneous lipid-lowering drugs,ANTI-CHOLESTEROL AGENTS,partial (item-aggregate),1,ANYCHOLMED,Medications,item-aggregate,1
+mesa,fhs,,,Miscellaneous lipid-lowering drugs,D202-016-ANTI-CHOLESTEROL,partial (item-aggregate),1,ANYCHOLMED,Medications,item-aggregate,1
+mesa,fhs,,,Miscellaneous lipid-lowering drugs,ANTI CHOLESTEROL DRUGS,partial (item-aggregate),1,ANYCHOLMED,Medications,item-aggregate,1
+mesa,fhs,,,Niacin and nictotinic acid,ANTI-CHOLESTEROL AGENTS,partial (item-aggregate),1,ANYCHOLMED,Medications,item-aggregate,1
+mesa,fhs,,,Niacin and nictotinic acid,D202-016-ANTI-CHOLESTEROL,partial (item-aggregate),1,ANYCHOLMED,Medications,item-aggregate,1
+mesa,fhs,,,Niacin and nictotinic acid,ANTI CHOLESTEROL DRUGS,partial (item-aggregate),1,ANYCHOLMED,Medications,item-aggregate,1
+mesa,fhs,,,Probucol,ANTI-CHOLESTEROL AGENTS,partial (item-aggregate),1,ANYCHOLMED,Medications,item-aggregate,1
+mesa,fhs,,,Probucol,D202-016-ANTI-CHOLESTEROL,partial (item-aggregate),1,ANYCHOLMED,Medications,item-aggregate,1
+mesa,fhs,,,Probucol,ANTI CHOLESTEROL DRUGS,partial (item-aggregate),1,ANYCHOLMED,Medications,item-aggregate,1
+mesa,fhs,,,Any lipid-lowering medication,ANTI-CHOLESTEROL AGENTS,same concept,1,ANYCHOLMED,Medications,indicator-indicator,1
+mesa,fhs,,,Any lipid-lowering medication,D202-016-ANTI-CHOLESTEROL,same concept,1,ANYCHOLMED,Medications,indicator-indicator,1
+mesa,fhs,,,Any lipid-lowering medication,ANTI CHOLESTEROL DRUGS,same concept,1,ANYCHOLMED,Medications,indicator-indicator,1
+mesa,fhs,,,Any lipid-lowering medication,ANTI CHOLESTEROL DRUGS-RESINS,partial (item-aggregate),1,ANYCHOLMED,Medications,item-aggregate,1
+mesa,fhs,,,Any lipid-lowering medication,ANTI CHOLESTEROL DRUGS-NIACIN,partial (item-aggregate),1,ANYCHOLMED,Medications,item-aggregate,1
+mesa,fhs,,,Any lipid-lowering medication,ANTI CHOLESTEROL DRUGS-FIBRATES,partial (item-aggregate),1,ANYCHOLMED,Medications,item-aggregate,1
+mesa,fhs,,,Any lipid-lowering medication,ANTI CHOLESTEROL DRUGS-STATINS,partial (item-aggregate),1,ANYCHOLMED,Medications,item-aggregate,1
+mesa,fhs,,,Any lipid-lowering medication,ANTI CHOLESTEROL DRUGS-OTHER,partial (item-aggregate),1,ANYCHOLMED,Medications,item-aggregate,1
+mesa,fhs,,,Any lipid-lowering medication,MEDS - ANTI-CHOL -RESINS,partial (item-aggregate),1,ANYCHOLMED,Medications,item-aggregate,1
+mesa,fhs,,,Any lipid-lowering medication,MEDS - ANTI-CHOL -NIACIN/NICOTINIC ACID,partial (item-aggregate),1,ANYCHOLMED,Medications,item-aggregate,1
+mesa,fhs,,,Any lipid-lowering medication,MEDS - ANTI-CHOL -FIBRATES,partial (item-aggregate),1,ANYCHOLMED,Medications,item-aggregate,1
+mesa,fhs,,,Any lipid-lowering medication,MEDS - ANTI-CHOL -STATINS,partial (item-aggregate),1,ANYCHOLMED,Medications,item-aggregate,1
+mesa,fhs,,,Any lipid-lowering medication,MEDS - ANTI-CHOL -OTHER,partial (item-aggregate),1,ANYCHOLMED,Medications,item-aggregate,1
+mesa,fhs,,,Any lipid-lowering medication,MEDS - ANTI-CHOL - RESINS,partial (item-aggregate),1,ANYCHOLMED,Medications,item-aggregate,1
+mesa,fhs,,,Any lipid-lowering medication,MEDS - ANTI-CHOL - NIACIN/NICOTINIC ACID,partial (item-aggregate),1,ANYCHOLMED,Medications,item-aggregate,1
+mesa,fhs,,,Any lipid-lowering medication,MEDS - ANTI-CHOL - FIBRATES,partial (item-aggregate),1,ANYCHOLMED,Medications,item-aggregate,1
+mesa,fhs,,,Any lipid-lowering medication,MEDS - ANTI-CHOL - STATINS,partial (item-aggregate),1,ANYCHOLMED,Medications,item-aggregate,1
+mesa,fhs,,,Any lipid-lowering medication,MEDS - ANTI-CHOL - OTHER,partial (item-aggregate),1,ANYCHOLMED,Medications,item-aggregate,1
+mesa,fhs,,,HMG COA REDUCATACE INHIBITORS (STATINS),ANTI-CHOLESTEROL AGENTS,partial (item-aggregate),1,ANYCHOLMED,Medications,item-aggregate,1
+mesa,fhs,,,HMG COA REDUCATACE INHIBITORS (STATINS),D202-016-ANTI-CHOLESTEROL,partial (item-aggregate),1,ANYCHOLMED,Medications,item-aggregate,1
+mesa,fhs,,,HMG COA REDUCATACE INHIBITORS (STATINS),ANTI CHOLESTEROL DRUGS,partial (item-aggregate),1,ANYCHOLMED,Medications,item-aggregate,1
+mesa,fhs,,,BILE-ACID SEQUESTRANTS,ANTI-CHOLESTEROL AGENTS,partial (item-aggregate),1,ANYCHOLMED,Medications,item-aggregate,1
+mesa,fhs,,,BILE-ACID SEQUESTRANTS,D202-016-ANTI-CHOLESTEROL,partial (item-aggregate),1,ANYCHOLMED,Medications,item-aggregate,1
+mesa,fhs,,,BILE-ACID SEQUESTRANTS,ANTI CHOLESTEROL DRUGS,partial (item-aggregate),1,ANYCHOLMED,Medications,item-aggregate,1
+mesa,fhs,,,FIBRATES,ANTI-CHOLESTEROL AGENTS,partial (item-aggregate),1,ANYCHOLMED,Medications,item-aggregate,1
+mesa,fhs,,,FIBRATES,D202-016-ANTI-CHOLESTEROL,partial (item-aggregate),1,ANYCHOLMED,Medications,item-aggregate,1
+mesa,fhs,,,FIBRATES,ANTI CHOLESTEROL DRUGS,partial (item-aggregate),1,ANYCHOLMED,Medications,item-aggregate,1
+mesa,fhs,,,MISCELLANEOUS LIPID-LOWERING DRUGS,ANTI-CHOLESTEROL AGENTS,partial (item-aggregate),1,ANYCHOLMED,Medications,item-aggregate,1
+mesa,fhs,,,MISCELLANEOUS LIPID-LOWERING DRUGS,D202-016-ANTI-CHOLESTEROL,partial (item-aggregate),1,ANYCHOLMED,Medications,item-aggregate,1
+mesa,fhs,,,MISCELLANEOUS LIPID-LOWERING DRUGS,ANTI CHOLESTEROL DRUGS,partial (item-aggregate),1,ANYCHOLMED,Medications,item-aggregate,1
+mesa,fhs,,,NIACIN AND NICTOTINIC ACID,ANTI-CHOLESTEROL AGENTS,partial (item-aggregate),1,ANYCHOLMED,Medications,item-aggregate,1
+mesa,fhs,,,NIACIN AND NICTOTINIC ACID,D202-016-ANTI-CHOLESTEROL,partial (item-aggregate),1,ANYCHOLMED,Medications,item-aggregate,1
+mesa,fhs,,,NIACIN AND NICTOTINIC ACID,ANTI CHOLESTEROL DRUGS,partial (item-aggregate),1,ANYCHOLMED,Medications,item-aggregate,1
+mesa,fhs,,,PROBUCOL,ANTI-CHOLESTEROL AGENTS,partial (item-aggregate),1,ANYCHOLMED,Medications,item-aggregate,1
+mesa,fhs,,,PROBUCOL,D202-016-ANTI-CHOLESTEROL,partial (item-aggregate),1,ANYCHOLMED,Medications,item-aggregate,1
+mesa,fhs,,,PROBUCOL,ANTI CHOLESTEROL DRUGS,partial (item-aggregate),1,ANYCHOLMED,Medications,item-aggregate,1
+mesa,fhs,,,ANY LIPID-LOWERING MEDICATION,ANTI-CHOLESTEROL AGENTS,same concept,1,ANYCHOLMED,Medications,indicator-indicator,1
+mesa,fhs,,,ANY LIPID-LOWERING MEDICATION,D202-016-ANTI-CHOLESTEROL,same concept,1,ANYCHOLMED,Medications,indicator-indicator,1
+mesa,fhs,,,ANY LIPID-LOWERING MEDICATION,ANTI CHOLESTEROL DRUGS,same concept,1,ANYCHOLMED,Medications,indicator-indicator,1
+mesa,fhs,,,ANY LIPID-LOWERING MEDICATION,ANTI CHOLESTEROL DRUGS-RESINS,partial (item-aggregate),1,ANYCHOLMED,Medications,item-aggregate,1
+mesa,fhs,,,ANY LIPID-LOWERING MEDICATION,ANTI CHOLESTEROL DRUGS-NIACIN,partial (item-aggregate),1,ANYCHOLMED,Medications,item-aggregate,1
+mesa,fhs,,,ANY LIPID-LOWERING MEDICATION,ANTI CHOLESTEROL DRUGS-FIBRATES,partial (item-aggregate),1,ANYCHOLMED,Medications,item-aggregate,1
+mesa,fhs,,,ANY LIPID-LOWERING MEDICATION,ANTI CHOLESTEROL DRUGS-STATINS,partial (item-aggregate),1,ANYCHOLMED,Medications,item-aggregate,1
+mesa,fhs,,,ANY LIPID-LOWERING MEDICATION,ANTI CHOLESTEROL DRUGS-OTHER,partial (item-aggregate),1,ANYCHOLMED,Medications,item-aggregate,1
+mesa,fhs,,,ANY LIPID-LOWERING MEDICATION,MEDS - ANTI-CHOL -RESINS,partial (item-aggregate),1,ANYCHOLMED,Medications,item-aggregate,1
+mesa,fhs,,,ANY LIPID-LOWERING MEDICATION,MEDS - ANTI-CHOL -NIACIN/NICOTINIC ACID,partial (item-aggregate),1,ANYCHOLMED,Medications,item-aggregate,1
+mesa,fhs,,,ANY LIPID-LOWERING MEDICATION,MEDS - ANTI-CHOL -FIBRATES,partial (item-aggregate),1,ANYCHOLMED,Medications,item-aggregate,1
+mesa,fhs,,,ANY LIPID-LOWERING MEDICATION,MEDS - ANTI-CHOL -STATINS,partial (item-aggregate),1,ANYCHOLMED,Medications,item-aggregate,1
+mesa,fhs,,,ANY LIPID-LOWERING MEDICATION,MEDS - ANTI-CHOL -OTHER,partial (item-aggregate),1,ANYCHOLMED,Medications,item-aggregate,1
+mesa,fhs,,,ANY LIPID-LOWERING MEDICATION,MEDS - ANTI-CHOL - RESINS,partial (item-aggregate),1,ANYCHOLMED,Medications,item-aggregate,1
+mesa,fhs,,,ANY LIPID-LOWERING MEDICATION,MEDS - ANTI-CHOL - NIACIN/NICOTINIC ACID,partial (item-aggregate),1,ANYCHOLMED,Medications,item-aggregate,1
+mesa,fhs,,,ANY LIPID-LOWERING MEDICATION,MEDS - ANTI-CHOL - FIBRATES,partial (item-aggregate),1,ANYCHOLMED,Medications,item-aggregate,1
+mesa,fhs,,,ANY LIPID-LOWERING MEDICATION,MEDS - ANTI-CHOL - STATINS,partial (item-aggregate),1,ANYCHOLMED,Medications,item-aggregate,1
+mesa,fhs,,,ANY LIPID-LOWERING MEDICATION,MEDS - ANTI-CHOL - OTHER,partial (item-aggregate),1,ANYCHOLMED,Medications,item-aggregate,1
+mesa,fhs,,,Aspirin from 280804 (anti-inflam agents),NUMBER OF ASPIRINS TAKEN REGULARLY,same concept,1,ASPIRIN,Medications,indicator-indicator,1
+mesa,fhs,,,Aspirin from 280804 (anti-inflam agents),ASPIRIN FREQUENCY,same concept,1,ASPIRIN,Medications,indicator-indicator,1
+mesa,fhs,,,Aspirin from 280804 (anti-inflam agents),Number aspirins taken regularly,same concept,1,ASPIRIN,Medications,indicator-indicator,1
+mesa,fhs,,,Aspirin from 280804 (anti-inflam agents),Aspirin Frequency per,same concept,1,ASPIRIN,Medications,indicator-indicator,1
+mesa,fhs,,,Aspirin from 280804 (anti-inflam agents),"MEDS - ASPIR, # OF",same concept,1,ASPIRIN,Medications,indicator-indicator,1
+mesa,fhs,,,Aspirin from 280804 (anti-inflam agents),"MEDS - ASPIR, PER DY/WK/MO/YR",same concept,1,ASPIRIN,Medications,indicator-indicator,1
+mesa,fhs,,,ASPIRIN FROM 280804 (ANTI-INFLAM AGENTS),NUMBER OF ASPIRINS TAKEN REGULARLY,same concept,1,ASPIRIN,Medications,indicator-indicator,1
+mesa,fhs,,,ASPIRIN FROM 280804 (ANTI-INFLAM AGENTS),ASPIRIN FREQUENCY,same concept,1,ASPIRIN,Medications,indicator-indicator,1
+mesa,fhs,,,ASPIRIN FROM 280804 (ANTI-INFLAM AGENTS),Number aspirins taken regularly,same concept,1,ASPIRIN,Medications,indicator-indicator,1
+mesa,fhs,,,ASPIRIN FROM 280804 (ANTI-INFLAM AGENTS),Aspirin Frequency per,same concept,1,ASPIRIN,Medications,indicator-indicator,1
+mesa,fhs,,,ASPIRIN FROM 280804 (ANTI-INFLAM AGENTS),"MEDS - ASPIR, # OF",same concept,1,ASPIRIN,Medications,indicator-indicator,1
+mesa,fhs,,,ASPIRIN FROM 280804 (ANTI-INFLAM AGENTS),"MEDS - ASPIR, PER DY/WK/MO/YR",same concept,1,ASPIRIN,Medications,indicator-indicator,1
+mesa,fhs,,,Type of pre-baseline event,Cardiovascular Disease (CVD) status,same concept,1,BASE_CVD,Other,indicator-indicator,1
+mesa,fhs,,,BODY MASS INDEX (kg)/(m^2),"Body mass index (kg/m²), Exam 1",same concept,1,BMI,Vitals,indicator-indicator,1
+mesa,fhs,,,BODY MASS INDEX (kg/m^2),"Body mass index (kg/m²), Exam 1",same concept,1,BMI,Vitals,indicator-indicator,1
+mesa,fhs,,,CIGARETTE SMOKING STATUS,"Current smoking status, Exam 1",same concept,1,CURRSMK,Co-morbidities,indicator-indicator,1
+mesa,fhs,,,"Cigarrette Smoking Status, Exam 2","Current smoking status, Exam 2",same concept,1,CURRSMK,Co-morbidities,indicator-indicator,2
+mesa,fhs,,,"Cigarrette Smoking Status, Exam 3","Current smoking status, Exam 3",same concept,1,CURRSMK,Co-morbidities,indicator-indicator,3
+mesa,fhs,,,"Cigarette Smoking Status, Exam 4","Current smoking status, Exam 4",same concept,1,CURRSMK,Co-morbidities,indicator-indicator,4
+mesa,fhs,,,"CIGARETTE SMOKING STATUS, EXAM 5","Current smoking status, Exam 5",same concept,1,CURRSMK,Co-morbidities,indicator-indicator,5
+mesa,fhs,,,Exam 1 Diabetes mellitus by 2003 ADA fasting criteria algorithm,"Diabetes Mellitus Status, Exam 1",same concept,1,DIAB,Co-morbidities,indicator-indicator,1
+mesa,fhs,,,Exam 2 Diabetes mellitus by 2003 ADA fasting criteria algorithm,"Diabetes Mellitus Status, Exam 2",same concept,1,DIAB,Co-morbidities,indicator-indicator,2
+mesa,fhs,,,Exam 3 Diabetes mellitus by 2003 ADA fasting criteria algorithm,"Diabetes Mellitus Status, Exam 3",same concept,1,DIAB,Co-morbidities,indicator-indicator,3
+mesa,fhs,,,Exam 4 Diabetes mellitus by 2003 ADA fasting criteria algorithm,"Diabetes Mellitus Status, Exam 4",same concept,1,DIAB,Co-morbidities,indicator-indicator,4
+mesa,fhs,,,DIABETES 2003 ADA FASTING CRITERIA,"Diabetes Mellitus Status, Exam 1",same concept,1,DIAB,Co-morbidities,indicator-indicator,1
+mesa,fhs,,,EDUCATION: HIGHEST LEVEL COMPLETED,D201-099-YEARS-EDUCATION,same concept,1,EDUCLEV,Socio-demographics,indicator-indicator,1
+mesa,fhs,,,"TOTAL GROSS FAMILY INCOME, PAST 12 MONTHS",Current total family income/yr before tx,same concept,1,FAM_INCOME,Socio-demographics,indicator-indicator,1
+mesa,fhs,,,FAMILY HISTORY OF STROKE: PARENT,FATHER-HAVE STROKE BEFORE AGE 65,partial (item-aggregate),1,FH_STROKE,Co-morbidities,item-aggregate,1
+mesa,fhs,,,FAMILY HISTORY OF STROKE: PARENT,MOTHER-HAVE STROKE BEFORE AGE 65,partial (item-aggregate),1,FH_STROKE,Co-morbidities,item-aggregate,1
+mesa,fhs,,,IN GENERAL YOUR HEALTH IS,"IN GENERAL, HOW IS YOUR HEALTH",same concept,1,GENHLTH2,Co-morbidities,indicator-indicator,1
+mesa,fhs,,,IN GENERAL YOUR HEALTH IS,SF-12 - HOW YOUR HLTH,same concept,1,GENHLTH2,Co-morbidities,indicator-indicator,1
+mesa,fhs,,,HDL CHOLESTROL (mg/dl),"HDL cholesterol (mg/dL), Exam 1",same concept,1,HDL,Labs,indicator-indicator,1
+mesa,fhs,,,HDL CHOLESTEROL (mg/dl),"HDL cholesterol (mg/dL), Exam 1",same concept,1,HDL,Labs,indicator-indicator,1
+mesa,fhs,,,HDL Cholesterol (mg/dl),"HDL cholesterol (mg/dL), Exam 1",same concept,1,HDL,Labs,indicator-indicator,1
+mesa,fhs,,,HEIGHT (cm),"Height (inches), Exam 1",same concept,1,HGT_CM,Vitals,indicator-indicator,1
+mesa,fhs,,,Hypertension Medication,"Treated for hypertension, Exam 1",same concept,1,HRX,Co-morbidities,indicator-indicator,1
+mesa,fhs,,,Any hypertension medication,"Treated for hypertension, Exam 1",same concept,1,HRX,Co-morbidities,indicator-indicator,1
+mesa,fhs,,,ANY HYPERTENSION MEDICATION,"Treated for hypertension, Exam 1",same concept,1,HRX,Co-morbidities,indicator-indicator,1
+mesa,fhs,,,Myocardial Infarction (MI),Cardiovascular Disease (CVD) status,partial (item-aggregate),1,HXCVD,Co-morbidities,item-aggregate,1
+mesa,fhs,,,Resuscitated Cardiac Arrest,Cardiovascular Disease (CVD) status,partial (item-aggregate),1,HXCVD,Co-morbidities,item-aggregate,1
+mesa,fhs,,,Angina Pectoris,Cardiovascular Disease (CVD) status,partial (item-aggregate),1,HXCVD,Co-morbidities,item-aggregate,1
+mesa,fhs,,,Congestive Heart Failure (CHF),Cardiovascular Disease (CVD) status,partial (item-aggregate),1,HXCVD,Co-morbidities,item-aggregate,1
+mesa,fhs,,,Peripheral Vascular Disease (PVD),Cardiovascular Disease (CVD) status,partial (item-aggregate),1,HXCVD,Co-morbidities,item-aggregate,1
+mesa,fhs,,,WHO ROSE Intermittent Claudication,Cardiovascular Disease (CVD) status,partial (item-aggregate),1,HXCVD,Co-morbidities,item-aggregate,1
+mesa,fhs,,,Coronary Bypass Graft (CBG),Cardiovascular Disease (CVD) status,partial (item-aggregate),1,HXHRTD,Co-morbidities,item-aggregate,1
+mesa,fhs,,,"PTCA, Cor. Stent, or Cor. Atherectomy",Cardiovascular Disease (CVD) status,partial (item-aggregate),1,HXHRTD,Co-morbidities,item-aggregate,1
+mesa,fhs,,,Coronary Revascularization,Cardiovascular Disease (CVD) status,partial (item-aggregate),1,HXHRTD,Co-morbidities,item-aggregate,1
+mesa,fhs,,,Insulins,D202-23-INSULIN,same concept,1,INSULIN,Medications,indicator-indicator,1
+mesa,fhs,,,Insulins,INSULIN,same concept,1,INSULIN,Medications,indicator-indicator,1
+mesa,fhs,,,Insulins,MEDS - INSULIN,same concept,1,INSULIN,Medications,indicator-indicator,1
+mesa,fhs,,,INSULINS,D202-23-INSULIN,same concept,1,INSULIN,Medications,indicator-indicator,1
+mesa,fhs,,,INSULINS,INSULIN,same concept,1,INSULIN,Medications,indicator-indicator,1
+mesa,fhs,,,INSULINS,MEDS - INSULIN,same concept,1,INSULIN,Medications,indicator-indicator,1
+mesa,fhs,,,LEFT VENTRICULAR HYPERTROPHY BY NOVACODE,"Definite left ventricular hypertrophy, Exam 1",same concept,1,LVH,Co-morbidities,indicator-indicator,1
+mesa,fhs,,,ECG LEFT VENTRICULAR HYPERTROPHY BY NOVACODE,"Definite left ventricular hypertrophy, Exam 1",same concept,1,LVH,Co-morbidities,indicator-indicator,1
+mesa,fhs,,,gender,'Participant gender',same concept,1,SEX_C,Socio-demographics,indicator-indicator,1
+mesa,fhs,,,HMG CoA reducatace inhibitors (statins),ANTI CHOLESTEROL DRUGS-STATINS,same concept,1,STATIN,Medications,indicator-indicator,1
+mesa,fhs,,,HMG CoA reducatace inhibitors (statins),MEDS - ANTI-CHOL -STATINS,same concept,1,STATIN,Medications,indicator-indicator,1
+mesa,fhs,,,HMG CoA reducatace inhibitors (statins),MEDS - ANTI-CHOL - STATINS,same concept,1,STATIN,Medications,indicator-indicator,1
+mesa,fhs,,,HMG COA REDUCATACE INHIBITORS (STATINS),ANTI CHOLESTEROL DRUGS-STATINS,same concept,1,STATIN,Medications,indicator-indicator,1
+mesa,fhs,,,HMG COA REDUCATACE INHIBITORS (STATINS),MEDS - ANTI-CHOL -STATINS,same concept,1,STATIN,Medications,indicator-indicator,1
+mesa,fhs,,,HMG COA REDUCATACE INHIBITORS (STATINS),MEDS - ANTI-CHOL - STATINS,same concept,1,STATIN,Medications,indicator-indicator,1
+mesa,fhs,,,TOTAL CHOLESTEROL (mg/dl),"Total cholesterol (mg/dL), Exam 1",same concept,1,TC,Labs,indicator-indicator,1
+mesa,fhs,,,Total Cholesterol (mg/dl),"Total cholesterol (mg/dL), Exam 1",same concept,1,TC,Labs,indicator-indicator,1
+mesa,fhs,,,TRIGLYCERIDES (mg/dl),"Triglycerides (mg/dL), Exam 1",same concept,1,TRIG,Labs,indicator-indicator,1
+mesa,fhs,,,Triglycerides (mg/dl),"Triglycerides (mg/dL), Exam 1",same concept,1,TRIG,Labs,indicator-indicator,1
+mesa,fhs,,,WEIGHT (lbs),"Weight (pounds), Exam 1",same concept,1,WGT,Vitals,indicator-indicator,1

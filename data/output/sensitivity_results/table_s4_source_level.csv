@@ -1,0 +1,13 @@
+Reference set,Model,Source variables,tau90,Ret@0.45,Median gold,Median pool,R@1,R@3,R@10
+Author/ADNI-Dict pairs,sapbert,357,0.52,96.1,0.81,0.29,86.3,93.8,98.0
+"Mallya et al., all",sapbert,232,0.39,83.6,0.65,0.25,76.3,84.5,92.7
+"Mallya et al., equivalent only",sapbert,177,0.49,93.2,0.68,0.26,86.4,94.4,100.0
+Combined,sapbert,589,0.46,91.2,0.74,0.27,82.3,90.2,95.9
+Author/ADNI-Dict pairs,biolord,357,0.5,94.4,0.81,0.16,91.9,95.8,98.0
+"Mallya et al., all",biolord,232,0.28,78.4,0.61,0.1,75.0,87.5,96.1
+"Mallya et al., equivalent only",biolord,177,0.43,88.7,0.65,0.11,84.2,96.0,99.4
+Combined,biolord,589,0.42,88.1,0.74,0.13,85.2,92.5,97.3
+Author/ADNI-Dict pairs,openai,357,0.48,94.1,0.74,0.21,89.6,96.9,98.9
+"Mallya et al., all",openai,232,0.39,84.5,0.62,0.25,77.2,86.6,94.4
+"Mallya et al., equivalent only",openai,177,0.47,94.4,0.64,0.26,85.3,95.5,99.4
+Combined,openai,589,0.45,90.3,0.69,0.24,84.7,92.9,97.1

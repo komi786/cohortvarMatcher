@@ -103,7 +103,7 @@ kgq:Q05_concept a sh:NodeShape ;
     rdfs:comment "Every variable is mapped to at least one standard concept." ;
     sh:targetClass obo:CMEO_0000009 ;
     sh:severity sh:Warning ;
-    sh:property [ sh:path skos:closeMatch ;
+    sh:property [ sh:path sio:SIO_000255 ;
                   sh:qualifiedValueShape [ sh:class obo:IAO_0020020 ] ;
                   sh:qualifiedMinCount 1 ;
                   sh:message "Variable has no concept mapping (VARIABLE CONCEPT CODE)." ] .
@@ -156,7 +156,7 @@ kgq:Q11_unit_not_standardised a sh:NodeShape ;
                     FILTER(CONTAINS(LCASE(STR(?dtype)), "date") || CONTAINS(LCASE(STR(?dtype)), "time"))
                 }
                 FILTER NOT EXISTS {
-                    ?u skos:closeMatch ?ucum .
+                    ?u sio:SIO_000255 ?ucum .
                     FILTER(STRSTARTS(STR(?ucum), "http://unitsofmeasure.org/"))
                 }
             }""" ] .
@@ -188,7 +188,7 @@ kgq:Q13_category_without_concept a sh:NodeShape ;
         sh:select """
             SELECT $this ?value WHERE {
                 $this obo:OBI_0001938 ?c . ?c a obo:OBI_0001930 ; rdfs:label ?value .
-                FILTER NOT EXISTS { ?c skos:closeMatch ?concept . }
+                FILTER NOT EXISTS { ?c sio:SIO_000255 ?concept . }
             }""" ] .
 
 kgq:Q14_categorical_with_unit a sh:NodeShape ;

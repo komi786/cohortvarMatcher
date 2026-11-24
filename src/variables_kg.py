@@ -206,7 +206,7 @@ def collect_endpoint_variables(g: Graph, cohort_uri: URIRef) -> list[URIRef]:
         for o in g.objects(var_uri, DC.identifier, cohort_uri):
             texts.append(str(o))
         # concept labels via code_set → code → rdfs:label
-        for code_set in g.objects(var_uri, OntologyNamespaces.SKOS.value.closeMatch, cohort_uri):
+        for code_set in g.objects(var_uri, OntologyNamespaces.SIO.value.has_annotation, cohort_uri):
             for code in g.objects(code_set, OntologyNamespaces.RO.value.has_part, cohort_uri):
                 for lbl in g.objects(code, RDFS.label, cohort_uri):
                     texts.append(str(lbl))
@@ -920,7 +920,9 @@ def add_composite_concepts_info(g: Graph, linked_uri: URIRef, concepts: list[Con
     # g.add((code_set_uri, RDF.type, RDF.Seq, cohort_uri))
     g.add((data_standardization_uri, OntologyNamespaces.OBI.value.has_specified_output, code_set_uri,cohort_uri))
     g.add((code_set_uri, OntologyNamespaces.OBI.value.is_specified_output_of, data_standardization_uri,cohort_uri))
-    g.add((linked_uri, OntologyNamespaces.SKOS.value.closeMatch, code_set_uri, cohort_uri)) # for composite concepts we use closeMatch instead of exactMatch as they are not exactly defined by the code set in other vocabularies but our interpretation of them
+    # A data element is an information artefact, not a skos:Concept, so it is linked to its
+    # code set with SIO 'has annotation'; SKOS mapping properties are kept for concept-to-concept links.
+    g.add((linked_uri, OntologyNamespaces.SIO.value.has_annotation, code_set_uri, cohort_uri))
     # g.add((code_set_uri, OntologyNamespaces.SIO.value.is_close_match_to, linked_uri, cohort_uri))
     # # print(linked_uri)
     for i, concept in enumerate(concepts):
@@ -974,7 +976,7 @@ def add_solo_concept_info(g: Graph, linked_uri: URIRef, concept: Concept, cohort
     g.add((code_uri, OntologyNamespaces.OBI.value.is_specified_output_of, data_standardization_uri,cohort_uri))
     g.add((data_standardization_uri, OntologyNamespaces.OBI.value.has_specified_output, code_uri,cohort_uri))
     g.add((code_uri, RDFS.label, Literal(label, datatype=XSD.string),cohort_uri))
-    g.add((linked_uri, OntologyNamespaces.SKOS.value.closeMatch, code_uri, cohort_uri))
+    g.add((linked_uri, OntologyNamespaces.SIO.value.has_annotation, code_uri, cohort_uri))
     g.add((code_uri, OntologyNamespaces.CMEO.value.has_value, Literal(code, datatype=XSD.string),cohort_uri))
     omop_id_uri = URIRef(f"{OntologyNamespaces.OMOP.value}{omop_id}")
     g.add((omop_id_uri, RDF.type, OntologyNamespaces.CMEO.value.omop_id,cohort_uri))

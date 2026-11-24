@@ -50,12 +50,13 @@ class SPARQLQueryBuilder:
                         ?de a {T.data_element} ;
                             rdfs:label ?var_label ;
                             dc:identifier ?var ;
-                            skos:closeMatch ?codeSet .
-                        ?codeSet rdf:_1 ?codeNode .
+                            {T.has_annotation} ?codeSet .
+                        ?codeSet a {T.code_set} ;
+                                 rdf:_1 ?codeNode .
                         ?codeNode rdfs:label ?lbl ;
                                   {T.has_value} ?val ;
                                   {T.denotes}/{T.has_value} ?omop_id .
-                        OPTIONAL {{ ?de {T.has_attribute}/skos:closeMatch/rdfs:label ?vis_label . }}
+                        OPTIONAL {{ ?de {T.has_attribute}/{T.has_annotation}/rdfs:label ?vis_label . }}
                         OPTIONAL {{ ?de {T.has_annotation}/{T.has_value} ?domain_val . }}
                         BIND(CONCAT(?var, ";;", ?var_label, ";;", COALESCE(?vis_label, "N/A")) AS ?combined)
                         BIND(COALESCE(?domain_val, "") AS ?domain)
@@ -106,7 +107,7 @@ class SPARQLQueryBuilder:
 
     @classmethod   
     def build_unmapped_variables_query(cls, study: str, use_filter:bool=False) -> str:
-        """Variables with no skos:closeMatch — raw label/visit/unit/stat for NE mode."""
+        """Variables with no concept code set — raw label/visit/unit/stat for NE mode."""
         if use_filter:
             return f"""
             {cls.PREFIXES}
@@ -116,7 +117,7 @@ class SPARQLQueryBuilder:
                     ?de a {T.data_element} ;
                         dc:identifier ?var ;
                         rdfs:label ?var_label .
-                    FILTER NOT EXISTS {{ ?de skos:closeMatch ?any }}
+                    FILTER NOT EXISTS {{ ?de {T.has_annotation} ?any . ?any a {T.code_set} }}
                     OPTIONAL {{ ?de {T.is_denoted_by}/{T.has_value} ?stat_label. }}
                     OPTIONAL {{ ?de {T.has_attribute} ?visit.
                                 ?visit a {T.visit_type};
@@ -204,7 +205,7 @@ class SPARQLQueryBuilder:
             ?dataElement {T.has_measurement_unit_label} ?unit_node .
 
             OPTIONAL {{
-                ?unit_node skos:closeMatch/{T.has_value} ?standard_unit .
+                ?unit_node {T.has_annotation}/{T.has_value} ?standard_unit .
                 }}
 
             OPTIONAL {{
@@ -215,7 +216,7 @@ class SPARQLQueryBuilder:
             # unit across these dictionaries, so the id is what says two units are
             # the same; the label is kept for display and for the conversion table.
             OPTIONAL {{
-                ?unit_node skos:closeMatch/{T.denotes}/{T.has_value} ?_unit_omop_id .
+                ?unit_node {T.has_annotation}/{T.denotes}/{T.has_value} ?_unit_omop_id .
             }}
 
             BIND(COALESCE(?standard_unit, ?raw_unit) AS ?_unit_label)
@@ -227,7 +228,7 @@ class SPARQLQueryBuilder:
                 {T.specifies_value_of} ?dataElement ;
                 {T.has_value} ?_catV .
             OPTIONAL {{
-            ?cat_val skos:closeMatch ?cat_code .
+            ?cat_val {T.has_annotation} ?cat_code .
             ?cat_code a skos:Concept ;
             rdfs:label ?_catL .
             OPTIONAL {{ ?cat_code {T.denotes}/{T.has_value} ?cat_omop_id . }}
@@ -246,7 +247,8 @@ class SPARQLQueryBuilder:
             WHERE {{
             GRAPH <{cls.GRAPHS_URI}/{source}> {{
             SELECT ?dataElement ?cL ?cV ?omop_id ?seqNum WHERE {{
-            ?dataElement skos:closeMatch ?codeSet .
+            ?dataElement {T.has_annotation} ?codeSet .
+            ?codeSet a {T.code_set} .
             ?codeSet ?seqPred ?codeNode .
             ?codeNode a skos:Concept ;
             rdfs:label ?cL ;

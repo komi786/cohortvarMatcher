@@ -77,7 +77,11 @@ def _compatible_loinc_property(src_prop: str, tgt_prop: str) -> bool:
         "molar concentration",
     )
 
-    return any(x in s for x in concentration_terms) and any(x in t for x in concentration_terms)
+    if any(x in s for x in concentration_terms) and any(x in t for x in concentration_terms):
+        return True
+
+    fraction_terms = ("decimal number fraction", "number fraction")
+    return s in fraction_terms and t in fraction_terms
 
 
 class OmopGraphNX:

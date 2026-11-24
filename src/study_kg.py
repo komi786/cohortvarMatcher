@@ -117,7 +117,7 @@ def generate_studies_kg(filepath: str) -> Graph:
             # # print(row["Primary objective"])
             po_value = row["study objective"].lower().strip() if pd.notna(row["study objective"]) else ""
             objective_uri = URIRef(study_uri + "/objective_specification") 
-            g.add((protocol_uri, RDFS.label, Literal("objective specification", datatype=XSD.string), metadata_graph))
+            g.add((objective_uri, RDFS.label, Literal("objective specification", datatype=XSD.string), metadata_graph))
             g.add((protocol_uri, OntologyNamespaces.RO.value.has_part, objective_uri,metadata_graph))
             g.add((objective_uri, RDF.type, OntologyNamespaces.OBI.value.objective_specification,metadata_graph))
             g.add((objective_uri, OntologyNamespaces.CMEO.value.has_value, Literal(po_value, datatype=XSD.string),metadata_graph))

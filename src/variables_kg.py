@@ -40,8 +40,13 @@ def add_category_annotation(g: Graph, variable_uri: URIRef, category: str, cohor
     category_ = category.strip().lower().replace(' ','_')
     category_uri = URIRef(f"{variable_uri}/category/{category_}")
     # CMEO 'category' is obsolete (the grouping is now the subset CMEO:0000085 in the
-    # ontology). The variable's domain stays an annotation node, typed as a SKOS concept.
+    # ontology, which tags ontology terms, not instance data). The variable's domain stays
+    # an annotation node, typed as a SKOS concept in the OMOP CDM domain scheme.
+    domain_scheme_uri = URIRef(OntologyNamespaces.CMEO.value + "scheme/omop_cdm_domain")
+    g.add((domain_scheme_uri, RDF.type, OntologyNamespaces.SKOS.value.ConceptScheme, cohort_uri))
+    g.add((domain_scheme_uri, RDFS.label, Literal("OMOP CDM domain", datatype=XSD.string), cohort_uri))
     g.add((category_uri, RDF.type, OntologyNamespaces.SKOS.value.Concept, cohort_uri))
+    g.add((category_uri, OntologyNamespaces.SKOS.value.inScheme, domain_scheme_uri, cohort_uri))
     g.add((variable_uri, OntologyNamespaces.SIO.value.has_annotation, category_uri, cohort_uri))
     g.add((category_uri, OntologyNamespaces.CMEO.value.has_value, Literal(category_), cohort_uri))
     return g

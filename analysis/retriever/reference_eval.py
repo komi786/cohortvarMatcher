@@ -17,7 +17,7 @@ Output rows (one column per model):
 
 Run from the repo root:
     .venv/bin/python -m analysis.retriever.reference_eval sapbert biolord openai
-    .venv/bin/python -m analysis.retriever.reference_eval sapbert --pairs data/clinVar_E.csv --out data/output/sensitivity_results
+    .venv/bin/python -m analysis.retriever.reference_eval sapbert --pairs data/threshold_analysis/clinVar_E.csv --out data/output/sensitivity_results
     .venv/bin/python -m analysis.retriever.reference_eval sapbert --modes data/clinVar_OE.csv
 """
 import argparse
@@ -29,7 +29,7 @@ import numpy as np
 import pandas as pd
 
 REPO = Path(__file__).resolve().parents[2]
-PAIRS = REPO / "data/clinVar_E.csv"
+PAIRS = REPO / "data/threshold_analysis/clinVar_E.csv"
 CACHE = REPO / "data/output/embed_cache"          # written here
 # Read-only: embeddings computed for the submitted tables (never written to)
 LEGACY_CACHE = Path.home() / "phd_projects/CohortVarLinker/.embed_cache"
@@ -452,7 +452,7 @@ def cutoff_comparison(model_key: str, pairs: Path = PAIRS, taus=(0.45, 0.50),
 if __name__ == "__main__":
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     ap.add_argument("models", nargs="+", help="keys from src/embed_model.MODEL_MAP")
-    ap.add_argument("--pairs", type=Path, default=PAIRS, help="reference pairs CSV (default: data/clinVar_E.csv)")
+    ap.add_argument("--pairs", type=Path, default=PAIRS, help="reference pairs CSV (default: data/threshold_analysis/clinVar_E.csv)")
     ap.add_argument("--out", type=Path, help="folder (or .csv path) for the results")
     ap.add_argument("--modes", type=Path, metavar="PAIRS_OR_DIR",
                     help="compare NE vs OEH text: a clinVar_2-style CSV with concept names, "

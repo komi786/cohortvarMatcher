@@ -420,6 +420,7 @@ _ONTOLOGY_TERM_IRIS = {
     "has_value": OBO + "STATO_0000129",  # has value (replaces obsolete CMEO:0000082)
     "concretizes": OBO + "RO_0000059",  # concretizes
     "is_concretized_by": OBO + "RO_0000058",  # is concretized as
+    "executes": OBO + "STATO_0000102",  # executes (planned process -> plan specification it carries out)
     "denotes": OBO + "IAO_0000219",  # denotes
     "is_denoted_by": OBO + "IAO_0000235",  # denoted by
     "is_about": OBO + "IAO_0000136",  # is about

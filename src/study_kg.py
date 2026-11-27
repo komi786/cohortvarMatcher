@@ -41,7 +41,7 @@ def generate_studies_kg(filepath: str) -> Graph:
     g = init_graph()
     metadata_graph = URIRef(OntologyNamespaces.CMEO.value + "graph/studies_metadata")
     # df.columns = df.columns.str.lower()
-    # start from study design execution a process that realized plan which concretizes the study design 
+    # study design execution: a planned process that executes (stato:executes) the study design
     for row in df.to_dict(orient="records"):
         if pd.isna(row["study name"]):
             # print("Study name is missing, skipping this row.")
@@ -81,8 +81,7 @@ def generate_studies_kg(filepath: str) -> Graph:
               g.add((study_design_uri , OntologyNamespaces.CMEO.value.has_value, Literal(study_design_value, datatype=XSD.string), metadata_graph))
 
        
-        g.add((study_design_execution_uri, OntologyNamespaces.RO.value.concretizes, study_design_uri, metadata_graph))
-        g.add((study_design_uri, OntologyNamespaces.RO.value.is_concretized_by, study_design_execution_uri, metadata_graph))
+        g.add((study_design_execution_uri, OntologyNamespaces.STATO.value.executes, study_design_uri, metadata_graph))
         
         study_design_variable_specification_uri = URIRef(study_uri + "/study_design_variable_specification")
         g.add((study_design_variable_specification_uri, RDFS.label, Literal("study design variable specification", datatype=XSD.string), metadata_graph))
@@ -297,7 +296,7 @@ def add_eligibility_criterion(g: Graph, row: pd.Series, study_uri: URIRef, proto
     
     human_subject_enrollement = URIRef(study_uri + "/human_subject_enrollment")
     g.add((human_subject_enrollement, RDF.type, OntologyNamespaces.CMEO.value.human_subject_enrollment, metadata_graph))
-    g.add((eligibility_criterion_uri, OntologyNamespaces.RO.value.is_concretized_by, human_subject_enrollement, metadata_graph))
+    g.add((human_subject_enrollement, OntologyNamespaces.STATO.value.executes, eligibility_criterion_uri, metadata_graph))
     
     input_population_uri = URIRef(study_uri + "/input_population")
     g.add((input_population_uri, RDF.type, OntologyNamespaces.OBI.value.population, metadata_graph))

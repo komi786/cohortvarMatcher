@@ -307,18 +307,18 @@ class SPARQLQueryBuilder:
                         FILTER(REPLACE(LCASE(STR(?study_name)), "[ _-]+", " ") = "{study_key}")
 
                         # ── Study design ──
-                        OPTIONAL {{ ?sde {T.concretizes} ?sdA . ?sdA {T.has_value} ?design_val . }}
+                        OPTIONAL {{ ?sde {T.executes} ?sdA . ?sdA {T.has_value} ?design_val . }}
 
                         # ── Study descriptor ──
                         OPTIONAL {{
-                            ?sde {T.concretizes} ?sdB .
+                            ?sde {T.executes} ?sdB .
                             ?sdB {T.is_about} ?desc .
                             ?desc a {T.descriptor} ; rdfs:label ?type_label .
                         }}
 
                         # ── Number of participants ──
                         OPTIONAL {{
-                            ?sde {T.concretizes} ?sdC .
+                            ?sde {T.executes} ?sdC .
                             ?sdC {T.has_part} ?protC .
                             ?protC a {T.protocol} ; {T.has_part} ?np .
                             ?np a {T.number_of_participants} ; {T.has_value} ?n_val .
@@ -326,10 +326,11 @@ class SPARQLQueryBuilder:
 
                         # ── Population morbidity ──
                         OPTIONAL {{
-                            ?sde {T.concretizes} ?sdD .
+                            ?sde {T.executes} ?sdD .
                             ?sdD {T.has_part} ?protD .
                             ?protD {T.has_part} ?eligD .
-                            ?eligD a {T.eligibility_criterion} ; {T.is_concretized_by} ?enrollD .
+                            ?eligD a {T.eligibility_criterion} .
+                            ?enrollD {T.executes} ?eligD .
                             ?enrollD {T.has_output} ?popD .
                             ?popD {T.has_characteristic} ?morb .
                             ?morb a {T.morbidity} ; rdfs:label ?morb_label .
@@ -337,10 +338,11 @@ class SPARQLQueryBuilder:
 
                         # ── Age distribution ──
                         OPTIONAL {{
-                            ?sde {T.concretizes} ?sdE .
+                            ?sde {T.executes} ?sdE .
                             ?sdE {T.has_part} ?protE .
                             ?protE {T.has_part} ?eligE .
-                            ?eligE a {T.eligibility_criterion} ; {T.is_concretized_by} ?enrollE .
+                            ?eligE a {T.eligibility_criterion} .
+                            ?enrollE {T.executes} ?eligE .
                             ?enrollE {T.has_output} ?popE .
                             ?popE {T.has_characteristic} ?age .
                             ?age a {T.age_distribution} ; {T.has_value} ?age_val .
@@ -348,17 +350,18 @@ class SPARQLQueryBuilder:
 
                         # ── Population location ──
                         OPTIONAL {{
-                            ?sde {T.concretizes} ?sdF .
+                            ?sde {T.executes} ?sdF .
                             ?sdF {T.has_part} ?protF .
                             ?protF {T.has_part} ?eligF .
-                            ?eligF a {T.eligibility_criterion} ; {T.is_concretized_by} ?enrollF .
+                            ?eligF a {T.eligibility_criterion} .
+                            ?enrollF {T.executes} ?eligF .
                             ?enrollF {T.has_output} ?popF .
                             ?site a {T.site} ; {T.is_about} ?popF ; {T.has_value} ?loc_val .
                         }}
 
                         # ── Study objective ──
                         OPTIONAL {{
-                            ?sde {T.concretizes} ?sdG .
+                            ?sde {T.executes} ?sdG .
                             ?sdG {T.has_part} ?protG .
                             ?protG a {T.protocol} ; {T.has_part} ?obj .
                             ?obj a {T.objective_specification} ; {T.has_value} ?obj_val .
@@ -366,7 +369,7 @@ class SPARQLQueryBuilder:
 
                         # ── Inclusion criteria ──
                         OPTIONAL {{
-                            ?sde {T.concretizes} ?sdH .
+                            ?sde {T.executes} ?sdH .
                             ?sdH {T.has_part} ?protH .
                             ?protH {T.has_part} ?eligH .
                             ?eligH a {T.eligibility_criterion} ; {T.has_part} ?inc_crit .
